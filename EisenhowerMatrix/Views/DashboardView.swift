@@ -4,8 +4,10 @@ import Charts
 struct DashboardView: View {
     @EnvironmentObject var taskStore: TaskStore
     @AppStorage("appLanguage") private var lang: String = "en"
+    @AppStorage("appAccent")   private var appAccent: String = "blue"
 
     private var s: Str { Str(lang) }
+    private var accent: Color { .accent(appAccent) }
 
     var body: some View {
         NavigationView {
@@ -34,10 +36,10 @@ struct DashboardView: View {
                 }
                 Spacer()
                 ZStack {
-                    Circle().stroke(Color.blue.opacity(0.15), lineWidth: 8)
+                    Circle().stroke(accent.opacity(0.15), lineWidth: 8)
                     Circle()
                         .trim(from: 0, to: taskStore.completionRate)
-                        .stroke(Color.blue, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                        .stroke(accent, style: StrokeStyle(lineWidth: 8, lineCap: .round))
                         .rotationEffect(.degrees(-90))
                         .animation(.easeInOut, value: taskStore.completionRate)
                     Text("\(Int(taskStore.completionRate * 100))%")
@@ -87,7 +89,7 @@ struct DashboardView: View {
                     x: .value("Day", item.date, unit: .day),
                     y: .value(s.completedLabel, item.count)
                 )
-                .foregroundStyle(Color.blue.gradient)
+                .foregroundStyle(accent.gradient)
                 .cornerRadius(4)
             }
             .chartXAxis {

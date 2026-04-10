@@ -7,6 +7,7 @@ struct SettingsView: View {
     @AppStorage("showCompletedTasks") private var showCompletedTasks = true
     @AppStorage("appTheme")           private var appTheme           = "system"
     @AppStorage("appLanguage")        private var lang               = "en"
+    @AppStorage("appAccent")          private var appAccent          = "blue"
     @State private var showingResetConfirm   = false
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
 
@@ -24,6 +25,13 @@ struct SettingsView: View {
                         Text(s.themeLight).tag("light")
                         Text(s.themeDark).tag("dark")
                     }
+                }
+
+                // MARK: Accent colour
+                Section(s.accentSection) {
+                    accentColorPicker
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                 }
 
                 // MARK: Language
@@ -116,6 +124,34 @@ struct SettingsView: View {
                 Text(s.resetConfirmMsg)
             }
             .onAppear { refreshNotificationStatus() }
+        }
+    }
+
+    private var accentColorPicker: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 10) {
+                ForEach(accentOptions) { option in
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.15)) { appAccent = option.id }
+                    } label: {
+                        ZStack {
+                            Circle()
+                                .fill(option.color)
+                                .frame(width: 32, height: 32)
+                            if appAccent == option.id {
+                                Circle()
+                                    .stroke(Color.primary, lineWidth: 2)
+                                    .frame(width: 36, height: 36)
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(.white)
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.vertical, 4)
         }
     }
 

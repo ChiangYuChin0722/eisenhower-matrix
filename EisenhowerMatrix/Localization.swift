@@ -1,4 +1,33 @@
 import Foundation
+import SwiftUI
+
+// MARK: - Accent colour helpers
+
+struct AccentOption: Identifiable {
+    let id: String   // stored in AppStorage
+    let color: Color
+    let labelEN: String
+    let labelZH: String
+}
+
+let accentOptions: [AccentOption] = [
+    AccentOption(id: "blue",   color: .blue,   labelEN: "Blue",   labelZH: "藍"),
+    AccentOption(id: "indigo", color: .indigo, labelEN: "Indigo", labelZH: "靛"),
+    AccentOption(id: "purple", color: .purple, labelEN: "Purple", labelZH: "紫"),
+    AccentOption(id: "pink",   color: .pink,   labelEN: "Pink",   labelZH: "粉"),
+    AccentOption(id: "red",    color: .red,    labelEN: "Red",    labelZH: "紅"),
+    AccentOption(id: "orange", color: .orange, labelEN: "Orange", labelZH: "橘"),
+    AccentOption(id: "yellow", color: Color(red: 0.85, green: 0.70, blue: 0.0), labelEN: "Yellow", labelZH: "黃"),
+    AccentOption(id: "green",  color: .green,  labelEN: "Green",  labelZH: "綠"),
+    AccentOption(id: "teal",   color: .teal,   labelEN: "Teal",   labelZH: "青"),
+    AccentOption(id: "mint",   color: .mint,   labelEN: "Mint",   labelZH: "薄荷"),
+]
+
+extension Color {
+    static func accent(_ name: String) -> Color {
+        accentOptions.first { $0.id == name }?.color ?? .blue
+    }
+}
 
 /// Build a string set from a language code ("en" or "zh").
 /// Usage in any view:
@@ -117,6 +146,7 @@ struct Str {
     var resetConfirmMsg:    String { zh ? "所有任務將被刪除，並還原成範例資料。" : "All tasks will be deleted and sample data restored." }
     var resetConfirmAction: String { zh ? "重置" : "Reset" }
     var doneButton:         String { zh ? "完成" : "Done" }
+    var accentSection:      String { zh ? "主題色" : "Accent Color" }
 
     // MARK: - AddTaskView
     var newTaskTitle:      String { zh ? "新增任務"  : "New Task" }

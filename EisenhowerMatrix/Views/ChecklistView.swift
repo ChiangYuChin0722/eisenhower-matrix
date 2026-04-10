@@ -3,6 +3,7 @@ import SwiftUI
 struct ChecklistView: View {
     @EnvironmentObject var taskStore: TaskStore
     @AppStorage("appLanguage") private var lang: String = "en"
+    @AppStorage("appAccent")   private var appAccent: String = "blue"
     @State private var showAddTask           = false
     @State private var editingTask: EisTask? = nil
     @State private var showCompleted         = false
@@ -14,6 +15,7 @@ struct ChecklistView: View {
     @FocusState private var quickAddFocused: Bool
 
     private var s: Str { Str(lang) }
+    private var accent: Color { .accent(appAccent) }
 
     private var displayedTasks: [EisTask] {
         var base = taskStore.checklistTasks
@@ -133,7 +135,7 @@ struct ChecklistView: View {
                 Text(name).font(.caption).fontWeight(.medium)
             }
             .padding(.horizontal, 12).padding(.vertical, 6)
-            .background(isSelected ? Color.blue : Color.secondary.opacity(0.1))
+            .background(isSelected ? accent : Color.secondary.opacity(0.1))
             .foregroundColor(isSelected ? .white : .primary)
             .cornerRadius(20)
         }
@@ -159,7 +161,7 @@ struct ChecklistView: View {
                             Button { newCategoryIcon = icon } label: {
                                 ZStack {
                                     Circle()
-                                        .fill(newCategoryIcon == icon ? Color.blue : Color.secondary.opacity(0.1))
+                                        .fill(newCategoryIcon == icon ? accent : Color.secondary.opacity(0.1))
                                         .frame(width: 44, height: 44)
                                     Image(systemName: icon)
                                         .foregroundColor(newCategoryIcon == icon ? .white : .primary)
@@ -204,10 +206,10 @@ struct ChecklistView: View {
                         .font(.caption).foregroundColor(.secondary)
                     Spacer()
                     Text("\(Int(progress * 100))%")
-                        .font(.caption).fontWeight(.semibold).foregroundColor(.blue)
+                        .font(.caption).fontWeight(.semibold).foregroundColor(accent)
                 }
                 .padding(.horizontal, 16)
-                ProgressView(value: progress).tint(.blue).padding(.horizontal, 16)
+                ProgressView(value: progress).tint(accent).padding(.horizontal, 16)
             }
             .padding(.vertical, 10)
             .background(Color(uiColor: .systemBackground))
@@ -239,7 +241,7 @@ struct ChecklistView: View {
                         Button { editingTask = task } label: {
                             Label(s.edit, systemImage: "pencil")
                         }
-                        .tint(.blue)
+                        .tint(accent)
                     }
             }
             .onMove { from, to in
@@ -287,7 +289,7 @@ struct ChecklistView: View {
 
                     if task.recurrence != .none {
                         Text("·").foregroundColor(.secondary)
-                        Image(systemName: task.recurrence.icon).font(.caption2).foregroundColor(.blue)
+                        Image(systemName: task.recurrence.icon).font(.caption2).foregroundColor(accent)
                     }
 
                     if let due = task.dueDate {
@@ -323,14 +325,14 @@ struct ChecklistView: View {
         VStack(spacing: 0) {
             Divider()
             HStack(spacing: 12) {
-                Image(systemName: "plus.circle.fill").foregroundColor(.blue).font(.title3)
+                Image(systemName: "plus.circle.fill").foregroundColor(accent).font(.title3)
                 TextField(s.quickAddPlaceholder, text: $newItemTitle)
                     .focused($quickAddFocused)
                     .submitLabel(.done)
                     .onSubmit { commitQuickAdd() }
                 if !newItemTitle.isEmpty {
                     Button(action: commitQuickAdd) {
-                        Image(systemName: "arrow.up.circle.fill").font(.title3).foregroundColor(.blue)
+                        Image(systemName: "arrow.up.circle.fill").font(.title3).foregroundColor(accent)
                     }
                 }
             }

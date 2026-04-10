@@ -2,11 +2,13 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var taskStore: TaskStore
-    @AppStorage("appTheme")    private var appTheme: String = "system"
-    @AppStorage("appLanguage") private var lang: String     = "en"
+    @AppStorage("appTheme")    private var appTheme: String  = "system"
+    @AppStorage("appLanguage") private var lang: String      = "en"
+    @AppStorage("appAccent")   private var appAccent: String = "blue"
     @State private var showSearch = false
 
     private var s: Str { Str(lang) }
+    private var accent: Color { .accent(appAccent) }
 
     var body: some View {
         TabView {
@@ -25,7 +27,7 @@ struct ContentView: View {
             DashboardView()
                 .tabItem { Label(s.tabDashboard, systemImage: "chart.bar.fill") }
         }
-        .tint(.blue)
+        .tint(accent)
         .preferredColorScheme(colorScheme)
         .overlay(alignment: .topTrailing) {
             Button {
@@ -33,6 +35,7 @@ struct ContentView: View {
             } label: {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(accent)
                     .padding(10)
                     .background(.ultraThinMaterial)
                     .clipShape(Circle())

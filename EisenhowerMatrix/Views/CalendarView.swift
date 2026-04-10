@@ -3,6 +3,7 @@ import SwiftUI
 struct CalendarView: View {
     @EnvironmentObject var taskStore: TaskStore
     @AppStorage("appLanguage") private var lang: String = "en"
+    @AppStorage("appAccent")   private var appAccent: String = "blue"
     @State private var selectedDate    = Date()
     @State private var displayedMonth  = Date()
     @State private var viewMode: ViewMode = .month
@@ -15,6 +16,7 @@ struct CalendarView: View {
     }
 
     private var s: Str { Str(lang) }
+    private var accent: Color { .accent(appAccent) }
     private let cal  = Calendar.current
     private let cols = Array(repeating: GridItem(.flexible()), count: 7)
     private var weekdays: [String] {
@@ -131,11 +133,11 @@ struct CalendarView: View {
             VStack(spacing: 2) {
                 ZStack {
                     Circle()
-                        .fill(isSelected ? Color.blue : (isToday ? Color.blue.opacity(0.12) : .clear))
+                        .fill(isSelected ? accent : (isToday ? accent.opacity(0.12) : .clear))
                         .frame(width: 30, height: 30)
                     Text("\(cal.component(.day, from: date))")
                         .font(.system(size: 14, weight: isToday ? .bold : .regular))
-                        .foregroundColor(isSelected ? .white : (isToday ? .blue : .primary))
+                        .foregroundColor(isSelected ? .white : (isToday ? accent : .primary))
                 }
                 HStack(spacing: 2) {
                     ForEach(dots, id: \.self) { q in
@@ -167,7 +169,7 @@ struct CalendarView: View {
                     viewMode = .day
                 } label: {
                     Label(s.timeline, systemImage: "clock")
-                        .font(.caption).foregroundColor(.blue)
+                        .font(.caption).foregroundColor(accent)
                 }
             }
             .padding(.horizontal, 16)
@@ -325,14 +327,14 @@ struct CalendarView: View {
             // Hour label
             Text(hourLabel(hour))
                 .font(.system(size: 11, weight: isCurrentHour ? .bold : .regular))
-                .foregroundColor(isCurrentHour ? .blue : .secondary)
+                .foregroundColor(isCurrentHour ? accent : .secondary)
                 .frame(width: 52, alignment: .trailing)
                 .padding(.trailing, 8)
                 .padding(.top, 2)
 
             VStack(alignment: .leading, spacing: 0) {
                 Rectangle()
-                    .fill(isCurrentHour ? Color.blue.opacity(0.3) : Color.gray.opacity(0.15))
+                    .fill(isCurrentHour ? accent.opacity(0.3) : Color.gray.opacity(0.15))
                     .frame(height: 1)
 
                 if tasks.isEmpty {
