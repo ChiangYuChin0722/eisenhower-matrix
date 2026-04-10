@@ -8,7 +8,6 @@ struct ChecklistView: View {
     private func qColor(_ q: Quadrant) -> Color { q.color(theme: matrixTheme) }
     private func qBg(_ q: Quadrant)    -> Color { q.bgColor(theme: matrixTheme) }
 
-    @State private var showAddTask           = false
     @State private var editingTask: EisTask? = nil
     @State private var showCompleted         = false
     @State private var showQuickAdd          = false
@@ -18,6 +17,7 @@ struct ChecklistView: View {
     @State private var newCategoryIcon       = "list.bullet"
     @State private var expandedIds           = Set<UUID>()
     @State private var isReorderMode         = false
+    @State private var showSearch            = false
 
     private var s: Str { Str(lang) }
     private var accent: Color { .accent(appAccent) }
@@ -112,22 +112,19 @@ struct ChecklistView: View {
                             } label: {
                                 Image(systemName: "arrow.up.arrow.down")
                             }
-                            Button { showAddTask = true } label: {
-                                Image(systemName: "square.and.pencil")
+                            Button { showSearch = true } label: {
+                                Image(systemName: "magnifyingglass")
                             }
                         }
                     }
                 }
-            }
-            .sheet(isPresented: $showAddTask) {
-                AddTaskView(defaultQuadrant: .doFirst, forceChecklist: true,
-                            defaultCategoryId: selectedCategoryId)
             }
             .sheet(item: $editingTask) { task in AddTaskView(editingTask: task) }
             .sheet(isPresented: $showAddCategory) { addCategorySheet }
             .sheet(isPresented: $showQuickAdd) {
                 ChecklistQuickAddSheet(defaultCategoryId: selectedCategoryId)
             }
+            .sheet(isPresented: $showSearch) { SearchView() }
         }
     }
 
