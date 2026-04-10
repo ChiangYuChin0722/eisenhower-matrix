@@ -155,9 +155,11 @@ struct DashboardView: View {
             }
         }
         .padding()
-        .background(Color(uiColor: .systemBackground))
+        .background(LinearGradient(
+            colors: [qColor(q).opacity(0.09), Color(uiColor: .systemBackground)],
+            startPoint: .topLeading, endPoint: .bottomTrailing))
         .cornerRadius(12)
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(qColor(q).opacity(0.2), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(qColor(q).opacity(0.25), lineWidth: 1))
     }
 
     private var recentActivity: some View {

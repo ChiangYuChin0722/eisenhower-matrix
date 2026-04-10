@@ -85,6 +85,27 @@ extension Quadrant {
     func bgColor(theme: String) -> Color {
         color(theme: theme).opacity(0.07)
     }
+    /// Foreground gradient: strong → lighter, top-leading to bottom-trailing.
+    func gradient(theme: String) -> LinearGradient {
+        let c = color(theme: theme)
+        return LinearGradient(colors: [c, c.opacity(0.6)],
+                              startPoint: .topLeading, endPoint: .bottomTrailing)
+    }
+    /// Background gradient for quadrant panels — each corner flows inward.
+    func bgGradient(theme: String, corner: UnitPoint = .topLeading) -> LinearGradient {
+        let c = color(theme: theme)
+        let opposite: UnitPoint = {
+            switch corner {
+            case .topLeading:     return .bottomTrailing
+            case .topTrailing:    return .bottomLeading
+            case .bottomLeading:  return .topTrailing
+            case .bottomTrailing: return .topLeading
+            default:              return .bottomTrailing
+            }
+        }()
+        return LinearGradient(colors: [c.opacity(0.13), c.opacity(0.03)],
+                              startPoint: corner, endPoint: opposite)
+    }
 }
 
 struct AccentOption: Identifiable {
@@ -267,6 +288,13 @@ struct Str {
     func subtasksOf(_ done: Int, _ total: Int) -> String {
         zh ? "\(done)/\(total) 子任務" : "\(done)/\(total) subtasks"
     }
+
+    // MARK: - Countdown precision
+    var countdownPrecisionSection: String { zh ? "倒數顯示精度" : "Countdown Precision" }
+    var precisionD:    String { zh ? "天"           : "Days" }
+    var precisionDH:   String { zh ? "天＋小時"      : "Days + Hours" }
+    var precisionDHM:  String { zh ? "天＋小時＋分"  : "Days + H + Min" }
+    var precisionDHMS: String { zh ? "完整（天時分秒）" : "Full (d+h+m+s)" }
 
     // MARK: - Custom quadrant names
     var customQuadrantSection:  String { zh ? "自訂象限名稱" : "Custom Quadrant Names" }

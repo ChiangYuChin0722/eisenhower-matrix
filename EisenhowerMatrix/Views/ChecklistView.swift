@@ -294,12 +294,16 @@ struct ChecklistView: View {
         } label: {
             ZStack {
                 Circle()
-                    .stroke(task.isCompleted ? qColor(task.quadrant) : Color.gray.opacity(0.35), lineWidth: 1.5)
+                    .stroke(task.isCompleted
+                            ? AnyShapeStyle(task.quadrant.gradient(theme: matrixTheme))
+                            : AnyShapeStyle(Color.gray.opacity(0.35)),
+                            lineWidth: 1.5)
                     .frame(width: 24, height: 24)
                     .animation(.spring(response: 0.3, dampingFraction: 0.6), value: task.isCompleted)
                 if task.isCompleted {
                     Circle()
-                        .fill(qColor(task.quadrant).opacity(0.15))
+                        .fill(task.quadrant.gradient(theme: matrixTheme))
+                        .opacity(0.18)
                         .frame(width: 24, height: 24)
                         .transition(.scale.combined(with: .opacity))
                     Image(systemName: "checkmark")

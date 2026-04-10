@@ -12,6 +12,7 @@ struct DeadlineView: View {
     @State private var showCompleted = false
     @State private var showPomodoro  = false
     @State private var pomodoroTask: EisTask? = nil
+    @AppStorage("countdownPrecision") private var countdownPrecision: String = "dhms"
 
     private let cal = Calendar.current
     private var s: Str { Str(lang) }
@@ -278,9 +279,12 @@ struct DeadlineView: View {
     }
 
     private func compactCountdownCard(task: EisTask, due: Date, remaining: TimeInterval) -> some View {
-        let totalHours = Int(remaining) / 3600
-        let minutes    = (Int(remaining) % 3600) / 60
-        let seconds    = Int(remaining) % 60
+        let secs    = Int(remaining)
+        let days    = secs / 86400
+        let hours   = (secs % 86400) / 3600
+        let minutes = (secs % 3600) / 60
+        let seconds = secs % 60
+
         let urgency: Color = {
             if remaining < 3600      { return .red }
             if remaining < 86400     { return .orange }
@@ -288,44 +292,80 @@ struct DeadlineView: View {
             return accent
         }()
 
+        // Card width scales with number of visible units
+        let cardWidth: CGFloat = {
+            switch countdownPrecision {
+            case "d":    return 95
+            case "dh":   return 125
+            case "dhm":  return 152
+            default:     return 168   // dhms
+            }
+        }()
+
+        let sep = Text(":").font(.system(size: 13, weight: .thin)).foregroundColor(.secondary)
+        let zh  = lang == "zh"
+
         return VStack(alignment: .leading, spacing: 6) {
             // Task name + quadrant dot
             HStack(spacing: 4) {
-                Circle().fill(qColor(task.quadrant)).frame(width: 6, height: 6)
+                Circle()
+                    .fill(Quadrant(rawValue: task.quadrant.rawValue)?.gradient(theme: matrixTheme) ?? LinearGradient(colors: [qColor(task.quadrant)], startPoint: .top, endPoint: .bottom))
+                    .frame(width: 6, height: 6)
                 Text(task.title)
                     .font(.caption).fontWeight(.semibold)
                     .lineLimit(1)
                     .foregroundColor(.primary)
             }
 
-            // HH : MM : SS
+            // Time units
             HStack(spacing: 2) {
-                miniUnit(String(format: "%02d", totalHours), label: lang == "zh" ? "時" : "h", color: urgency)
-                Text(":").font(.system(size: 14, weight: .thin)).foregroundColor(.secondary)
-                miniUnit(String(format: "%02d", minutes),   label: lang == "zh" ? "分" : "m", color: urgency)
-                Text(":").font(.system(size: 14, weight: .thin)).foregroundColor(.secondary)
-                miniUnit(String(format: "%02d", seconds),   label: lang == "zh" ? "秒" : "s", color: urgency)
+                switch countdownPrecision {
+                case "d":
+                    if days > 0 {
+                        miniUnit("\(days)", label: zh ? "天" : "d", color: urgency)
+                    } else {
+                        miniUnit("<1",      label: zh ? "天" : "d", color: urgency)
+                    }
+                case "dh":
+                    miniUnit("\(days)",                        label: zh ? "天" : "d", color: urgency)
+                    sep
+                    miniUnit(String(format: "%02d", hours),    label: zh ? "時" : "h", color: urgency)
+                case "dhm":
+                    miniUnit("\(days)",                        label: zh ? "天" : "d", color: urgency)
+                    sep
+                    miniUnit(String(format: "%02d", hours),    label: zh ? "時" : "h", color: urgency)
+                    sep
+                    miniUnit(String(format: "%02d", minutes),  label: zh ? "分" : "m", color: urgency)
+                default: // dhms
+                    miniUnit("\(days)",                        label: zh ? "天" : "d", color: urgency)
+                    sep
+                    miniUnit(String(format: "%02d", hours),    label: zh ? "時" : "h", color: urgency)
+                    sep
+                    miniUnit(String(format: "%02d", minutes),  label: zh ? "分" : "m", color: urgency)
+                    sep
+                    miniUnit(String(format: "%02d", seconds),  label: zh ? "秒" : "s", color: urgency)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .center)
 
             // Due date
-            let comps = cal.dateComponents([.hour, .minute], from: due)
+            let comps   = cal.dateComponents([.hour, .minute], from: due)
             let hasTime = (comps.hour ?? 0) != 0 || (comps.minute ?? 0) != 0
             HStack(spacing: 3) {
                 Image(systemName: "calendar").font(.system(size: 9))
                 Text(due, style: .date).font(.system(size: 10))
-                if hasTime {
-                    Text(due, style: .time).font(.system(size: 10))
-                }
+                if hasTime { Text(due, style: .time).font(.system(size: 10)) }
             }
             .foregroundColor(.secondary)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .frame(width: 145)
-        .background(urgency.opacity(0.07))
+        .frame(width: cardWidth)
+        .background(LinearGradient(
+            colors: [urgency.opacity(0.12), urgency.opacity(0.04)],
+            startPoint: .topLeading, endPoint: .bottomTrailing))
         .cornerRadius(12)
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(urgency.opacity(0.2), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(urgency.opacity(0.25), lineWidth: 1))
         .onTapGesture { editingTask = task }
     }
 

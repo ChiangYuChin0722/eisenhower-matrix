@@ -79,7 +79,7 @@ struct MatrixView: View {
             .sheet(item: $editingTask) { task in
                 AddTaskView(editingTask: task)
             }
-            .sheet(isPresented: $showingSettings) {
+            .navigationDestination(isPresented: $showingSettings) {
                 SettingsView()
             }
             .sheet(isPresented: $showSearch) {
@@ -115,10 +115,19 @@ struct MatrixView: View {
         let w = size.width / 2
         let h = size.height / 2
         return Group {
-            Rectangle().fill(qBg(.schedule)).frame(width: w, height: h).offset(x: 0, y: 0)
-            Rectangle().fill(qBg(.doFirst)).frame(width: w, height: h).offset(x: w, y: 0)
-            Rectangle().fill(qBg(.eliminate)).frame(width: w, height: h).offset(x: 0, y: h)
-            Rectangle().fill(qBg(.delegate)).frame(width: w, height: h).offset(x: w, y: h)
+            // Each quadrant's gradient radiates from its outer corner toward the centre
+            Rectangle()
+                .fill(Quadrant.schedule.bgGradient(theme: matrixTheme, corner: .topLeading))
+                .frame(width: w, height: h).offset(x: 0, y: 0)
+            Rectangle()
+                .fill(Quadrant.doFirst.bgGradient(theme: matrixTheme, corner: .topTrailing))
+                .frame(width: w, height: h).offset(x: w, y: 0)
+            Rectangle()
+                .fill(Quadrant.eliminate.bgGradient(theme: matrixTheme, corner: .bottomLeading))
+                .frame(width: w, height: h).offset(x: 0, y: h)
+            Rectangle()
+                .fill(Quadrant.delegate.bgGradient(theme: matrixTheme, corner: .bottomTrailing))
+                .frame(width: w, height: h).offset(x: w, y: h)
         }
     }
 

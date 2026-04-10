@@ -3,19 +3,19 @@ import UserNotifications
 
 struct SettingsView: View {
     @EnvironmentObject var taskStore: TaskStore
-    @Environment(\.dismiss) var dismiss
-    @AppStorage("showCompletedTasks")    private var showCompletedTasks = true
-    @AppStorage("appTheme")             private var appTheme           = "system"
-    @AppStorage("appLanguage")          private var lang               = "en"
-    @AppStorage("appAccent")            private var appAccent          = "blue"
-    @AppStorage("matrixTheme")          private var matrixTheme        = "classic"
-    @AppStorage("quadrantName_do")      private var nameDoFirst        = ""
-    @AppStorage("quadrantName_schedule")private var nameSchedule       = ""
-    @AppStorage("quadrantName_delegate")private var nameDelegate       = ""
-    @AppStorage("quadrantName_eliminate")private var nameEliminate     = ""
-    @AppStorage("pomodoroWork")         private var pomodoroWork       = 25
-    @AppStorage("pomodoroShortBreak")   private var pomodoroShort      = 5
-    @AppStorage("pomodoroLongBreak")    private var pomodoroLong       = 15
+    @AppStorage("showCompletedTasks")     private var showCompletedTasks = true
+    @AppStorage("appTheme")              private var appTheme           = "system"
+    @AppStorage("appLanguage")           private var lang               = "en"
+    @AppStorage("appAccent")             private var appAccent          = "blue"
+    @AppStorage("matrixTheme")           private var matrixTheme        = "classic"
+    @AppStorage("quadrantName_do")       private var nameDoFirst        = ""
+    @AppStorage("quadrantName_schedule") private var nameSchedule       = ""
+    @AppStorage("quadrantName_delegate") private var nameDelegate       = ""
+    @AppStorage("quadrantName_eliminate")private var nameEliminate      = ""
+    @AppStorage("pomodoroWork")          private var pomodoroWork       = 25
+    @AppStorage("pomodoroShortBreak")    private var pomodoroShort      = 5
+    @AppStorage("pomodoroLongBreak")     private var pomodoroLong       = 15
+    @AppStorage("countdownPrecision")    private var countdownPrecision = "dhms"
     @State private var showingResetConfirm   = false
     @State private var showingQuadrantEdit   = false
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
@@ -23,18 +23,17 @@ struct SettingsView: View {
     private var s: Str { Str(lang) }
 
     var body: some View {
-        NavigationView {
-            Form {
-                // MARK: Display
-                Section(s.displaySection) {
-                    Toggle(s.showCompletedLabel, isOn: $showCompletedTasks)
+        Form {
+            // MARK: Display
+            Section(s.displaySection) {
+                Toggle(s.showCompletedLabel, isOn: $showCompletedTasks)
 
-                    Picker(s.themeLabel, selection: $appTheme) {
-                        Text(s.themeSystem).tag("system")
-                        Text(s.themeLight).tag("light")
-                        Text(s.themeDark).tag("dark")
-                    }
+                Picker(s.themeLabel, selection: $appTheme) {
+                    Text(s.themeSystem).tag("system")
+                    Text(s.themeLight).tag("light")
+                    Text(s.themeDark).tag("dark")
                 }
+            }
 
                 // MARK: Matrix colour theme
                 Section(s.matrixThemeSection) {
@@ -119,6 +118,16 @@ struct SettingsView: View {
                     Text(s.notifSection)
                 }
 
+                // MARK: Countdown precision
+                Section(s.countdownPrecisionSection) {
+                    Picker(s.countdownPrecisionSection, selection: $countdownPrecision) {
+                        Text(s.precisionD).tag("d")
+                        Text(s.precisionDH).tag("dh")
+                        Text(s.precisionDHM).tag("dhm")
+                        Text(s.precisionDHMS).tag("dhms")
+                    }
+                }
+
                 // MARK: Reset
                 Section(s.resetSectionTitle) {
                     Button(role: .destructive) {
@@ -127,32 +136,26 @@ struct SettingsView: View {
                         Label(s.resetButton, systemImage: "arrow.counterclockwise")
                     }
                 }
+        }
+        .scrollContentBackground(.hidden)
+        .background(Color.appBackground)
+        .navigationTitle(s.settingsTitle)
+        .navigationBarTitleDisplayMode(.inline)
+        .confirmationDialog(
+            s.resetConfirmTitle,
+            isPresented: $showingResetConfirm,
+            titleVisibility: .visible
+        ) {
+            Button(s.resetConfirmAction, role: .destructive) {
+                taskStore.resetToSampleData()
             }
-            .scrollContentBackground(.hidden)
-            .background(Color.appBackground)
-            .navigationTitle(s.settingsTitle)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(s.doneButton) { dismiss() }
-                }
-            }
-            .confirmationDialog(
-                s.resetConfirmTitle,
-                isPresented: $showingResetConfirm,
-                titleVisibility: .visible
-            ) {
-                Button(s.resetConfirmAction, role: .destructive) {
-                    taskStore.resetToSampleData()
-                }
-                Button(s.cancel, role: .cancel) {}
-            } message: {
-                Text(s.resetConfirmMsg)
-            }
-            .onAppear { refreshNotificationStatus() }
-            .sheet(isPresented: $showingQuadrantEdit) {
-                quadrantEditSheet
-            }
+            Button(s.cancel, role: .cancel) {}
+        } message: {
+            Text(s.resetConfirmMsg)
+        }
+        .onAppear { refreshNotificationStatus() }
+        .sheet(isPresented: $showingQuadrantEdit) {
+            quadrantEditSheet
         }
     }
 
