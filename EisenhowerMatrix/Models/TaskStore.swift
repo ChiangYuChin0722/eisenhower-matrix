@@ -131,6 +131,46 @@ class TaskStore: ObservableObject {
         save()
     }
 
+    func toggleSubtaskCompletion(taskId: UUID, subtaskId: UUID) {
+        guard let taskIdx = tasks.firstIndex(where: { $0.id == taskId }),
+              let subIdx  = tasks[taskIdx].subtasks.firstIndex(where: { $0.id == subtaskId })
+        else { return }
+        tasks[taskIdx].subtasks[subIdx].isCompleted.toggle()
+        save()
+    }
+
+    func completeMultiple(ids: Set<UUID>) {
+        for id in ids {
+            guard let idx = tasks.firstIndex(where: { $0.id == id }) else { continue }
+            if !tasks[idx].isCompleted {
+                tasks[idx].isCompleted = true
+                tasks[idx].completedAt = Date()
+            }
+        }
+        save()
+    }
+
+    func deleteMultiple(ids: Set<UUID>) {
+        for id in ids {
+            if let task = tasks.first(where: { $0.id == id }) {
+                NotificationManager.shared.cancelNotification(for: task)
+            }
+        }
+        tasks.removeAll { ids.contains($0.id) }
+        save()
+    }
+
+    /// Called after the user manually reorders the checklist.
+    /// `reordered` is the new desired order of the visible (filtered) tasks.
+    func reorderChecklistTasks(_ reordered: [EisTask]) {
+        for (idx, task) in reordered.enumerated() {
+            if let storeIdx = tasks.firstIndex(where: { $0.id == task.id }) {
+                tasks[storeIdx].sortOrder = idx
+            }
+        }
+        save()
+    }
+
     // MARK: - Category mutations
 
     func addCategory(_ cat: ChecklistCategory) {

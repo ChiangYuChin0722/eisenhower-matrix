@@ -168,6 +168,7 @@ struct EisTask: Identifiable, Codable, Equatable {
     var completedAt: Date? = nil
     var subtasks: [EisTask]  = []
     var colorTag: TaskColor  = .none
+    var sortOrder: Int       = 0
     var isInChecklist: Bool  = false
     var canvasX: Double
     var canvasY: Double

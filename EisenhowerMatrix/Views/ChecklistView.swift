@@ -7,6 +7,7 @@ struct ChecklistView: View {
     @AppStorage("matrixTheme") private var matrixTheme: String = "classic"
     private func qColor(_ q: Quadrant) -> Color { q.color(theme: matrixTheme) }
     private func qBg(_ q: Quadrant)    -> Color { q.bgColor(theme: matrixTheme) }
+
     @State private var showAddTask           = false
     @State private var editingTask: EisTask? = nil
     @State private var showCompleted         = false
@@ -15,10 +16,17 @@ struct ChecklistView: View {
     @State private var showAddCategory       = false
     @State private var newCategoryName       = ""
     @State private var newCategoryIcon       = "list.bullet"
+    // Expand / select / reorder
+    @State private var expandedIds           = Set<UUID>()
+    @State private var isSelectMode          = false
+    @State private var selectedIds           = Set<UUID>()
+    @State private var isReorderMode         = false
     @FocusState private var quickAddFocused: Bool
 
     private var s: Str { Str(lang) }
     private var accent: Color { .accent(appAccent) }
+
+    // MARK: - Derived data
 
     private var displayedTasks: [EisTask] {
         var base = taskStore.checklistTasks
@@ -28,6 +36,7 @@ struct ChecklistView: View {
         if !showCompleted { base = base.filter { !$0.isCompleted } }
         return base.sorted {
             if $0.isCompleted != $1.isCompleted { return !$0.isCompleted }
+            if $0.sortOrder   != $1.sortOrder   { return $0.sortOrder < $1.sortOrder }
             return $0.createdAt < $1.createdAt
         }
     }
@@ -44,10 +53,14 @@ struct ChecklistView: View {
         return Double(completedCount) / Double(totalCount)
     }
 
+    // MARK: - Body
+
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                categoryPicker
+                if !isReorderMode {
+                    categoryPicker
+                }
 
                 if totalCount > 0 { progressBar }
 
@@ -59,22 +72,51 @@ struct ChecklistView: View {
                     taskList
                 }
 
-                quickAddBar
+                if isSelectMode {
+                    batchActionBar
+                } else if !isReorderMode {
+                    quickAddBar
+                }
             }
             .navigationTitle(s.tabChecklist)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        withAnimation { showCompleted.toggle() }
-                    } label: {
-                        Image(systemName: showCompleted ? "eye.slash" : "eye")
-                        Text(showCompleted ? s.hideDone : s.showDone).font(.caption)
+                    Group {
+                        if isSelectMode {
+                            Button(s.cancelSelectBtn) {
+                                withAnimation { isSelectMode = false; selectedIds = [] }
+                            }
+                        } else if isReorderMode {
+                            Button(s.doneReorder) {
+                                withAnimation { isReorderMode = false }
+                            }
+                            .fontWeight(.semibold)
+                        } else {
+                            Button {
+                                withAnimation { showCompleted.toggle() }
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: showCompleted ? "eye.slash" : "eye")
+                                    Text(showCompleted ? s.hideDone : s.showDone).font(.caption)
+                                }
+                            }
+                            .foregroundColor(.secondary)
+                        }
                     }
-                    .foregroundColor(.secondary)
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button { showAddTask = true } label: {
-                        Image(systemName: "square.and.pencil")
+                if !isSelectMode && !isReorderMode {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        HStack(spacing: 2) {
+                            Button {
+                                withAnimation { isReorderMode = true }
+                            } label: {
+                                Image(systemName: "arrow.up.arrow.down")
+                            }
+                            Button { showAddTask = true } label: {
+                                Image(systemName: "square.and.pencil")
+                            }
+                        }
                     }
                 }
             }
@@ -85,6 +127,307 @@ struct ChecklistView: View {
             .sheet(item: $editingTask) { task in AddTaskView(editingTask: task) }
             .sheet(isPresented: $showAddCategory) { addCategorySheet }
         }
+    }
+
+    // MARK: - Task list
+
+    private var taskList: some View {
+        List {
+            if isReorderMode {
+                ForEach(displayedTasks) { task in
+                    checklistRow(task)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                        .listRowSeparator(.hidden)
+                }
+                .onMove { from, to in
+                    var reordered = displayedTasks
+                    reordered.move(fromOffsets: from, toOffset: to)
+                    taskStore.reorderChecklistTasks(reordered)
+                }
+            } else {
+                ForEach(displayedTasks) { task in
+                    checklistRow(task)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                            Button {
+                                withAnimation { taskStore.toggleCompletion(id: task.id) }
+                            } label: {
+                                Label(task.isCompleted ? s.undo : s.done,
+                                      systemImage: task.isCompleted ? "arrow.uturn.backward" : "checkmark")
+                            }
+                            .tint(.green)
+                        }
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) { taskStore.deleteTask(id: task.id) } label: {
+                                Label(s.delete, systemImage: "trash")
+                            }
+                            Button { editingTask = task } label: {
+                                Label(s.edit, systemImage: "pencil")
+                            }
+                            .tint(accent)
+                        }
+                }
+            }
+        }
+        .listStyle(.plain)
+        .environment(\.editMode, .constant(isReorderMode ? .active : .inactive))
+    }
+
+    // MARK: - Row
+
+    private func checklistRow(_ task: EisTask) -> some View {
+        let isExpanded = expandedIds.contains(task.id)
+        let hasExtra   = !task.subtasks.isEmpty || !task.notes.isEmpty
+
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 14) {
+                // Left: selection checkbox OR completion button
+                if isSelectMode {
+                    Image(systemName: selectedIds.contains(task.id)
+                          ? "checkmark.circle.fill" : "circle")
+                        .font(.title3)
+                        .foregroundColor(selectedIds.contains(task.id) ? accent : Color.gray.opacity(0.4))
+                        .onTapGesture { toggleSelection(task.id) }
+                } else {
+                    completionButton(task)
+                }
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(task.title)
+                        .font(.body)
+                        .strikethrough(task.isCompleted, color: .secondary)
+                        .foregroundColor(task.isCompleted ? .secondary : .primary)
+                        .animation(.easeInOut(duration: 0.2), value: task.isCompleted)
+
+                    metaRow(task)
+
+                    // Subtask progress summary (only when collapsed)
+                    if !task.subtasks.isEmpty && !isExpanded {
+                        Text(s.subtasksOf(task.completedSubtaskCount, task.totalSubtaskCount))
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                Spacer()
+
+                if task.colorTag != .none {
+                    Circle().fill(task.colorTag.color).frame(width: 8, height: 8)
+                }
+
+                // Expand chevron (when row has notes or subtasks, and not in reorder mode)
+                if hasExtra && !isReorderMode {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.secondary.opacity(0.6))
+                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                        .animation(.easeInOut(duration: 0.2), value: isExpanded)
+                }
+            }
+            .padding(.vertical, 11)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if isSelectMode {
+                    toggleSelection(task.id)
+                } else if hasExtra {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        if expandedIds.contains(task.id) {
+                            expandedIds.remove(task.id)
+                        } else {
+                            expandedIds.insert(task.id)
+                        }
+                    }
+                } else {
+                    editingTask = task
+                }
+            }
+            .onLongPressGesture {
+                guard !isReorderMode else { return }
+                withAnimation {
+                    isSelectMode = true
+                    selectedIds  = [task.id]
+                }
+            }
+
+            // Expanded content: notes + subtasks
+            if isExpanded {
+                expandedContent(task)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .opacity(task.isCompleted ? 0.65 : 1.0)
+    }
+
+    private func completionButton(_ task: EisTask) -> some View {
+        Button {
+            withAnimation(.spring(response: 0.25)) { taskStore.toggleCompletion(id: task.id) }
+        } label: {
+            ZStack {
+                Circle()
+                    .stroke(task.isCompleted ? qColor(task.quadrant) : Color.gray.opacity(0.35), lineWidth: 1.5)
+                    .frame(width: 24, height: 24)
+                if task.isCompleted {
+                    Circle().fill(qColor(task.quadrant).opacity(0.15)).frame(width: 24, height: 24)
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(qColor(task.quadrant))
+                }
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func metaRow(_ task: EisTask) -> some View {
+        HStack(spacing: 6) {
+            Text(task.quadrant.emoji + " " + s.quadrantTitle(task.quadrant))
+                .font(.caption2)
+                .foregroundColor(qColor(task.quadrant).opacity(0.8))
+
+            if task.recurrence != .none {
+                Text("·").foregroundColor(.secondary).font(.caption2)
+                Image(systemName: task.recurrence.icon).font(.caption2).foregroundColor(accent)
+            }
+
+            if let due = task.dueDate {
+                Text("·").foregroundColor(.secondary).font(.caption2)
+                Image(systemName: "calendar").font(.caption2).foregroundColor(.secondary)
+                Text(due, style: .date)
+                    .font(.caption2)
+                    .foregroundColor(due < Date() && !task.isCompleted ? .red : .secondary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func expandedContent(_ task: EisTask) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Notes preview
+            if !task.notes.isEmpty {
+                Text(task.notes)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .lineLimit(4)
+                    .padding(.leading, 38)
+                    .padding(.trailing, 16)
+                    .padding(.bottom, task.subtasks.isEmpty ? 10 : 6)
+            }
+
+            // Subtasks
+            if !task.subtasks.isEmpty {
+                Divider().padding(.leading, 38)
+                ForEach(task.subtasks) { sub in
+                    subtaskRow(sub, parentId: task.id)
+                }
+                .padding(.bottom, 4)
+            }
+        }
+    }
+
+    private func subtaskRow(_ sub: EisTask, parentId: UUID) -> some View {
+        HStack(spacing: 10) {
+            Color.clear.frame(width: 38, height: 1)
+
+            Button {
+                taskStore.toggleSubtaskCompletion(taskId: parentId, subtaskId: sub.id)
+            } label: {
+                ZStack {
+                    Circle()
+                        .stroke(sub.isCompleted
+                                ? Color.secondary.opacity(0.35)
+                                : Color.gray.opacity(0.35),
+                                lineWidth: 1.5)
+                        .frame(width: 20, height: 20)
+                    if sub.isCompleted {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+
+            Text(sub.title)
+                .font(.subheadline)
+                .foregroundColor(sub.isCompleted ? .secondary : .primary)
+                .strikethrough(sub.isCompleted, color: .secondary)
+
+            Spacer()
+        }
+        .padding(.vertical, 7)
+        .contentShape(Rectangle())
+    }
+
+    // MARK: - Batch action bar
+
+    private var batchActionBar: some View {
+        VStack(spacing: 0) {
+            Divider()
+            HStack(spacing: 12) {
+                let n = selectedIds.count
+                Button {
+                    taskStore.completeMultiple(ids: selectedIds)
+                    withAnimation { isSelectMode = false; selectedIds = [] }
+                } label: {
+                    Label(s.completeSelected(n), systemImage: "checkmark.circle")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .tint(.green)
+                .disabled(n == 0)
+
+                Button {
+                    taskStore.deleteMultiple(ids: selectedIds)
+                    withAnimation { isSelectMode = false; selectedIds = [] }
+                } label: {
+                    Label(s.deleteSelected(n), systemImage: "trash")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .tint(.red)
+                .disabled(n == 0)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color(uiColor: .systemBackground))
+        }
+    }
+
+    // MARK: - Quick add bar
+
+    private var quickAddBar: some View {
+        VStack(spacing: 0) {
+            Divider()
+            HStack(spacing: 12) {
+                Image(systemName: "plus.circle.fill").foregroundColor(accent).font(.title3)
+                TextField(s.quickAddPlaceholder, text: $newItemTitle)
+                    .focused($quickAddFocused)
+                    .submitLabel(.done)
+                    .onSubmit { commitQuickAdd() }
+                if !newItemTitle.isEmpty {
+                    Button(action: commitQuickAdd) {
+                        Image(systemName: "arrow.up.circle.fill").font(.title3).foregroundColor(accent)
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color(uiColor: .systemBackground))
+        }
+    }
+
+    private func commitQuickAdd() {
+        let t = newItemTitle.trimmingCharacters(in: .whitespaces)
+        guard !t.isEmpty else { return }
+        taskStore.addTask(EisTask(title: t, quadrant: .doFirst, isInChecklist: true,
+                                  checklistCategoryId: selectedCategoryId ?? taskStore.checklistCategories.first?.id))
+        newItemTitle = ""
+    }
+
+    private func toggleSelection(_ id: UUID) {
+        if selectedIds.contains(id) { selectedIds.remove(id) }
+        else { selectedIds.insert(id) }
     }
 
     // MARK: - Category picker
@@ -145,6 +488,27 @@ struct ChecklistView: View {
         .buttonStyle(.plain)
     }
 
+    // MARK: - Progress bar
+
+    private var progressBar: some View {
+        VStack(spacing: 0) {
+            VStack(spacing: 6) {
+                HStack {
+                    Text("\(completedCount) / \(totalCount) \(s.done.lowercased())")
+                        .font(.caption).foregroundColor(.secondary)
+                    Spacer()
+                    Text("\(Int(progress * 100))%")
+                        .font(.caption).fontWeight(.semibold).foregroundColor(accent)
+                }
+                .padding(.horizontal, 16)
+                ProgressView(value: progress).tint(accent).padding(.horizontal, 16)
+            }
+            .padding(.vertical, 10)
+            .background(Color(uiColor: .systemBackground))
+            Divider()
+        }
+    }
+
     // MARK: - Add-category sheet
 
     private var addCategorySheet: some View {
@@ -197,160 +561,6 @@ struct ChecklistView: View {
                 }
             }
         }
-    }
-
-    // MARK: - Progress bar
-
-    private var progressBar: some View {
-        VStack(spacing: 0) {
-            VStack(spacing: 6) {
-                HStack {
-                    Text("\(completedCount) / \(totalCount) \(s.done.lowercased())")
-                        .font(.caption).foregroundColor(.secondary)
-                    Spacer()
-                    Text("\(Int(progress * 100))%")
-                        .font(.caption).fontWeight(.semibold).foregroundColor(accent)
-                }
-                .padding(.horizontal, 16)
-                ProgressView(value: progress).tint(accent).padding(.horizontal, 16)
-            }
-            .padding(.vertical, 10)
-            .background(Color(uiColor: .systemBackground))
-            Divider()
-        }
-    }
-
-    // MARK: - Task list
-
-    private var taskList: some View {
-        List {
-            ForEach(displayedTasks) { task in
-                checklistRow(task)
-                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
-                    .listRowSeparator(.hidden)
-                    .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                        Button {
-                            withAnimation { taskStore.toggleCompletion(id: task.id) }
-                        } label: {
-                            Label(task.isCompleted ? s.undo : s.done,
-                                  systemImage: task.isCompleted ? "arrow.uturn.backward" : "checkmark")
-                        }
-                        .tint(.green)
-                    }
-                    .swipeActions(edge: .trailing) {
-                        Button(role: .destructive) { taskStore.deleteTask(id: task.id) } label: {
-                            Label(s.delete, systemImage: "trash")
-                        }
-                        Button { editingTask = task } label: {
-                            Label(s.edit, systemImage: "pencil")
-                        }
-                        .tint(accent)
-                    }
-            }
-            .onMove { from, to in
-                var reordered = displayedTasks
-                reordered.move(fromOffsets: from, toOffset: to)
-                for task in reordered { taskStore.updateTask(task) }
-            }
-        }
-        .listStyle(.plain)
-        .environment(\.editMode, .constant(.active))
-    }
-
-    // MARK: - Row
-
-    private func checklistRow(_ task: EisTask) -> some View {
-        HStack(spacing: 14) {
-            Button {
-                withAnimation(.spring(response: 0.25)) { taskStore.toggleCompletion(id: task.id) }
-            } label: {
-                ZStack {
-                    Circle()
-                        .stroke(task.isCompleted ? qColor(task.quadrant) : Color.gray.opacity(0.35), lineWidth: 1.5)
-                        .frame(width: 24, height: 24)
-                    if task.isCompleted {
-                        Circle().fill(qColor(task.quadrant).opacity(0.15)).frame(width: 24, height: 24)
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(qColor(task.quadrant))
-                    }
-                }
-            }
-            .buttonStyle(.plain)
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(task.title)
-                    .font(.body)
-                    .strikethrough(task.isCompleted, color: .secondary)
-                    .foregroundColor(task.isCompleted ? .secondary : .primary)
-                    .animation(.easeInOut(duration: 0.2), value: task.isCompleted)
-
-                HStack(spacing: 8) {
-                    Text(task.quadrant.emoji + " " + s.quadrantTitle(task.quadrant))
-                        .font(.caption2)
-                        .foregroundColor(qColor(task.quadrant).opacity(0.8))
-
-                    if task.recurrence != .none {
-                        Text("·").foregroundColor(.secondary)
-                        Image(systemName: task.recurrence.icon).font(.caption2).foregroundColor(accent)
-                    }
-
-                    if let due = task.dueDate {
-                        Text("·").foregroundColor(.secondary)
-                        Image(systemName: "calendar").font(.caption2).foregroundColor(.secondary)
-                        Text(due, style: .date)
-                            .font(.caption2)
-                            .foregroundColor(due < Date() && !task.isCompleted ? .red : .secondary)
-                    }
-
-                    if !task.notes.isEmpty {
-                        Text("·").foregroundColor(.secondary)
-                        Image(systemName: "note.text").font(.caption2).foregroundColor(.secondary)
-                    }
-                }
-            }
-
-            Spacer()
-
-            if task.colorTag != .none {
-                Circle().fill(task.colorTag.color).frame(width: 8, height: 8)
-            }
-        }
-        .padding(.vertical, 11)
-        .contentShape(Rectangle())
-        .onTapGesture { editingTask = task }
-        .opacity(task.isCompleted ? 0.6 : 1.0)
-    }
-
-    // MARK: - Quick add bar
-
-    private var quickAddBar: some View {
-        VStack(spacing: 0) {
-            Divider()
-            HStack(spacing: 12) {
-                Image(systemName: "plus.circle.fill").foregroundColor(accent).font(.title3)
-                TextField(s.quickAddPlaceholder, text: $newItemTitle)
-                    .focused($quickAddFocused)
-                    .submitLabel(.done)
-                    .onSubmit { commitQuickAdd() }
-                if !newItemTitle.isEmpty {
-                    Button(action: commitQuickAdd) {
-                        Image(systemName: "arrow.up.circle.fill").font(.title3).foregroundColor(accent)
-                    }
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color(uiColor: .systemBackground))
-        }
-    }
-
-    private func commitQuickAdd() {
-        let t = newItemTitle.trimmingCharacters(in: .whitespaces)
-        guard !t.isEmpty else { return }
-        taskStore.addTask(EisTask(title: t, quadrant: .doFirst, isInChecklist: true,
-                                  checklistCategoryId: selectedCategoryId ?? taskStore.checklistCategories.first?.id))
-        newItemTitle = ""
     }
 
     // MARK: - Empty states

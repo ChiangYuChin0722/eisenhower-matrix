@@ -52,6 +52,7 @@ struct DeadlineView: View {
                 }
             }
             .navigationTitle(s.tabDeadlines)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {

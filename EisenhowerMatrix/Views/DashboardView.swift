@@ -25,6 +25,7 @@ struct DashboardView: View {
                 .padding()
             }
             .navigationTitle(s.tabDashboard)
+            .navigationBarTitleDisplayMode(.inline)
             .background(Color(uiColor: .systemGroupedBackground))
         }
     }
