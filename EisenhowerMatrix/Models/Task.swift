@@ -2,16 +2,16 @@ import Foundation
 import SwiftUI
 
 enum Quadrant: String, Codable, CaseIterable, Identifiable {
-    case doFirst = "do"
-    case schedule = "schedule"
-    case delegate = "delegate"
+    case doFirst   = "do"
+    case schedule  = "schedule"
+    case delegate  = "delegate"
     case eliminate = "eliminate"
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
-        case .doFirst:   return "Do"
+        case .doFirst:   return "Do Now"
         case .schedule:  return "Schedule"
         case .delegate:  return "Delegate"
         case .eliminate: return "Eliminate"
@@ -27,15 +27,6 @@ enum Quadrant: String, Codable, CaseIterable, Identifiable {
         }
     }
 
-    var actionHint: String {
-        switch self {
-        case .doFirst:   return "Things to Do Quickly"
-        case .schedule:  return "Things that require planning"
-        case .delegate:  return "Things you can delegate"
-        case .eliminate: return "Things that can be organized"
-        }
-    }
-
     var emoji: String {
         switch self {
         case .doFirst:   return "🚀"
@@ -47,15 +38,46 @@ enum Quadrant: String, Codable, CaseIterable, Identifiable {
 
     var color: Color {
         switch self {
-        case .doFirst:   return .red
-        case .schedule:  return .blue
-        case .delegate:  return .orange
-        case .eliminate: return .green
+        case .doFirst:   return Color(red: 0.85, green: 0.22, blue: 0.22)
+        case .schedule:  return Color(red: 0.20, green: 0.44, blue: 0.85)
+        case .delegate:  return Color(red: 0.92, green: 0.55, blue: 0.14)
+        case .eliminate: return Color(red: 0.36, green: 0.36, blue: 0.38)
+        }
+    }
+
+    var bgColor: Color {
+        switch self {
+        case .doFirst:   return Color(red: 0.85, green: 0.22, blue: 0.22).opacity(0.07)
+        case .schedule:  return Color(red: 0.20, green: 0.44, blue: 0.85).opacity(0.07)
+        case .delegate:  return Color(red: 0.92, green: 0.55, blue: 0.14).opacity(0.06)
+        case .eliminate: return Color(red: 0.36, green: 0.36, blue: 0.38).opacity(0.04)
         }
     }
 
     var isUrgent: Bool    { self == .doFirst || self == .delegate }
     var isImportant: Bool { self == .doFirst || self == .schedule }
+
+    /// Default canvas fraction position for this quadrant
+    static func randomPosition(for quadrant: Quadrant) -> (x: Double, y: Double) {
+        // x: 0 = not urgent (left), 1 = urgent (right)
+        // y: 0 = important (top),   1 = not important (bottom)
+        let r = { Double.random(in: 0.08...0.35) }
+        switch quadrant {
+        case .doFirst:   return (0.5 + r(), r())          // top-right
+        case .schedule:  return (r(),       r())           // top-left
+        case .delegate:  return (0.5 + r(), 0.5 + r())    // bottom-right
+        case .eliminate: return (r(),       0.5 + r())     // bottom-left
+        }
+    }
+
+    static func from(canvasX x: Double, canvasY y: Double) -> Quadrant {
+        switch (x >= 0.5, y < 0.5) {
+        case (true,  true):  return .doFirst
+        case (false, true):  return .schedule
+        case (true,  false): return .delegate
+        case (false, false): return .eliminate
+        }
+    }
 }
 
 enum TaskColor: String, Codable, CaseIterable {
@@ -91,12 +113,29 @@ struct EisTask: Identifiable, Codable, Equatable {
     var subtasks: [EisTask] = []
     var colorTag: TaskColor = .none
 
-    static func == (lhs: EisTask, rhs: EisTask) -> Bool { lhs.id == rhs.id }
+    // Canvas position: x in [0,1] (left=not urgent, right=urgent)
+    //                  y in [0,1] (top=important, bottom=not important)
+    var canvasX: Double
+    var canvasY: Double
 
-    var completedSubtaskCount: Int { subtasks.filter { $0.isCompleted }.count }
-    var totalSubtaskCount: Int     { subtasks.count }
-    var progress: Double {
-        guard totalSubtaskCount > 0 else { return isCompleted ? 1.0 : 0.0 }
-        return Double(completedSubtaskCount) / Double(totalSubtaskCount)
+    init(
+        title: String,
+        quadrant: Quadrant,
+        canvasX: Double? = nil,
+        canvasY: Double? = nil,
+        isCompleted: Bool = false,
+        dueDate: Date? = nil,
+        notes: String = ""
+    ) {
+        self.title       = title
+        self.quadrant    = quadrant
+        self.isCompleted = isCompleted
+        self.dueDate     = dueDate
+        self.notes       = notes
+        let (defaultX, defaultY) = Quadrant.randomPosition(for: quadrant)
+        self.canvasX = canvasX ?? defaultX
+        self.canvasY = canvasY ?? defaultY
     }
+
+    static func == (lhs: EisTask, rhs: EisTask) -> Bool { lhs.id == rhs.id }
 }

@@ -12,14 +12,12 @@
 		AAAA020000000003 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000003 /* Task.swift */; };
 		AAAA020000000004 /* TaskStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000004 /* TaskStore.swift */; };
 		AAAA020000000005 /* MatrixView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000005 /* MatrixView.swift */; };
-		AAAA020000000006 /* QuadrantSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000006 /* QuadrantSectionView.swift */; };
+		AAAA020000000006 /* TaskDotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000006 /* TaskDotView.swift */; };
 		AAAA020000000007 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000007 /* DashboardView.swift */; };
-		AAAA020000000008 /* TreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000008 /* TreeView.swift */; };
 		AAAA020000000009 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000009 /* CalendarView.swift */; };
 		AAAA02000000000A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA01000000000A /* SettingsView.swift */; };
 		AAAA02000000000B /* AddTaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA01000000000B /* AddTaskView.swift */; };
 		AAAA02000000000C /* TaskRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA01000000000C /* TaskRowView.swift */; };
-		AAAA02000000000D /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA01000000000D /* ChatView.swift */; };
 		AAAA02000000000E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAAA01000000000E /* Assets.xcassets */; };
 		AAAA02000000000F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAAA01000000000F /* Preview Assets.xcassets */; };
 /* End PBXBuildFile section */
@@ -30,14 +28,12 @@
 		AAAA010000000003 /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
 		AAAA010000000004 /* TaskStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskStore.swift; sourceTree = "<group>"; };
 		AAAA010000000005 /* MatrixView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixView.swift; sourceTree = "<group>"; };
-		AAAA010000000006 /* QuadrantSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuadrantSectionView.swift; sourceTree = "<group>"; };
+		AAAA010000000006 /* TaskDotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDotView.swift; sourceTree = "<group>"; };
 		AAAA010000000007 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
-		AAAA010000000008 /* TreeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeView.swift; sourceTree = "<group>"; };
 		AAAA010000000009 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		AAAA01000000000A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		AAAA01000000000B /* AddTaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTaskView.swift; sourceTree = "<group>"; };
 		AAAA01000000000C /* TaskRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRowView.swift; sourceTree = "<group>"; };
-		AAAA01000000000D /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		AAAA01000000000E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AAAA01000000000F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		AAAA010000000010 /* EisenhowerMatrix.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EisenhowerMatrix.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -96,14 +92,12 @@
 			isa = PBXGroup;
 			children = (
 				AAAA010000000005 /* MatrixView.swift */,
-				AAAA010000000006 /* QuadrantSectionView.swift */,
+				AAAA010000000006 /* TaskDotView.swift */,
 				AAAA010000000007 /* DashboardView.swift */,
-				AAAA010000000008 /* TreeView.swift */,
 				AAAA010000000009 /* CalendarView.swift */,
 				AAAA01000000000A /* SettingsView.swift */,
 				AAAA01000000000B /* AddTaskView.swift */,
 				AAAA01000000000C /* TaskRowView.swift */,
-				AAAA01000000000D /* ChatView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -191,14 +185,12 @@
 				AAAA020000000003 /* Task.swift in Sources */,
 				AAAA020000000004 /* TaskStore.swift in Sources */,
 				AAAA020000000005 /* MatrixView.swift in Sources */,
-				AAAA020000000006 /* QuadrantSectionView.swift in Sources */,
+				AAAA020000000006 /* TaskDotView.swift in Sources */,
 				AAAA020000000007 /* DashboardView.swift in Sources */,
-				AAAA020000000008 /* TreeView.swift in Sources */,
 				AAAA020000000009 /* CalendarView.swift in Sources */,
 				AAAA02000000000A /* SettingsView.swift in Sources */,
 				AAAA02000000000B /* AddTaskView.swift in Sources */,
 				AAAA02000000000C /* TaskRowView.swift in Sources */,
-				AAAA02000000000D /* ChatView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
