@@ -11,15 +11,13 @@ struct ChecklistView: View {
     @State private var showAddTask           = false
     @State private var editingTask: EisTask? = nil
     @State private var showCompleted         = false
-    @State private var newItemTitle          = ""
+    @State private var showQuickAdd          = false
     @State private var selectedCategoryId: UUID? = nil
     @State private var showAddCategory       = false
     @State private var newCategoryName       = ""
     @State private var newCategoryIcon       = "list.bullet"
-    // Expand / reorder
     @State private var expandedIds           = Set<UUID>()
     @State private var isReorderMode         = false
-    @FocusState private var quickAddFocused: Bool
 
     private var s: Str { Str(lang) }
     private var accent: Color { .accent(appAccent) }
@@ -55,23 +53,33 @@ struct ChecklistView: View {
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                if !isReorderMode {
-                    categoryPicker
+            ZStack(alignment: .bottomTrailing) {
+                VStack(spacing: 0) {
+                    if !isReorderMode { categoryPicker }
+                    if totalCount > 0 { progressBar }
+
+                    if taskStore.checklistTasks.isEmpty {
+                        emptyState
+                    } else if displayedTasks.isEmpty {
+                        emptyCategory
+                    } else {
+                        taskList
+                    }
                 }
 
-                if totalCount > 0 { progressBar }
-
-                if taskStore.checklistTasks.isEmpty {
-                    emptyState
-                } else if displayedTasks.isEmpty {
-                    emptyCategory
-                } else {
-                    taskList
-                }
-
+                // FAB — hidden while in reorder mode
                 if !isReorderMode {
-                    quickAddBar
+                    Button { showQuickAdd = true } label: {
+                        Image(systemName: "plus")
+                            .font(.system(size: 22, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(width: 56, height: 56)
+                            .background(accent)
+                            .clipShape(Circle())
+                            .shadow(color: accent.opacity(0.4), radius: 8, y: 4)
+                    }
+                    .padding(.trailing, 20)
+                    .padding(.bottom, 16)
                 }
             }
             .navigationTitle(s.tabChecklist)
@@ -85,13 +93,12 @@ struct ChecklistView: View {
                             }
                             .fontWeight(.semibold)
                         } else {
+                            // Icon-only eye button — no text
                             Button {
                                 withAnimation { showCompleted.toggle() }
                             } label: {
-                                HStack(spacing: 4) {
-                                    Image(systemName: showCompleted ? "eye.slash" : "eye")
-                                    Text(showCompleted ? s.hideDone : s.showDone).font(.caption)
-                                }
+                                Image(systemName: showCompleted ? "eye.slash" : "eye")
+                                    .font(.system(size: 15))
                             }
                             .foregroundColor(.secondary)
                         }
@@ -118,6 +125,9 @@ struct ChecklistView: View {
             }
             .sheet(item: $editingTask) { task in AddTaskView(editingTask: task) }
             .sheet(isPresented: $showAddCategory) { addCategorySheet }
+            .sheet(isPresented: $showQuickAdd) {
+                ChecklistQuickAddSheet(defaultCategoryId: selectedCategoryId)
+            }
         }
     }
 
@@ -151,9 +161,12 @@ struct ChecklistView: View {
                             .tint(.green)
                         }
                         .swipeActions(edge: .trailing) {
-                            Button(role: .destructive) { taskStore.deleteTask(id: task.id) } label: {
+                            Button(role: .destructive) {
+                                taskStore.deleteTask(id: task.id)
+                            } label: {
                                 Label(s.delete, systemImage: "trash")
                             }
+                            .tint(.red)
                             Button { editingTask = task } label: {
                                 Label(s.edit, systemImage: "pencil")
                             }
@@ -185,7 +198,6 @@ struct ChecklistView: View {
 
                     metaRow(task)
 
-                    // Subtask progress summary (only when collapsed)
                     if !task.subtasks.isEmpty && !isExpanded {
                         Text(s.subtasksOf(task.completedSubtaskCount, task.totalSubtaskCount))
                             .font(.caption2)
@@ -199,7 +211,6 @@ struct ChecklistView: View {
                     Circle().fill(task.colorTag.color).frame(width: 8, height: 8)
                 }
 
-                // Expand chevron (when row has notes or subtasks, and not in reorder mode)
                 if hasExtra && !isReorderMode {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 11, weight: .medium))
@@ -224,7 +235,6 @@ struct ChecklistView: View {
                 }
             }
 
-            // Expanded content: notes + subtasks
             if isExpanded {
                 expandedContent(task)
                     .transition(.opacity.combined(with: .move(edge: .top)))
@@ -277,7 +287,6 @@ struct ChecklistView: View {
     @ViewBuilder
     private func expandedContent(_ task: EisTask) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Notes preview
             if !task.notes.isEmpty {
                 Text(task.notes)
                     .font(.subheadline)
@@ -288,7 +297,6 @@ struct ChecklistView: View {
                     .padding(.bottom, task.subtasks.isEmpty ? 10 : 6)
             }
 
-            // Subtasks
             if !task.subtasks.isEmpty {
                 Divider().padding(.leading, 38)
                 ForEach(task.subtasks) { sub in
@@ -331,37 +339,6 @@ struct ChecklistView: View {
         }
         .padding(.vertical, 7)
         .contentShape(Rectangle())
-    }
-
-    // MARK: - Quick add bar
-
-    private var quickAddBar: some View {
-        VStack(spacing: 0) {
-            Divider()
-            HStack(spacing: 12) {
-                Image(systemName: "plus.circle.fill").foregroundColor(accent).font(.title3)
-                TextField(s.quickAddPlaceholder, text: $newItemTitle)
-                    .focused($quickAddFocused)
-                    .submitLabel(.done)
-                    .onSubmit { commitQuickAdd() }
-                if !newItemTitle.isEmpty {
-                    Button(action: commitQuickAdd) {
-                        Image(systemName: "arrow.up.circle.fill").font(.title3).foregroundColor(accent)
-                    }
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color(uiColor: .systemBackground))
-        }
-    }
-
-    private func commitQuickAdd() {
-        let t = newItemTitle.trimmingCharacters(in: .whitespaces)
-        guard !t.isEmpty else { return }
-        taskStore.addTask(EisTask(title: t, quadrant: .doFirst, isInChecklist: true,
-                                  checklistCategoryId: selectedCategoryId ?? taskStore.checklistCategories.first?.id))
-        newItemTitle = ""
     }
 
     // MARK: - Category picker
@@ -518,6 +495,106 @@ struct ChecklistView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+// MARK: - Quick Add Sheet
+
+private struct ChecklistQuickAddSheet: View {
+    @EnvironmentObject var taskStore: TaskStore
+    @Environment(\.dismiss) var dismiss
+    @AppStorage("appLanguage") private var lang: String = "en"
+    @AppStorage("appAccent")   private var appAccent: String = "blue"
+    @AppStorage("matrixTheme") private var matrixTheme: String = "classic"
+
+    let defaultCategoryId: UUID?
+
+    @State private var title    = ""
+    @State private var notes    = ""
+    @State private var quadrant = Quadrant.doFirst
+    @FocusState private var titleFocused: Bool
+
+    private var s: Str { Str(lang) }
+    private var accent: Color { .accent(appAccent) }
+    private func qColor(_ q: Quadrant) -> Color { q.color(theme: matrixTheme) }
+
+    var body: some View {
+        NavigationView {
+            Form {
+                Section {
+                    TextField(s.titleField, text: $title)
+                        .focused($titleFocused)
+                    TextField(s.notesField, text: $notes, axis: .vertical)
+                        .lineLimit(3, reservesSpace: false)
+                }
+
+                Section(s.quadrantSection) {
+                    LazyVGrid(
+                        columns: [GridItem(.flexible()), GridItem(.flexible())],
+                        spacing: 10
+                    ) {
+                        ForEach(Quadrant.allCases) { q in
+                            Button {
+                                HapticManager.shared.selection()
+                                quadrant = q
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Text(q.emoji).font(.title3)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(s.quadrantTitle(q))
+                                            .font(.caption).fontWeight(.semibold)
+                                            .foregroundColor(qColor(q))
+                                        Text(s.quadrantSubtitle(q))
+                                            .font(.system(size: 9))
+                                            .foregroundColor(.secondary)
+                                            .lineLimit(1)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
+                                .background(quadrant == q ? qColor(q).opacity(0.12) : Color.secondary.opacity(0.06))
+                                .cornerRadius(8)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(quadrant == q ? qColor(q) : .clear, lineWidth: 1.5)
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
+                    .listRowBackground(Color.clear)
+                }
+            }
+            .navigationTitle(s.addTask)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(s.cancel) { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(s.add) { save() }
+                        .fontWeight(.semibold)
+                        .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+            .onAppear { titleFocused = true }
+        }
+        .presentationDetents([.medium, .large])
+    }
+
+    private func save() {
+        let t = title.trimmingCharacters(in: .whitespaces)
+        guard !t.isEmpty else { return }
+        taskStore.addTask(EisTask(
+            title: t,
+            quadrant: quadrant,
+            notes: notes.trimmingCharacters(in: .whitespaces),
+            isInChecklist: true,
+            checklistCategoryId: defaultCategoryId ?? taskStore.checklistCategories.first?.id
+        ))
+        dismiss()
     }
 }
 

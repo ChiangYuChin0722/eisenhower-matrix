@@ -6,7 +6,6 @@ struct ContentView: View {
     @AppStorage("appLanguage")        private var lang: String      = "en"
     @AppStorage("appAccent")          private var appAccent: String = "blue"
     @AppStorage("hasSeenOnboarding")  private var hasSeenOnboarding = false
-    @State private var showSearch = false
 
     private var s: Str { Str(lang) }
     private var accent: Color { .accent(appAccent) }
@@ -30,24 +29,6 @@ struct ContentView: View {
         }
         .tint(accent)
         .preferredColorScheme(colorScheme)
-        .overlay(alignment: .topTrailing) {
-            Button {
-                showSearch = true
-            } label: {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(accent)
-                    .padding(10)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Circle())
-                    .shadow(color: .black.opacity(0.12), radius: 4, y: 2)
-            }
-            .padding(.trailing, 16)
-            .padding(.top, 8)
-        }
-        .sheet(isPresented: $showSearch) {
-            SearchView()
-        }
         .fullScreenCover(isPresented: .init(
             get: { !hasSeenOnboarding },
             set: { _ in }

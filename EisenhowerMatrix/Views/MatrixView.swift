@@ -13,6 +13,7 @@ struct MatrixView: View {
     @State private var addCanvasY      = 0.25
     @State private var addQuadrant     = Quadrant.doFirst
     @State private var showingSettings = false
+    @State private var showSearch      = false
     @State private var canvasSize      = CGSize.zero
 
     private var s: Str { Str(lang) }
@@ -56,14 +57,19 @@ struct MatrixView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        let pos = Quadrant.randomPosition(for: .doFirst)
-                        addCanvasX  = pos.x
-                        addCanvasY  = pos.y
-                        addQuadrant = .doFirst
-                        showAddTask = true
-                    } label: {
-                        Image(systemName: "plus").fontWeight(.semibold)
+                    HStack(spacing: 2) {
+                        Button { showSearch = true } label: {
+                            Image(systemName: "magnifyingglass")
+                        }
+                        Button {
+                            let pos = Quadrant.randomPosition(for: .doFirst)
+                            addCanvasX  = pos.x
+                            addCanvasY  = pos.y
+                            addQuadrant = .doFirst
+                            showAddTask = true
+                        } label: {
+                            Image(systemName: "plus").fontWeight(.semibold)
+                        }
                     }
                 }
             }
@@ -75,6 +81,9 @@ struct MatrixView: View {
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
+            }
+            .sheet(isPresented: $showSearch) {
+                SearchView()
             }
         }
     }
