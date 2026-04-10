@@ -1,4 +1,5 @@
 import SwiftUI
+import Charts
 
 struct DashboardView: View {
     @EnvironmentObject var taskStore: TaskStore
@@ -8,6 +9,8 @@ struct DashboardView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     overallCard
+                    streakCard
+                    completionChart
                     quadrantCards
                     recentActivity
                 }
@@ -57,6 +60,70 @@ struct DashboardView: View {
         .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
     }
 
+    // MARK: - Streak card
+
+    private var streakCard: some View {
+        HStack(spacing: 16) {
+            Image(systemName: taskStore.currentStreak > 0 ? "flame.fill" : "flame")
+                .font(.system(size: 32))
+                .foregroundColor(taskStore.currentStreak > 0 ? .orange : .secondary)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(taskStore.currentStreak) day\(taskStore.currentStreak == 1 ? "" : "s") streak")
+                    .font(.headline)
+                Text(taskStore.currentStreak > 0
+                     ? "Keep it up — complete a task today!"
+                     : "Complete a task today to start your streak")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+        }
+        .padding()
+        .background(Color(uiColor: .systemBackground))
+        .cornerRadius(16)
+        .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
+    }
+
+    // MARK: - 7-day completion chart
+
+    private var completionChart: some View {
+        let history = taskStore.completionsPerDay(days: 7)
+        return VStack(alignment: .leading, spacing: 12) {
+            Text("Last 7 Days")
+                .font(.headline)
+
+            Chart(history, id: \.date) { item in
+                BarMark(
+                    x: .value("Day", item.date, unit: .day),
+                    y: .value("Completed", item.count)
+                )
+                .foregroundStyle(Color.blue.gradient)
+                .cornerRadius(4)
+            }
+            .chartXAxis {
+                AxisMarks(values: .stride(by: .day)) { _ in
+                    AxisValueLabel(format: .dateTime.weekday(.abbreviated))
+                }
+            }
+            .chartYAxis {
+                AxisMarks(position: .leading) { value in
+                    AxisValueLabel {
+                        if let v = value.as(Int.self) {
+                            Text("\(v)")
+                        }
+                    }
+                    AxisGridLine()
+                }
+            }
+            .frame(height: 120)
+        }
+        .padding()
+        .background(Color(uiColor: .systemBackground))
+        .cornerRadius(16)
+        .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
+    }
+
     // MARK: - Per-quadrant cards
 
     private var quadrantCards: some View {
@@ -74,10 +141,10 @@ struct DashboardView: View {
     }
 
     private func quadrantCard(_ q: Quadrant) -> some View {
-        let tasks   = taskStore.tasks(for: q)
-        let done    = tasks.filter { $0.isCompleted }.count
-        let total   = tasks.count
-        let rate    = total > 0 ? Double(done) / Double(total) : 0.0
+        let tasks = taskStore.tasks(for: q)
+        let done  = tasks.filter { $0.isCompleted }.count
+        let total = tasks.count
+        let rate  = total > 0 ? Double(done) / Double(total) : 0.0
 
         return VStack(alignment: .leading, spacing: 10) {
             HStack {

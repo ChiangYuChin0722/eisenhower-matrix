@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 struct SettingsView: View {
     @EnvironmentObject var taskStore: TaskStore
@@ -6,7 +7,8 @@ struct SettingsView: View {
     @AppStorage("showCompletedTasks") private var showCompletedTasks = true
     @AppStorage("defaultQuadrant")    private var defaultQuadrant    = "do"
     @AppStorage("appTheme")           private var appTheme           = "system"
-    @State private var showingClearConfirm = false
+    @State private var showingClearConfirm   = false
+    @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
 
     var body: some View {
         NavigationView {
@@ -27,6 +29,36 @@ struct SettingsView: View {
                     }
                 }
 
+                // MARK: - Notifications
+                Section {
+                    HStack {
+                        Label("Task reminders", systemImage: "bell.badge")
+                        Spacer()
+                        notificationBadge
+                    }
+
+                    if notificationStatus == .notDetermined {
+                        Button("Enable Notifications") {
+                            NotificationManager.shared.requestPermission()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                refreshNotificationStatus()
+                            }
+                        }
+                    } else if notificationStatus == .denied {
+                        Button("Open Settings to Enable") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                    }
+
+                    Text("You'll get a reminder 1 hour before each task's due time.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                } header: {
+                    Text("Notifications")
+                }
+
                 Section("About the Matrix") {
                     InfoRow(icon: "🚀", title: "Do",       subtitle: "Urgent & Important — act immediately")
                     InfoRow(icon: "🔥", title: "Schedule", subtitle: "Important, not urgent — plan it")
@@ -38,6 +70,7 @@ struct SettingsView: View {
                     LabeledContent("Total tasks",     value: "\(taskStore.totalCount)")
                     LabeledContent("Completed",       value: "\(taskStore.completedCount)")
                     LabeledContent("Completion rate", value: "\(Int(taskStore.completionRate * 100))%")
+                    LabeledContent("Current streak",  value: "\(taskStore.currentStreak) days")
                 }
 
                 Section {
@@ -69,6 +102,26 @@ struct SettingsView: View {
             } message: {
                 Text("This will permanently delete all tasks and cannot be undone.")
             }
+            .onAppear { refreshNotificationStatus() }
+        }
+    }
+
+    private var notificationBadge: some View {
+        Group {
+            switch notificationStatus {
+            case .authorized:
+                Text("On").foregroundColor(.green).font(.subheadline)
+            case .denied:
+                Text("Off").foregroundColor(.red).font(.subheadline)
+            default:
+                Text("Not set").foregroundColor(.secondary).font(.subheadline)
+            }
+        }
+    }
+
+    private func refreshNotificationStatus() {
+        NotificationManager.shared.getAuthorizationStatus { status in
+            notificationStatus = status
         }
     }
 }

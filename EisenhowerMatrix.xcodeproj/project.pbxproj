@@ -22,6 +22,8 @@
 		AAAA02000000000F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAAA01000000000F /* Preview Assets.xcassets */; };
 		AAAA020000000011 /* ChecklistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000011 /* ChecklistView.swift */; };
 		AAAA020000000012 /* DeadlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000012 /* DeadlineView.swift */; };
+		AAAA020000000013 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000013 /* NotificationManager.swift */; };
+		AAAA020000000014 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000014 /* SearchView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +43,8 @@
 		AAAA010000000010 /* EisenhowerMatrix.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EisenhowerMatrix.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAAA010000000011 /* ChecklistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChecklistView.swift; sourceTree = "<group>"; };
 		AAAA010000000012 /* DeadlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadlineView.swift; sourceTree = "<group>"; };
+		AAAA010000000013 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		AAAA010000000014 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +72,7 @@
 				AAAA010000000001 /* EisenhowerMatrixApp.swift */,
 				AAAA010000000002 /* ContentView.swift */,
 				AAAA030000000004 /* Models */,
+				AAAA030000000007 /* Managers */,
 				AAAA030000000005 /* Views */,
 				AAAA01000000000E /* Assets.xcassets */,
 				AAAA030000000006 /* Preview Content */,
@@ -92,6 +97,14 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		AAAA030000000007 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				AAAA010000000013 /* NotificationManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
 		AAAA030000000005 /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -104,6 +117,7 @@
 				AAAA01000000000A /* SettingsView.swift */,
 				AAAA01000000000B /* AddTaskView.swift */,
 				AAAA01000000000C /* TaskRowView.swift */,
+				AAAA010000000014 /* SearchView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -199,6 +213,8 @@
 				AAAA02000000000A /* SettingsView.swift in Sources */,
 				AAAA02000000000B /* AddTaskView.swift in Sources */,
 				AAAA02000000000C /* TaskRowView.swift in Sources */,
+				AAAA020000000013 /* NotificationManager.swift in Sources */,
+				AAAA020000000014 /* SearchView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

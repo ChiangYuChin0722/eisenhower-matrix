@@ -4,22 +4,25 @@ struct AddTaskView: View {
     @EnvironmentObject var taskStore: TaskStore
     @Environment(\.dismiss) var dismiss
 
-    var editingTask: EisTask?    = nil
-    var defaultQuadrant: Quadrant = .doFirst
-    var initialCanvasX: Double?  = nil
-    var initialCanvasY: Double?  = nil
-    var forceCalendar: Bool      = false   // pre-open calendar toggle (from DeadlineView)
-    var forceChecklist: Bool     = false   // pre-check checklist toggle (from ChecklistView)
+    var editingTask: EisTask?       = nil
+    var defaultQuadrant: Quadrant    = .doFirst
+    var initialCanvasX: Double?      = nil
+    var initialCanvasY: Double?      = nil
+    var forceCalendar: Bool          = false
+    var forceChecklist: Bool         = false
+    var defaultCategoryId: UUID?     = nil   // pre-select category from ChecklistView
 
-    @State private var title        = ""
-    @State private var notes        = ""
-    @State private var quadrant     = Quadrant.doFirst
-    @State private var addToCalendar = false
-    @State private var dueDate      = roundedNextHour()
-    @State private var addToChecklist = false
-    @State private var colorTag     = TaskColor.none
-    @State private var subtaskText  = ""
+    @State private var title           = ""
+    @State private var notes           = ""
+    @State private var quadrant        = Quadrant.doFirst
+    @State private var addToCalendar   = false
+    @State private var dueDate         = roundedNextHour()
+    @State private var addToChecklist  = false
+    @State private var colorTag        = TaskColor.none
+    @State private var subtaskText     = ""
     @State private var subtasks: [EisTask] = []
+    @State private var recurrence      = Recurrence.none
+    @State private var selectedCategoryId: UUID? = nil
 
     var isEditing: Bool { editingTask != nil }
 
@@ -50,7 +53,7 @@ struct AddTaskView: View {
                     .labelsHidden()
                 }
 
-                // MARK: Add to Calendar
+                // MARK: Add to Calendar + Recurrence
                 Section {
                     Toggle(isOn: $addToCalendar) {
                         Label("Add to Calendar", systemImage: "calendar")
@@ -58,13 +61,28 @@ struct AddTaskView: View {
                     if addToCalendar {
                         DatePicker("Date & Time", selection: $dueDate,
                                    displayedComponents: [.date, .hourAndMinute])
+
+                        Picker(selection: $recurrence) {
+                            ForEach(Recurrence.allCases) { r in
+                                Label(r.title, systemImage: r.icon).tag(r)
+                            }
+                        } label: {
+                            Label("Repeat", systemImage: "arrow.clockwise")
+                        }
                     }
                 }
 
-                // MARK: Add to Checklist
+                // MARK: Add to Checklist + Category
                 Section {
                     Toggle(isOn: $addToChecklist) {
                         Label("Add to Checklist", systemImage: "checklist")
+                    }
+                    if addToChecklist && !taskStore.checklistCategories.isEmpty {
+                        Picker("List", selection: $selectedCategoryId) {
+                            ForEach(taskStore.checklistCategories) { cat in
+                                Label(cat.name, systemImage: cat.icon).tag(Optional(cat.id))
+                            }
+                        }
                     }
                 }
 
@@ -138,20 +156,23 @@ struct AddTaskView: View {
 
     private func populate() {
         if let t = editingTask {
-            title           = t.title
-            notes           = t.notes
-            quadrant        = t.quadrant
-            colorTag        = t.colorTag
-            subtasks        = t.subtasks
-            addToChecklist  = t.isInChecklist
+            title              = t.title
+            notes              = t.notes
+            quadrant           = t.quadrant
+            colorTag           = t.colorTag
+            subtasks           = t.subtasks
+            addToChecklist     = t.isInChecklist
+            recurrence         = t.recurrence
+            selectedCategoryId = t.checklistCategoryId
             if let d = t.dueDate {
                 addToCalendar = true
                 dueDate       = d
             }
         } else {
-            quadrant        = defaultQuadrant
-            addToCalendar   = forceCalendar
-            addToChecklist  = forceChecklist
+            quadrant           = defaultQuadrant
+            addToCalendar      = forceCalendar
+            addToChecklist     = forceChecklist
+            selectedCategoryId = defaultCategoryId ?? taskStore.checklistCategories.first?.id
         }
     }
 
@@ -164,13 +185,15 @@ struct AddTaskView: View {
             canvasX: initialCanvasX,
             canvasY: initialCanvasY
         )
-        task.title         = title.trimmingCharacters(in: .whitespaces)
-        task.notes         = notes
-        task.quadrant      = quadrant
-        task.dueDate       = addToCalendar ? dueDate : nil
-        task.isInChecklist = addToChecklist
-        task.colorTag      = colorTag
-        task.subtasks      = subtasks
+        task.title               = title.trimmingCharacters(in: .whitespaces)
+        task.notes               = notes
+        task.quadrant            = quadrant
+        task.dueDate             = addToCalendar ? dueDate : nil
+        task.isInChecklist       = addToChecklist
+        task.colorTag            = colorTag
+        task.subtasks            = subtasks
+        task.recurrence          = addToCalendar ? recurrence : .none
+        task.checklistCategoryId = addToChecklist ? selectedCategoryId : nil
 
         if !isEditing {
             if let x = initialCanvasX { task.canvasX = x }

@@ -93,19 +93,86 @@ enum TaskColor: String, Codable, CaseIterable {
     }
 }
 
+// MARK: - Recurrence
+
+enum Recurrence: String, Codable, CaseIterable, Identifiable {
+    case none     = "none"
+    case daily    = "daily"
+    case weekdays = "weekdays"
+    case weekly   = "weekly"
+    case monthly  = "monthly"
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .none:     return "No Recurrence"
+        case .daily:    return "Daily"
+        case .weekdays: return "Weekdays (Mon–Fri)"
+        case .weekly:   return "Weekly"
+        case .monthly:  return "Monthly"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .none:     return "minus"
+        case .daily:    return "arrow.clockwise"
+        case .weekdays: return "briefcase"
+        case .weekly:   return "calendar.badge.clock"
+        case .monthly:  return "calendar"
+        }
+    }
+
+    /// Returns the next due date after `date` for this recurrence, or nil if `.none`.
+    func nextDate(after date: Date) -> Date? {
+        guard self != .none else { return nil }
+        let cal = Calendar.current
+        switch self {
+        case .none:    return nil
+        case .daily:   return cal.date(byAdding: .day,        value: 1, to: date)
+        case .weekly:  return cal.date(byAdding: .weekOfYear, value: 1, to: date)
+        case .monthly: return cal.date(byAdding: .month,      value: 1, to: date)
+        case .weekdays:
+            var next = cal.date(byAdding: .day, value: 1, to: date)!
+            while [1, 7].contains(cal.component(.weekday, from: next)) {
+                next = cal.date(byAdding: .day, value: 1, to: next)!
+            }
+            return next
+        }
+    }
+}
+
+// MARK: - ChecklistCategory
+
+struct ChecklistCategory: Identifiable, Codable, Equatable {
+    var id: UUID   = UUID()
+    var name: String
+    var icon: String   // SF Symbol name
+
+    static let general  = ChecklistCategory(name: "General",  icon: "list.bullet")
+    static let shopping = ChecklistCategory(name: "Shopping",  icon: "cart")
+    static let work     = ChecklistCategory(name: "Work",      icon: "briefcase")
+}
+
+// MARK: - EisTask
+
 struct EisTask: Identifiable, Codable, Equatable {
-    var id: UUID          = UUID()
+    var id: UUID           = UUID()
     var title: String
-    var notes: String     = ""
+    var notes: String      = ""
     var quadrant: Quadrant
-    var isCompleted: Bool = false
-    var dueDate: Date?    = nil
-    var createdAt: Date   = Date()
-    var subtasks: [EisTask] = []
+    var isCompleted: Bool  = false
+    var dueDate: Date?     = nil
+    var createdAt: Date    = Date()
+    var completedAt: Date? = nil
+    var subtasks: [EisTask]  = []
     var colorTag: TaskColor  = .none
-    var isInChecklist: Bool  = false   // shows in Checklist tab
+    var isInChecklist: Bool  = false
     var canvasX: Double
     var canvasY: Double
+    var recurrence: Recurrence      = .none
+    var checklistCategoryId: UUID?  = nil
 
     var completedSubtaskCount: Int { subtasks.filter { $0.isCompleted }.count }
     var totalSubtaskCount: Int     { subtasks.count }
@@ -118,14 +185,18 @@ struct EisTask: Identifiable, Codable, Equatable {
         isCompleted: Bool = false,
         dueDate: Date?    = nil,
         notes: String     = "",
-        isInChecklist: Bool = false
+        isInChecklist: Bool       = false,
+        recurrence: Recurrence    = .none,
+        checklistCategoryId: UUID? = nil
     ) {
-        self.title         = title
-        self.quadrant      = quadrant
-        self.isCompleted   = isCompleted
-        self.dueDate       = dueDate
-        self.notes         = notes
-        self.isInChecklist = isInChecklist
+        self.title               = title
+        self.quadrant            = quadrant
+        self.isCompleted         = isCompleted
+        self.dueDate             = dueDate
+        self.notes               = notes
+        self.isInChecklist       = isInChecklist
+        self.recurrence          = recurrence
+        self.checklistCategoryId = checklistCategoryId
         let pos = Quadrant.randomPosition(for: quadrant)
         self.canvasX = canvasX ?? pos.x
         self.canvasY = canvasY ?? pos.y
