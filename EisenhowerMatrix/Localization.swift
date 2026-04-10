@@ -274,6 +274,7 @@ struct Str {
     var addToChecklist:    String { zh ? "加入清單"  : "Add to Checklist" }
     var listPickerLabel:   String { zh ? "清單"      : "List" }
     var colorTagSection:   String { zh ? "顏色標籤"  : "Color Tag" }
+    var colorTagLabelField: String { zh ? "標籤文字（選填）" : "Label (optional)" }
     var subtasksSection:   String { zh ? "子任務"    : "Subtasks" }
     var addSubtask:        String { zh ? "新增子任務..." : "Add subtask…" }
 

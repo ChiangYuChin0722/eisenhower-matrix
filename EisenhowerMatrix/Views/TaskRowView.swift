@@ -9,10 +9,18 @@ struct TaskRowView: View {
         HStack(spacing: 10) {
             // Color tag indicator
             if task.colorTag != .none {
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(task.colorTag.color)
-                    .frame(width: 4)
-                    .frame(height: 32)
+                VStack(spacing: 2) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(task.colorTag.color)
+                        .frame(width: 4, height: task.colorTagLabel.isEmpty ? 32 : 22)
+                    if !task.colorTagLabel.isEmpty {
+                        Text(task.colorTagLabel)
+                            .font(.system(size: 7, weight: .semibold))
+                            .foregroundColor(task.colorTag.color)
+                            .lineLimit(1)
+                            .frame(width: 28)
+                    }
+                }
             }
 
             // Completion checkbox

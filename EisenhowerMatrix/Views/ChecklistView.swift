@@ -135,7 +135,7 @@ struct ChecklistView: View {
             if isReorderMode {
                 ForEach(displayedTasks) { task in
                     checklistRow(task)
-                        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
                         .listRowSeparator(.hidden)
                 }
                 .onMove { from, to in
@@ -146,7 +146,7 @@ struct ChecklistView: View {
             } else {
                 ForEach(displayedTasks) { task in
                     checklistRow(task)
-                        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
                         .listRowSeparator(.hidden)
                         .swipeActions(edge: .leading, allowsFullSwipe: true) {
                             Button {
@@ -172,7 +172,7 @@ struct ChecklistView: View {
                 }
             }
         }
-        .listStyle(.plain)
+        .listStyle(.insetGrouped)
         .environment(\.editMode, .constant(isReorderMode ? .active : .inactive))
     }
 
@@ -205,7 +205,18 @@ struct ChecklistView: View {
                 Spacer()
 
                 if task.colorTag != .none {
-                    Circle().fill(task.colorTag.color).frame(width: 8, height: 8)
+                    HStack(spacing: 3) {
+                        Circle().fill(task.colorTag.color).frame(width: 7, height: 7)
+                        if !task.colorTagLabel.isEmpty {
+                            Text(task.colorTagLabel)
+                                .font(.system(size: 9, weight: .medium))
+                                .foregroundColor(task.colorTag.color)
+                        }
+                    }
+                    .padding(.horizontal, task.colorTagLabel.isEmpty ? 0 : 5)
+                    .padding(.vertical, task.colorTagLabel.isEmpty ? 0 : 2)
+                    .background(task.colorTagLabel.isEmpty ? .clear : task.colorTag.color.opacity(0.12))
+                    .cornerRadius(4)
                 }
 
                 if hasExtra && !isReorderMode {
@@ -376,7 +387,7 @@ struct ChecklistView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
         }
-        .background(Color(uiColor: .systemBackground))
+        .background(Color(uiColor: .systemGroupedBackground))
     }
 
     private func categoryChip(id: UUID?, name: String, icon: String) -> some View {
@@ -412,7 +423,7 @@ struct ChecklistView: View {
                 ProgressView(value: progress).tint(accent).padding(.horizontal, 16)
             }
             .padding(.vertical, 10)
-            .background(Color(uiColor: .systemBackground))
+            .background(Color(uiColor: .systemGroupedBackground))
             Divider()
         }
     }

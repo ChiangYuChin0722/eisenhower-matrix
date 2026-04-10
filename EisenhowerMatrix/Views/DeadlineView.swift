@@ -15,11 +15,12 @@ struct DeadlineView: View {
     private var s: Str { Str(lang) }
     private var accent: Color { .accent(appAccent) }
 
-    private var nextUpcomingTask: EisTask? {
+    private var nextFourTasks: [EisTask] {
         taskStore.tasksWithDeadlines
             .filter { !$0.isCompleted && ($0.dueDate ?? .distantPast) > Date() }
             .sorted { $0.dueDate! < $1.dueDate! }
-            .first
+            .prefix(4)
+            .map { $0 }
     }
 
     private var allDeadlineTasks: [EisTask] {
@@ -106,14 +107,13 @@ struct DeadlineView: View {
 
     private var deadlineList: some View {
         List {
-            // MARK: Countdown card
-            if let task = nextUpcomingTask, let due = task.dueDate {
+            // MARK: Countdown strip
+            if !nextFourTasks.isEmpty {
                 Section {
                     TimelineView(.periodic(from: .now, by: 1.0)) { ctx in
-                        let remaining = max(0, due.timeIntervalSince(ctx.date))
-                        nextDeadlineCard(task: task, due: due, remaining: remaining)
+                        countdownStrip(at: ctx.date)
                     }
-                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 4, trailing: 16))
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
                 }
@@ -242,83 +242,84 @@ struct DeadlineView: View {
         return .blue
     }
 
-    // MARK: - Countdown card
+    // MARK: - Countdown strip
 
-    private func nextDeadlineCard(task: EisTask, due: Date, remaining: TimeInterval) -> some View {
-        let days    = Int(remaining) / 86400
-        let hours   = (Int(remaining) % 86400) / 3600
-        let minutes = (Int(remaining) % 3600) / 60
-        let seconds = Int(remaining) % 60
+    private func countdownStrip(at now: Date) -> some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 10) {
+                ForEach(nextFourTasks) { task in
+                    if let due = task.dueDate {
+                        let remaining = max(0, due.timeIntervalSince(now))
+                        compactCountdownCard(task: task, due: due, remaining: remaining)
+                    }
+                }
+            }
+            .padding(.vertical, 2)
+        }
+    }
+
+    private func compactCountdownCard(task: EisTask, due: Date, remaining: TimeInterval) -> some View {
+        let totalHours = Int(remaining) / 3600
+        let minutes    = (Int(remaining) % 3600) / 60
+        let seconds    = Int(remaining) % 60
         let urgency: Color = {
-            if remaining < 3600          { return .red }
-            if remaining < 86400         { return .orange }
-            if remaining < 86400 * 3     { return .yellow }
+            if remaining < 3600      { return .red }
+            if remaining < 86400     { return .orange }
+            if remaining < 86400 * 3 { return .yellow }
             return accent
         }()
 
-        return VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Label(s.nextDeadline, systemImage: "timer")
-                    .font(.caption).fontWeight(.semibold).foregroundColor(.secondary)
-                Spacer()
-                Text(s.quadrantTitle(task.quadrant))
-                    .font(.caption2)
-                    .foregroundColor(qColor(task.quadrant))
-                    .padding(.horizontal, 6).padding(.vertical, 2)
-                    .background(qColor(task.quadrant).opacity(0.12))
-                    .cornerRadius(4)
+        return VStack(alignment: .leading, spacing: 6) {
+            // Task name + quadrant dot
+            HStack(spacing: 4) {
+                Circle().fill(qColor(task.quadrant)).frame(width: 6, height: 6)
+                Text(task.title)
+                    .font(.caption).fontWeight(.semibold)
+                    .lineLimit(1)
+                    .foregroundColor(.primary)
             }
 
-            Text(task.title)
-                .font(.headline)
-                .lineLimit(1)
-
-            HStack(spacing: 4) {
-                if days > 0 {
-                    countdownUnit(days,    label: lang == "zh" ? "天" : "d", color: urgency)
-                    separator
-                }
-                countdownUnit(hours,   label: lang == "zh" ? "時" : "h", color: urgency)
-                separator
-                countdownUnit(minutes, label: lang == "zh" ? "分" : "m", color: urgency)
-                if days == 0 {
-                    separator
-                    countdownUnit(seconds, label: lang == "zh" ? "秒" : "s", color: urgency)
-                }
+            // HH : MM : SS
+            HStack(spacing: 2) {
+                miniUnit(String(format: "%02d", totalHours), label: lang == "zh" ? "時" : "h", color: urgency)
+                Text(":").font(.system(size: 14, weight: .thin)).foregroundColor(.secondary)
+                miniUnit(String(format: "%02d", minutes),   label: lang == "zh" ? "分" : "m", color: urgency)
+                Text(":").font(.system(size: 14, weight: .thin)).foregroundColor(.secondary)
+                miniUnit(String(format: "%02d", seconds),   label: lang == "zh" ? "秒" : "s", color: urgency)
             }
             .frame(maxWidth: .infinity, alignment: .center)
 
-            HStack(spacing: 4) {
-                Image(systemName: "calendar").font(.caption2)
-                Text(due, style: .date).font(.caption)
-                let comps = cal.dateComponents([.hour, .minute], from: due)
-                if (comps.hour ?? 0) != 0 || (comps.minute ?? 0) != 0 {
-                    Text("·").font(.caption)
-                    Text(due, style: .time).font(.caption)
+            // Due date
+            let comps = cal.dateComponents([.hour, .minute], from: due)
+            let hasTime = (comps.hour ?? 0) != 0 || (comps.minute ?? 0) != 0
+            HStack(spacing: 3) {
+                Image(systemName: "calendar").font(.system(size: 9))
+                Text(due, style: .date).font(.system(size: 10))
+                if hasTime {
+                    Text(due, style: .time).font(.system(size: 10))
                 }
             }
             .foregroundColor(.secondary)
         }
-        .padding(14)
-        .background(urgency.opacity(0.06))
-        .cornerRadius(14)
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(urgency.opacity(0.2), lineWidth: 1))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .frame(width: 145)
+        .background(urgency.opacity(0.07))
+        .cornerRadius(12)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(urgency.opacity(0.2), lineWidth: 1))
+        .onTapGesture { editingTask = task }
     }
 
-    private var separator: some View {
-        Text(":").font(.system(size: 26, weight: .thin)).foregroundColor(.secondary)
-    }
-
-    private func countdownUnit(_ value: Int, label: String, color: Color) -> some View {
+    private func miniUnit(_ value: String, label: String, color: Color) -> some View {
         VStack(spacing: 1) {
-            Text(String(format: "%02d", value))
-                .font(.system(size: 34, weight: .bold, design: .monospaced))
+            Text(value)
+                .font(.system(size: 20, weight: .bold, design: .monospaced))
                 .foregroundColor(color)
             Text(label)
-                .font(.system(size: 10))
+                .font(.system(size: 9))
                 .foregroundColor(.secondary)
         }
-        .frame(minWidth: 54)
+        .frame(minWidth: 32)
     }
 }
 

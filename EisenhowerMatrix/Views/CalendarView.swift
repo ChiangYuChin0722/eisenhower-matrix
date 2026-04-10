@@ -50,6 +50,7 @@ struct CalendarView: View {
                     dayTimelineView
                 }
             }
+            .background(Color(uiColor: .systemGroupedBackground))
             .navigationTitle(s.tabCalendar)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

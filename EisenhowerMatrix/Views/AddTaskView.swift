@@ -22,6 +22,7 @@ struct AddTaskView: View {
     @State private var dueDate         = roundedNextHour()
     @State private var addToChecklist  = false
     @State private var colorTag        = TaskColor.none
+    @State private var colorTagLabel   = ""
     @State private var subtaskText     = ""
     @State private var subtasks: [EisTask] = []
     @State private var recurrence      = Recurrence.none
@@ -101,6 +102,14 @@ struct AddTaskView: View {
                         }
                         .padding(.vertical, 4)
                     }
+                    if colorTag != .none {
+                        HStack(spacing: 8) {
+                            Circle()
+                                .fill(colorTag.color)
+                                .frame(width: 10, height: 10)
+                            TextField(s.colorTagLabelField, text: $colorTagLabel)
+                        }
+                    }
                 }
 
                 Section(s.subtasksSection) {
@@ -151,7 +160,10 @@ struct AddTaskView: View {
                 Circle().stroke(Color.primary, lineWidth: 2).frame(width: 34, height: 34)
             }
         }
-        .onTapGesture { colorTag = c }
+        .onTapGesture {
+            colorTag = c
+            if c == .none { colorTagLabel = "" }
+        }
     }
 
     private func populate() {
@@ -160,6 +172,7 @@ struct AddTaskView: View {
             notes              = t.notes
             quadrant           = t.quadrant
             colorTag           = t.colorTag
+            colorTagLabel      = t.colorTagLabel
             subtasks           = t.subtasks
             addToChecklist     = t.isInChecklist
             recurrence         = t.recurrence
@@ -187,6 +200,7 @@ struct AddTaskView: View {
         task.dueDate             = addToCalendar ? dueDate : nil
         task.isInChecklist       = addToChecklist
         task.colorTag            = colorTag
+        task.colorTagLabel       = colorTag == .none ? "" : colorTagLabel.trimmingCharacters(in: .whitespaces)
         task.subtasks            = subtasks
         task.recurrence          = addToCalendar ? recurrence : .none
         task.checklistCategoryId = addToChecklist ? selectedCategoryId : nil
