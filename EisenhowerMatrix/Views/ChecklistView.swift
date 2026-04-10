@@ -153,6 +153,10 @@ struct ChecklistView: View {
                     checklistRow(task)
                         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
                         .listRowSeparator(.hidden)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .leading).combined(with: .opacity),
+                            removal:   .opacity
+                        ))
                         .swipeActions(edge: .leading, allowsFullSwipe: true) {
                             Button {
                                 pomodoroTask = task
@@ -175,6 +179,7 @@ struct ChecklistView: View {
                             .tint(accent)
                         }
                 }
+                .animation(.spring(response: 0.38, dampingFraction: 0.78), value: displayedTasks.map(\.id))
             }
         }
         .listStyle(.insetGrouped)
@@ -260,17 +265,24 @@ struct ChecklistView: View {
 
     private func completionButton(_ task: EisTask) -> some View {
         Button {
-            withAnimation(.spring(response: 0.25)) { taskStore.toggleCompletion(id: task.id) }
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+                taskStore.toggleCompletion(id: task.id)
+            }
         } label: {
             ZStack {
                 Circle()
                     .stroke(task.isCompleted ? qColor(task.quadrant) : Color.gray.opacity(0.35), lineWidth: 1.5)
                     .frame(width: 24, height: 24)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: task.isCompleted)
                 if task.isCompleted {
-                    Circle().fill(qColor(task.quadrant).opacity(0.15)).frame(width: 24, height: 24)
+                    Circle()
+                        .fill(qColor(task.quadrant).opacity(0.15))
+                        .frame(width: 24, height: 24)
+                        .transition(.scale.combined(with: .opacity))
                     Image(systemName: "checkmark")
                         .font(.system(size: 11, weight: .bold))
                         .foregroundColor(qColor(task.quadrant))
+                        .transition(.scale(scale: 0.4).combined(with: .opacity))
                 }
             }
         }
@@ -425,6 +437,8 @@ struct ChecklistView: View {
                     Spacer()
                     Text("\(Int(progress * 100))%")
                         .font(.caption).fontWeight(.semibold).foregroundColor(accent)
+                        .contentTransition(.numericText())
+                        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: completedCount)
                 }
                 .padding(.horizontal, 16)
                 ProgressView(value: progress).tint(accent).padding(.horizontal, 16)

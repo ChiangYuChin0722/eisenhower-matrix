@@ -112,11 +112,11 @@ extension Color {
         accentOptions.first { $0.id == name }?.color ?? .blue
     }
 
-    /// Warm cream background: #FFFDE8 in light mode, system grouped in dark.
+    /// White in light mode, system grouped background in dark mode.
     static let appBackground = Color(UIColor { trait in
         trait.userInterfaceStyle == .dark
             ? .systemGroupedBackground
-            : UIColor(red: 1.0, green: 253/255, blue: 232/255, alpha: 1)
+            : .systemBackground
     })
 }
 

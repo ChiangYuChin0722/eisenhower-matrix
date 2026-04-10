@@ -158,6 +158,10 @@ struct DeadlineView: View {
         Section {
             ForEach(tasks) { task in
                 deadlineRow(task)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .leading).combined(with: .opacity),
+                        removal:   .opacity
+                    ))
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
                         Button {
                             pomodoroTask = task
@@ -179,12 +183,16 @@ struct DeadlineView: View {
                         .tint(.blue)
                     }
             }
+            .animation(.spring(response: 0.38, dampingFraction: 0.78), value: tasks.map(\.id))
         } header: {
             HStack(spacing: 6) {
                 Image(systemName: icon).foregroundColor(color)
                 Text(title).foregroundColor(color)
                 Spacer()
-                Text("\(tasks.count)").foregroundColor(.secondary)
+                Text("\(tasks.count)")
+                    .foregroundColor(.secondary)
+                    .contentTransition(.numericText())
+                    .animation(.spring(response: 0.4, dampingFraction: 0.7), value: tasks.count)
             }
             .font(.caption)
         }
