@@ -184,6 +184,7 @@ struct Str {
     var noDeadlinesSub:  String { zh ? "為任務設定截止日\n在這裡追蹤進度" : "Add due dates to tasks to track\nthem here." }
     var addWithDeadline: String { zh ? "新增有截止日的任務" : "Add Task with Deadline" }
     var allDoneMsg:      String { zh ? "所有任務已完成！" : "All tasks completed!" }
+    var nextDeadline:    String { zh ? "最近截止日" : "Next Deadline" }
     func inDays(_ n: Int) -> String { zh ? "還有 \(n) 天" : "In \(n) days" }
 
     // MARK: - DashboardView

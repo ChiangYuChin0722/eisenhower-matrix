@@ -3,6 +3,7 @@ import SwiftUI
 struct DeadlineView: View {
     @EnvironmentObject var taskStore: TaskStore
     @AppStorage("appLanguage") private var lang: String = "en"
+    @AppStorage("appAccent")   private var appAccent: String = "blue"
     @AppStorage("matrixTheme") private var matrixTheme: String = "classic"
     private func qColor(_ q: Quadrant) -> Color { q.color(theme: matrixTheme) }
     private func qBg(_ q: Quadrant)    -> Color { q.bgColor(theme: matrixTheme) }
@@ -12,6 +13,14 @@ struct DeadlineView: View {
 
     private let cal = Calendar.current
     private var s: Str { Str(lang) }
+    private var accent: Color { .accent(appAccent) }
+
+    private var nextUpcomingTask: EisTask? {
+        taskStore.tasksWithDeadlines
+            .filter { !$0.isCompleted && ($0.dueDate ?? .distantPast) > Date() }
+            .sorted { $0.dueDate! < $1.dueDate! }
+            .first
+    }
 
     private var allDeadlineTasks: [EisTask] {
         let base = taskStore.tasksWithDeadlines
@@ -97,6 +106,19 @@ struct DeadlineView: View {
 
     private var deadlineList: some View {
         List {
+            // MARK: Countdown card
+            if let task = nextUpcomingTask, let due = task.dueDate {
+                Section {
+                    TimelineView(.periodic(from: .now, by: 1.0)) { ctx in
+                        let remaining = max(0, due.timeIntervalSince(ctx.date))
+                        nextDeadlineCard(task: task, due: due, remaining: remaining)
+                    }
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                }
+            }
+
             if !overdue.isEmpty {
                 deadlineSection(s.overdue, tasks: overdue,   color: .red,      icon: "exclamationmark.circle.fill")
             }
@@ -218,6 +240,85 @@ struct DeadlineView: View {
         if date < startOfToday { return .red }
         if cal.isDateInToday(date) { return .orange }
         return .blue
+    }
+
+    // MARK: - Countdown card
+
+    private func nextDeadlineCard(task: EisTask, due: Date, remaining: TimeInterval) -> some View {
+        let days    = Int(remaining) / 86400
+        let hours   = (Int(remaining) % 86400) / 3600
+        let minutes = (Int(remaining) % 3600) / 60
+        let seconds = Int(remaining) % 60
+        let urgency: Color = {
+            if remaining < 3600          { return .red }
+            if remaining < 86400         { return .orange }
+            if remaining < 86400 * 3     { return .yellow }
+            return accent
+        }()
+
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Label(s.nextDeadline, systemImage: "timer")
+                    .font(.caption).fontWeight(.semibold).foregroundColor(.secondary)
+                Spacer()
+                Text(s.quadrantTitle(task.quadrant))
+                    .font(.caption2)
+                    .foregroundColor(qColor(task.quadrant))
+                    .padding(.horizontal, 6).padding(.vertical, 2)
+                    .background(qColor(task.quadrant).opacity(0.12))
+                    .cornerRadius(4)
+            }
+
+            Text(task.title)
+                .font(.headline)
+                .lineLimit(1)
+
+            HStack(spacing: 4) {
+                if days > 0 {
+                    countdownUnit(days,    label: lang == "zh" ? "天" : "d", color: urgency)
+                    separator
+                }
+                countdownUnit(hours,   label: lang == "zh" ? "時" : "h", color: urgency)
+                separator
+                countdownUnit(minutes, label: lang == "zh" ? "分" : "m", color: urgency)
+                if days == 0 {
+                    separator
+                    countdownUnit(seconds, label: lang == "zh" ? "秒" : "s", color: urgency)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
+
+            HStack(spacing: 4) {
+                Image(systemName: "calendar").font(.caption2)
+                Text(due, style: .date).font(.caption)
+                let comps = cal.dateComponents([.hour, .minute], from: due)
+                if (comps.hour ?? 0) != 0 || (comps.minute ?? 0) != 0 {
+                    Text("·").font(.caption)
+                    Text(due, style: .time).font(.caption)
+                }
+            }
+            .foregroundColor(.secondary)
+        }
+        .padding(14)
+        .background(urgency.opacity(0.06))
+        .cornerRadius(14)
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(urgency.opacity(0.2), lineWidth: 1))
+    }
+
+    private var separator: some View {
+        Text(":").font(.system(size: 26, weight: .thin)).foregroundColor(.secondary)
+    }
+
+    private func countdownUnit(_ value: Int, label: String, color: Color) -> some View {
+        VStack(spacing: 1) {
+            Text(String(format: "%02d", value))
+                .font(.system(size: 34, weight: .bold, design: .monospaced))
+                .foregroundColor(color)
+            Text(label)
+                .font(.system(size: 10))
+                .foregroundColor(.secondary)
+        }
+        .frame(minWidth: 54)
     }
 }
 
