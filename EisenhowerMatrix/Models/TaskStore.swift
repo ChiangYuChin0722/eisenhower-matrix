@@ -138,6 +138,12 @@ class TaskStore: ObservableObject {
         saveCategories()
     }
 
+    func resetToSampleData() {
+        tasks = []
+        NotificationManager.shared.cancelAll()
+        loadSampleData()
+    }
+
     func deleteCategory(id: UUID) {
         checklistCategories.removeAll { $0.id == id }
         // Reassign tasks to first remaining category (General)

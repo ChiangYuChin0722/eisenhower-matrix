@@ -3,6 +3,7 @@ import SwiftUI
 struct AddTaskView: View {
     @EnvironmentObject var taskStore: TaskStore
     @Environment(\.dismiss) var dismiss
+    @AppStorage("appLanguage") private var lang: String = "en"
 
     var editingTask: EisTask?       = nil
     var defaultQuadrant: Quadrant    = .doFirst
@@ -10,7 +11,7 @@ struct AddTaskView: View {
     var initialCanvasY: Double?      = nil
     var forceCalendar: Bool          = false
     var forceChecklist: Bool         = false
-    var defaultCategoryId: UUID?     = nil   // pre-select category from ChecklistView
+    var defaultCategoryId: UUID?     = nil
 
     @State private var title           = ""
     @State private var notes           = ""
@@ -25,25 +26,26 @@ struct AddTaskView: View {
     @State private var selectedCategoryId: UUID? = nil
 
     var isEditing: Bool { editingTask != nil }
+    private var s: Str { Str(lang) }
 
     var body: some View {
         NavigationView {
             Form {
-                // MARK: Task basics
-                Section("Task") {
-                    TextField("Title", text: $title)
-                    TextField("Notes (optional)", text: $notes, axis: .vertical)
+                Section(s.taskSection) {
+                    TextField(s.titleField, text: $title)
+                    TextField(s.notesField, text: $notes, axis: .vertical)
                         .lineLimit(3, reservesSpace: false)
                 }
 
-                // MARK: Quadrant
-                Section("Quadrant") {
-                    Picker("Quadrant", selection: $quadrant) {
+                Section(s.quadrantSection) {
+                    Picker(s.quadrantSection, selection: $quadrant) {
                         ForEach(Quadrant.allCases) { q in
                             Label {
                                 VStack(alignment: .leading, spacing: 1) {
-                                    Text(q.title).font(.subheadline).fontWeight(.medium)
-                                    Text(q.subtitle).font(.caption).foregroundColor(.secondary)
+                                    Text(s.quadrantTitle(q))
+                                        .font(.subheadline).fontWeight(.medium)
+                                    Text(s.quadrantSubtitle(q))
+                                        .font(.caption).foregroundColor(.secondary)
                                 }
                             } icon: { Text(q.emoji) }
                             .tag(q)
@@ -53,13 +55,12 @@ struct AddTaskView: View {
                     .labelsHidden()
                 }
 
-                // MARK: Add to Calendar + Recurrence
                 Section {
                     Toggle(isOn: $addToCalendar) {
-                        Label("Add to Calendar", systemImage: "calendar")
+                        Label(s.addToCalendar, systemImage: "calendar")
                     }
                     if addToCalendar {
-                        DatePicker("Date & Time", selection: $dueDate,
+                        DatePicker(s.dateTimeLabel, selection: $dueDate,
                                    displayedComponents: [.date, .hourAndMinute])
 
                         Picker(selection: $recurrence) {
@@ -67,18 +68,17 @@ struct AddTaskView: View {
                                 Label(r.title, systemImage: r.icon).tag(r)
                             }
                         } label: {
-                            Label("Repeat", systemImage: "arrow.clockwise")
+                            Label(s.repeatLabel, systemImage: "arrow.clockwise")
                         }
                     }
                 }
 
-                // MARK: Add to Checklist + Category
                 Section {
                     Toggle(isOn: $addToChecklist) {
-                        Label("Add to Checklist", systemImage: "checklist")
+                        Label(s.addToChecklist, systemImage: "checklist")
                     }
                     if addToChecklist && !taskStore.checklistCategories.isEmpty {
-                        Picker("List", selection: $selectedCategoryId) {
+                        Picker(s.listPickerLabel, selection: $selectedCategoryId) {
                             ForEach(taskStore.checklistCategories) { cat in
                                 Label(cat.name, systemImage: cat.icon).tag(Optional(cat.id))
                             }
@@ -86,8 +86,7 @@ struct AddTaskView: View {
                     }
                 }
 
-                // MARK: Color tag
-                Section("Color Tag") {
+                Section(s.colorTagSection) {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
                             ForEach(TaskColor.allCases, id: \.self) { c in
@@ -98,8 +97,7 @@ struct AddTaskView: View {
                     }
                 }
 
-                // MARK: Subtasks
-                Section("Subtasks") {
+                Section(s.subtasksSection) {
                     ForEach(subtasks) { sub in
                         HStack {
                             Image(systemName: sub.isCompleted ? "checkmark.circle.fill" : "circle")
@@ -110,8 +108,8 @@ struct AddTaskView: View {
                     .onDelete { subtasks.remove(atOffsets: $0) }
 
                     HStack {
-                        TextField("Add subtask…", text: $subtaskText)
-                        Button("Add") {
+                        TextField(s.addSubtask, text: $subtaskText)
+                        Button(s.add) {
                             subtasks.append(EisTask(title: subtaskText, quadrant: quadrant))
                             subtaskText = ""
                         }
@@ -119,14 +117,14 @@ struct AddTaskView: View {
                     }
                 }
             }
-            .navigationTitle(isEditing ? "Edit Task" : "New Task")
+            .navigationTitle(isEditing ? s.editTaskTitle : s.newTaskTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(s.cancel) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(isEditing ? "Save" : "Add", action: save)
+                    Button(isEditing ? s.save : s.add, action: save)
                         .fontWeight(.semibold)
                         .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
@@ -134,8 +132,6 @@ struct AddTaskView: View {
             .onAppear(perform: populate)
         }
     }
-
-    // MARK: - Color circle
 
     private func colorCircle(_ c: TaskColor) -> some View {
         ZStack {
@@ -151,8 +147,6 @@ struct AddTaskView: View {
         }
         .onTapGesture { colorTag = c }
     }
-
-    // MARK: - Populate when editing
 
     private func populate() {
         if let t = editingTask {
@@ -176,14 +170,10 @@ struct AddTaskView: View {
         }
     }
 
-    // MARK: - Save
-
     private func save() {
         var task = editingTask ?? EisTask(
-            title: title,
-            quadrant: quadrant,
-            canvasX: initialCanvasX,
-            canvasY: initialCanvasY
+            title: title, quadrant: quadrant,
+            canvasX: initialCanvasX, canvasY: initialCanvasY
         )
         task.title               = title.trimmingCharacters(in: .whitespaces)
         task.notes               = notes
@@ -204,8 +194,6 @@ struct AddTaskView: View {
         else         { taskStore.addTask(task) }
         dismiss()
     }
-
-    // MARK: - Helpers
 
     private static func roundedNextHour() -> Date {
         let cal  = Calendar.current

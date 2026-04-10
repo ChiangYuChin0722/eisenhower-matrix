@@ -1,0 +1,156 @@
+import Foundation
+
+/// Build a string set from a language code ("en" or "zh").
+/// Usage in any view:
+///   @AppStorage("appLanguage") private var lang: String = "en"
+///   private var s: Str { Str(lang) }
+struct Str {
+    let zh: Bool
+    init(_ lang: String = UserDefaults.standard.string(forKey: "appLanguage") ?? "en") {
+        zh = lang == "zh"
+    }
+
+    // MARK: - Common actions
+    var add:    String { zh ? "新增" : "Add" }
+    var save:   String { zh ? "儲存" : "Save" }
+    var cancel: String { zh ? "取消" : "Cancel" }
+    var done:   String { zh ? "完成" : "Done" }
+    var undo:   String { zh ? "還原" : "Undo" }
+    var delete: String { zh ? "刪除" : "Delete" }
+    var edit:   String { zh ? "編輯" : "Edit" }
+    var today:  String { zh ? "今天" : "Today" }
+    var addTask: String { zh ? "新增任務" : "Add Task" }
+
+    // MARK: - Tabs
+    var tabMatrix:    String { zh ? "矩陣"     : "Matrix" }
+    var tabChecklist: String { zh ? "清單"     : "Checklist" }
+    var tabCalendar:  String { zh ? "行事曆"   : "Calendar" }
+    var tabDeadlines: String { zh ? "截止日期" : "Deadlines" }
+    var tabDashboard: String { zh ? "總覽"     : "Dashboard" }
+
+    // MARK: - MatrixView
+    var matrixNavTitle:    String { zh ? "艾森豪矩陣"  : "Eisenhower Matrix" }
+    var notUrgentLabel:    String { zh ? "← 不緊急"   : "← Not Urgent" }
+    var urgentLabel:       String { zh ? "緊急 →"     : "Urgent →" }
+    var importantLabel:    String { zh ? "重要 ↑"     : "Important ↑" }
+    var notImportantLabel: String { zh ? "↓ 不重要"   : "↓ Not Important" }
+    var tapToAdd:          String { zh ? "點擊任意處新增" : "tap anywhere to add" }
+
+    // MARK: - ChecklistView
+    var hideDone:              String { zh ? "隱藏完成"   : "Hide done" }
+    var showDone:              String { zh ? "顯示完成"   : "Show done" }
+    var quickAddPlaceholder:   String { zh ? "快速新增..." : "Quick add item…" }
+    var allCategory:           String { zh ? "全部"      : "All" }
+    var newList:               String { zh ? "新清單"     : "New List" }
+    var listNameLabel:         String { zh ? "清單名稱"   : "List Name" }
+    var iconLabel:             String { zh ? "圖示"      : "Icon" }
+    var egGroceries:           String { zh ? "例如：購物" : "e.g. Groceries" }
+    var emptyChecklistTitle:   String { zh ? "清單是空的" : "Your checklist is empty" }
+    var emptyChecklistSub:     String { zh ? "在下方輸入快速新增\n或點 + 新增完整任務" : "Type below to quickly add an item,\nor tap + to add a full task." }
+    var emptyCategoryMsg:      String { zh ? "此清單沒有項目" : "No items in this list" }
+
+    // MARK: - CalendarView
+    var monthMode:       String { zh ? "月" : "Month" }
+    var dayMode:         String { zh ? "日" : "Day" }
+    var allDay:          String { zh ? "全天" : "All Day" }
+    var timeline:        String { zh ? "時間軸" : "Timeline" }
+    var noTasksForDay:   String { zh ? "今天沒有任務" : "No tasks for this day" }
+    func taskCount(_ n: Int) -> String {
+        zh ? "\(n) 個任務" : "\(n) task\(n == 1 ? "" : "s")"
+    }
+
+    // MARK: - DeadlineView
+    var showDoneTitle:   String { zh ? "顯示完成" : "Show Done" }
+    var hideDoneTitle:   String { zh ? "隱藏完成" : "Hide Done" }
+    var overdue:         String { zh ? "逾期"     : "Overdue" }
+    var tomorrow:        String { zh ? "明天"     : "Tomorrow" }
+    var thisWeek:        String { zh ? "本週"     : "This Week" }
+    var later:           String { zh ? "之後"     : "Later" }
+    var noDeadlines:     String { zh ? "沒有截止日期" : "No deadlines" }
+    var noDeadlinesSub:  String { zh ? "為任務設定截止日\n在這裡追蹤進度" : "Add due dates to tasks to track\nthem here." }
+    var addWithDeadline: String { zh ? "新增有截止日的任務" : "Add Task with Deadline" }
+    var allDoneMsg:      String { zh ? "所有任務已完成！" : "All tasks completed!" }
+    func inDays(_ n: Int) -> String { zh ? "還有 \(n) 天" : "In \(n) days" }
+
+    // MARK: - DashboardView
+    var overallProgress:   String { zh ? "整體進度"  : "Overall Progress" }
+    var lastSevenDays:     String { zh ? "最近 7 天" : "Last 7 Days" }
+    var quadrantBreakdown: String { zh ? "象限分析"  : "Quadrant Breakdown" }
+    var recentTasks:       String { zh ? "最近任務"  : "Recent Tasks" }
+    var totalLabel:        String { zh ? "總計"      : "Total" }
+    var pendingLabel:      String { zh ? "待完成"    : "Pending" }
+    var completedLabel:    String { zh ? "已完成"    : "Completed" }
+    var streakKeepUp:      String { zh ? "繼續保持！今天完成一個任務！" : "Keep it up — complete a task today!" }
+    var streakStart:       String { zh ? "今天完成一個任務，開始連續紀錄" : "Complete a task today to start your streak" }
+    func tasksDone(_ c: Int, _ t: Int) -> String {
+        zh ? "\(c) / \(t) 已完成" : "\(c) of \(t) tasks done"
+    }
+    func streak(_ n: Int) -> String {
+        zh ? "\(n) 天連續" : "\(n) day\(n == 1 ? "" : "s") streak"
+    }
+
+    // MARK: - SettingsView
+    var settingsTitle:      String { zh ? "設定"   : "Settings" }
+    var displaySection:     String { zh ? "顯示"   : "Display" }
+    var showCompletedLabel: String { zh ? "顯示已完成任務" : "Show completed tasks" }
+    var themeLabel:         String { zh ? "外觀"   : "Theme" }
+    var themeSystem:        String { zh ? "系統"   : "System" }
+    var themeLight:         String { zh ? "淺色"   : "Light" }
+    var themeDark:          String { zh ? "深色"   : "Dark" }
+    var languageSection:    String { zh ? "語言"   : "Language" }
+    var notifSection:       String { zh ? "通知"   : "Notifications" }
+    var notifReminders:     String { zh ? "任務提醒" : "Task reminders" }
+    var notifOn:            String { zh ? "開啟"   : "On" }
+    var notifOff:           String { zh ? "關閉"   : "Off" }
+    var notifNotSet:        String { zh ? "未設定" : "Not set" }
+    var enableNotif:        String { zh ? "開啟通知" : "Enable Notifications" }
+    var openSettingsNotif:  String { zh ? "前往設定開啟" : "Open Settings to Enable" }
+    var notifDesc:          String { zh ? "任務截止前 1 小時會收到提醒。" : "You'll get a reminder 1 hour before each task's due time." }
+    var aboutSection:       String { zh ? "矩陣說明" : "About the Matrix" }
+    var statsSection:       String { zh ? "統計"   : "Statistics" }
+    var totalTasksLabel:    String { zh ? "總任務數" : "Total tasks" }
+    var completionRateLabel:String { zh ? "完成率"  : "Completion rate" }
+    var currentStreakLabel:  String { zh ? "連續天數" : "Current streak" }
+    var resetSectionTitle:  String { zh ? "重置"   : "Reset" }
+    var resetButton:        String { zh ? "重置 App 資料" : "Reset App Data" }
+    var resetConfirmTitle:  String { zh ? "重置 App 資料？" : "Reset app data?" }
+    var resetConfirmMsg:    String { zh ? "所有任務將被刪除，並還原成範例資料。" : "All tasks will be deleted and sample data restored." }
+    var resetConfirmAction: String { zh ? "重置" : "Reset" }
+    var doneButton:         String { zh ? "完成" : "Done" }
+
+    // MARK: - AddTaskView
+    var newTaskTitle:      String { zh ? "新增任務"  : "New Task" }
+    var editTaskTitle:     String { zh ? "編輯任務"  : "Edit Task" }
+    var taskSection:       String { zh ? "任務"      : "Task" }
+    var titleField:        String { zh ? "標題"      : "Title" }
+    var notesField:        String { zh ? "備註（選填）" : "Notes (optional)" }
+    var quadrantSection:   String { zh ? "象限"      : "Quadrant" }
+    var addToCalendar:     String { zh ? "加入行事曆" : "Add to Calendar" }
+    var dateTimeLabel:     String { zh ? "日期與時間" : "Date & Time" }
+    var repeatLabel:       String { zh ? "重複"      : "Repeat" }
+    var addToChecklist:    String { zh ? "加入清單"  : "Add to Checklist" }
+    var listPickerLabel:   String { zh ? "清單"      : "List" }
+    var colorTagSection:   String { zh ? "顏色標籤"  : "Color Tag" }
+    var subtasksSection:   String { zh ? "子任務"    : "Subtasks" }
+    var addSubtask:        String { zh ? "新增子任務..." : "Add subtask…" }
+
+    // MARK: - Quadrant names (localized)
+    func quadrantTitle(_ q: Quadrant) -> String {
+        guard zh else { return q.title }
+        switch q {
+        case .doFirst:   return "立刻執行"
+        case .schedule:  return "計畫安排"
+        case .delegate:  return "委派他人"
+        case .eliminate: return "排除刪去"
+        }
+    }
+    func quadrantSubtitle(_ q: Quadrant) -> String {
+        guard zh else { return q.subtitle }
+        switch q {
+        case .doFirst:   return "緊急且重要"
+        case .schedule:  return "重要但不緊急"
+        case .delegate:  return "緊急但不重要"
+        case .eliminate: return "不緊急也不重要"
+        }
+    }
+}

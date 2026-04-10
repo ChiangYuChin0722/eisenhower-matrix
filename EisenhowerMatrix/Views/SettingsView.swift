@@ -5,102 +5,115 @@ struct SettingsView: View {
     @EnvironmentObject var taskStore: TaskStore
     @Environment(\.dismiss) var dismiss
     @AppStorage("showCompletedTasks") private var showCompletedTasks = true
-    @AppStorage("defaultQuadrant")    private var defaultQuadrant    = "do"
     @AppStorage("appTheme")           private var appTheme           = "system"
-    @State private var showingClearConfirm   = false
+    @AppStorage("appLanguage")        private var lang               = "en"
+    @State private var showingResetConfirm   = false
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
+
+    private var s: Str { Str(lang) }
 
     var body: some View {
         NavigationView {
             Form {
-                Section("Display") {
-                    Toggle("Show completed tasks", isOn: $showCompletedTasks)
+                // MARK: Display
+                Section(s.displaySection) {
+                    Toggle(s.showCompletedLabel, isOn: $showCompletedTasks)
 
-                    Picker("Default quadrant", selection: $defaultQuadrant) {
-                        ForEach(Quadrant.allCases) { q in
-                            Text(q.emoji + " " + q.title).tag(q.rawValue)
-                        }
-                    }
-
-                    Picker("Theme", selection: $appTheme) {
-                        Text("System").tag("system")
-                        Text("Light").tag("light")
-                        Text("Dark").tag("dark")
+                    Picker(s.themeLabel, selection: $appTheme) {
+                        Text(s.themeSystem).tag("system")
+                        Text(s.themeLight).tag("light")
+                        Text(s.themeDark).tag("dark")
                     }
                 }
 
-                // MARK: - Notifications
+                // MARK: Language
+                Section(s.languageSection) {
+                    Picker(s.languageSection, selection: $lang) {
+                        Text("English").tag("en")
+                        Text("中文").tag("zh")
+                    }
+                    .pickerStyle(.segmented)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                }
+
+                // MARK: Notifications
                 Section {
                     HStack {
-                        Label("Task reminders", systemImage: "bell.badge")
+                        Label(s.notifReminders, systemImage: "bell.badge")
                         Spacer()
                         notificationBadge
                     }
 
                     if notificationStatus == .notDetermined {
-                        Button("Enable Notifications") {
+                        Button(s.enableNotif) {
                             NotificationManager.shared.requestPermission()
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                 refreshNotificationStatus()
                             }
                         }
                     } else if notificationStatus == .denied {
-                        Button("Open Settings to Enable") {
+                        Button(s.openSettingsNotif) {
                             if let url = URL(string: UIApplication.openSettingsURLString) {
                                 UIApplication.shared.open(url)
                             }
                         }
                     }
 
-                    Text("You'll get a reminder 1 hour before each task's due time.")
+                    Text(s.notifDesc)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 } header: {
-                    Text("Notifications")
+                    Text(s.notifSection)
                 }
 
-                Section("About the Matrix") {
-                    InfoRow(icon: "🚀", title: "Do",       subtitle: "Urgent & Important — act immediately")
-                    InfoRow(icon: "🔥", title: "Schedule", subtitle: "Important, not urgent — plan it")
-                    InfoRow(icon: "👥", title: "Delegate", subtitle: "Urgent, not important — hand it off")
-                    InfoRow(icon: "🗂️", title: "Eliminate",subtitle: "Not urgent & not important — drop it")
+                // MARK: About
+                Section(s.aboutSection) {
+                    InfoRow(icon: "🚀", title: s.quadrantTitle(.doFirst),
+                            subtitle: s.quadrantSubtitle(.doFirst))
+                    InfoRow(icon: "🔥", title: s.quadrantTitle(.schedule),
+                            subtitle: s.quadrantSubtitle(.schedule))
+                    InfoRow(icon: "👥", title: s.quadrantTitle(.delegate),
+                            subtitle: s.quadrantSubtitle(.delegate))
+                    InfoRow(icon: "🗂️", title: s.quadrantTitle(.eliminate),
+                            subtitle: s.quadrantSubtitle(.eliminate))
                 }
 
-                Section("Statistics") {
-                    LabeledContent("Total tasks",     value: "\(taskStore.totalCount)")
-                    LabeledContent("Completed",       value: "\(taskStore.completedCount)")
-                    LabeledContent("Completion rate", value: "\(Int(taskStore.completionRate * 100))%")
-                    LabeledContent("Current streak",  value: "\(taskStore.currentStreak) days")
+                // MARK: Statistics
+                Section(s.statsSection) {
+                    LabeledContent(s.totalTasksLabel,    value: "\(taskStore.totalCount)")
+                    LabeledContent(s.completedLabel,     value: "\(taskStore.completedCount)")
+                    LabeledContent(s.completionRateLabel,value: "\(Int(taskStore.completionRate * 100))%")
+                    LabeledContent(s.currentStreakLabel, value: s.streak(taskStore.currentStreak))
                 }
 
-                Section {
+                // MARK: Reset
+                Section(s.resetSectionTitle) {
                     Button(role: .destructive) {
-                        showingClearConfirm = true
+                        showingResetConfirm = true
                     } label: {
-                        Label("Clear all tasks", systemImage: "trash")
+                        Label(s.resetButton, systemImage: "arrow.counterclockwise")
                     }
                 }
             }
-            .navigationTitle("Settings")
+            .navigationTitle(s.settingsTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+                    Button(s.doneButton) { dismiss() }
                 }
             }
             .confirmationDialog(
-                "Clear all tasks?",
-                isPresented: $showingClearConfirm,
+                s.resetConfirmTitle,
+                isPresented: $showingResetConfirm,
                 titleVisibility: .visible
             ) {
-                Button("Clear all", role: .destructive) {
-                    for task in taskStore.tasks {
-                        taskStore.deleteTask(id: task.id)
-                    }
+                Button(s.resetConfirmAction, role: .destructive) {
+                    taskStore.resetToSampleData()
                 }
-                Button("Cancel", role: .cancel) {}
+                Button(s.cancel, role: .cancel) {}
             } message: {
-                Text("This will permanently delete all tasks and cannot be undone.")
+                Text(s.resetConfirmMsg)
             }
             .onAppear { refreshNotificationStatus() }
         }
@@ -110,14 +123,17 @@ struct SettingsView: View {
         Group {
             switch notificationStatus {
             case .authorized:
-                Text("On").foregroundColor(.green).font(.subheadline)
+                Text(s.notifOn).foregroundColor(.green).font(.subheadline)
             case .denied:
-                Text("Off").foregroundColor(.red).font(.subheadline)
+                Text(s.notifOff).foregroundColor(.red).font(.subheadline)
             default:
-                Text("Not set").foregroundColor(.secondary).font(.subheadline)
+                Text(s.notifNotSet).foregroundColor(.secondary).font(.subheadline)
             }
         }
     }
+
+    private func quadrantTitle(_ q: Quadrant) -> String { s.quadrantTitle(q) }
+    private func quadrantSubtitle(_ q: Quadrant) -> String { s.quadrantSubtitle(q) }
 
     private func refreshNotificationStatus() {
         NotificationManager.shared.getAuthorizationStatus { status in
@@ -143,6 +159,5 @@ struct InfoRow: View {
 }
 
 #Preview {
-    SettingsView()
-        .environmentObject(TaskStore())
+    SettingsView().environmentObject(TaskStore())
 }

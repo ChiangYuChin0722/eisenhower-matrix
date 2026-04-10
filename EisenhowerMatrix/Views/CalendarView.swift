@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CalendarView: View {
     @EnvironmentObject var taskStore: TaskStore
+    @AppStorage("appLanguage") private var lang: String = "en"
     @State private var selectedDate    = Date()
     @State private var displayedMonth  = Date()
     @State private var viewMode: ViewMode = .month
@@ -13,16 +14,22 @@ struct CalendarView: View {
         case day   = "Day"
     }
 
+    private var s: Str { Str(lang) }
     private let cal  = Calendar.current
     private let cols = Array(repeating: GridItem(.flexible()), count: 7)
-    private let weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    private var weekdays: [String] {
+        lang == "zh"
+            ? ["日","一","二","三","四","五","六"]
+            : ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
+    }
 
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
                 // Mode toggle
                 Picker("", selection: $viewMode) {
-                    ForEach(ViewMode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                    Text(s.monthMode).tag(ViewMode.month)
+                    Text(s.dayMode).tag(ViewMode.day)
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal, 16)
@@ -34,11 +41,11 @@ struct CalendarView: View {
                     dayTimelineView
                 }
             }
-            .navigationTitle("Calendar")
+            .navigationTitle(s.tabCalendar)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Today") {
+                    Button(s.today) {
                         selectedDate   = Date()
                         displayedMonth = Date()
                     }
@@ -152,14 +159,14 @@ struct CalendarView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(selectedDate, style: .date)
                         .font(.subheadline).fontWeight(.semibold)
-                    Text("\(tasks.count) task\(tasks.count == 1 ? "" : "s")")
+                    Text(s.taskCount(tasks.count))
                         .font(.caption).foregroundColor(.secondary)
                 }
                 Spacer()
                 Button {
                     viewMode = .day
                 } label: {
-                    Label("Timeline", systemImage: "clock")
+                    Label(s.timeline, systemImage: "clock")
                         .font(.caption).foregroundColor(.blue)
                 }
             }
@@ -192,10 +199,10 @@ struct CalendarView: View {
             Image(systemName: "calendar.badge.clock")
                 .font(.system(size: 44))
                 .foregroundColor(.secondary.opacity(0.35))
-            Text("No tasks for this day")
+            Text(s.noTasksForDay)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
-            Button("Add Task") { showAddTask = true }
+            Button(s.addTask) { showAddTask = true }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.regular)
         }
@@ -243,7 +250,7 @@ struct CalendarView: View {
                 Spacer()
                 VStack(spacing: 2) {
                     Text(selectedDate, style: .date).font(.headline)
-                    Text("\(taskStore.tasks(for: selectedDate).count) tasks")
+                    Text(s.taskCount(taskStore.tasks(for: selectedDate).count))
                         .font(.caption).foregroundColor(.secondary)
                 }
                 Spacer()
@@ -291,7 +298,7 @@ struct CalendarView: View {
     private func allDaySection(_ tasks: [EisTask]) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("All Day")
+                Text(s.allDay)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.secondary)
                     .frame(width: 52, alignment: .trailing)

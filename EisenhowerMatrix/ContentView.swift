@@ -2,30 +2,32 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var taskStore: TaskStore
-    @AppStorage("appTheme") private var appTheme = "system"
+    @AppStorage("appTheme")    private var appTheme: String = "system"
+    @AppStorage("appLanguage") private var lang: String     = "en"
     @State private var showSearch = false
+
+    private var s: Str { Str(lang) }
 
     var body: some View {
         TabView {
             MatrixView()
-                .tabItem { Label("Matrix",    systemImage: "square.grid.2x2.fill") }
+                .tabItem { Label(s.tabMatrix,    systemImage: "square.grid.2x2.fill") }
 
             ChecklistView()
-                .tabItem { Label("Checklist", systemImage: "checklist") }
+                .tabItem { Label(s.tabChecklist, systemImage: "checklist") }
 
             CalendarView()
-                .tabItem { Label("Calendar",  systemImage: "calendar") }
+                .tabItem { Label(s.tabCalendar,  systemImage: "calendar") }
 
             DeadlineView()
-                .tabItem { Label("Deadlines", systemImage: "clock.badge.exclamationmark") }
+                .tabItem { Label(s.tabDeadlines, systemImage: "clock.badge.exclamationmark") }
 
             DashboardView()
-                .tabItem { Label("Dashboard", systemImage: "chart.bar.fill") }
+                .tabItem { Label(s.tabDashboard, systemImage: "chart.bar.fill") }
         }
         .tint(.blue)
         .preferredColorScheme(colorScheme)
         .overlay(alignment: .topTrailing) {
-            // Global search button floating above all tabs
             Button {
                 showSearch = true
             } label: {

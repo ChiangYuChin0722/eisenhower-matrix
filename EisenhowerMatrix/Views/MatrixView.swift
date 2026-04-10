@@ -2,14 +2,17 @@ import SwiftUI
 
 struct MatrixView: View {
     @EnvironmentObject var taskStore: TaskStore
+    @AppStorage("appLanguage") private var lang: String = "en"
 
-    @State private var showAddTask   = false
+    @State private var showAddTask     = false
     @State private var editingTask: EisTask? = nil
-    @State private var addCanvasX    = 0.75
-    @State private var addCanvasY    = 0.25
-    @State private var addQuadrant   = Quadrant.doFirst
+    @State private var addCanvasX      = 0.75
+    @State private var addCanvasY      = 0.25
+    @State private var addQuadrant     = Quadrant.doFirst
     @State private var showingSettings = false
-    @State private var canvasSize    = CGSize.zero
+    @State private var canvasSize      = CGSize.zero
+
+    private var s: Str { Str(lang) }
 
     var body: some View {
         NavigationView {
@@ -20,26 +23,17 @@ struct MatrixView: View {
 
                 GeometryReader { geo in
                     ZStack(alignment: .topLeading) {
-                        // Quadrant backgrounds
                         quadrantBackgrounds(size: geo.size)
-
-                        // Divider lines
                         dividers(size: geo.size)
-
-                        // Quadrant corner labels
                         cornerLabels(size: geo.size)
 
-                        // Task dots (drag gesture on each dot)
                         ForEach(taskStore.tasks) { task in
                             TaskDotView(task: task, canvasSize: geo.size)
                         }
                     }
-                    // Single spatial tap gesture handles both "edit dot" and "add task"
                     .gesture(
                         SpatialTapGesture()
-                            .onEnded { val in
-                                handleTap(at: val.location, size: geo.size)
-                            }
+                            .onEnded { val in handleTap(at: val.location, size: geo.size) }
                     )
                     .onAppear { canvasSize = geo.size }
                     .onChange(of: geo.size) { canvasSize = $0 }
@@ -50,7 +44,7 @@ struct MatrixView: View {
                     .padding(.bottom, 4)
             }
             .background(Color(uiColor: .systemBackground))
-            .navigationTitle("Eisenhower Matrix")
+            .navigationTitle(s.matrixNavTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -66,17 +60,12 @@ struct MatrixView: View {
                         addQuadrant = .doFirst
                         showAddTask = true
                     } label: {
-                        Image(systemName: "plus")
-                            .fontWeight(.semibold)
+                        Image(systemName: "plus").fontWeight(.semibold)
                     }
                 }
             }
             .sheet(isPresented: $showAddTask) {
-                AddTaskView(
-                    defaultQuadrant: addQuadrant,
-                    initialCanvasX: addCanvasX,
-                    initialCanvasY: addCanvasY
-                )
+                AddTaskView(defaultQuadrant: addQuadrant, initialCanvasX: addCanvasX, initialCanvasY: addCanvasY)
             }
             .sheet(item: $editingTask) { task in
                 AddTaskView(editingTask: task)
@@ -93,7 +82,6 @@ struct MatrixView: View {
         let tapX = Double(location.x / size.width)
         let tapY = Double(location.y / size.height)
 
-        // If near an existing dot → edit
         if let hit = taskStore.tasks.first(where: { task in
             let dx = location.x - CGFloat(task.canvasX) * size.width
             let dy = location.y - CGFloat(task.canvasY) * size.height
@@ -103,7 +91,6 @@ struct MatrixView: View {
             return
         }
 
-        // Otherwise → add new task at that position
         addCanvasX  = tapX
         addCanvasY  = tapY
         addQuadrant = Quadrant.from(canvasX: tapX, canvasY: tapY)
@@ -116,22 +103,10 @@ struct MatrixView: View {
         let w = size.width / 2
         let h = size.height / 2
         return Group {
-            // Schedule — top-left (blue)
-            Rectangle().fill(Quadrant.schedule.bgColor)
-                .frame(width: w, height: h)
-                .offset(x: 0, y: 0)
-            // Do Now — top-right (red)
-            Rectangle().fill(Quadrant.doFirst.bgColor)
-                .frame(width: w, height: h)
-                .offset(x: w, y: 0)
-            // Eliminate — bottom-left (gray)
-            Rectangle().fill(Quadrant.eliminate.bgColor)
-                .frame(width: w, height: h)
-                .offset(x: 0, y: h)
-            // Delegate — bottom-right (orange)
-            Rectangle().fill(Quadrant.delegate.bgColor)
-                .frame(width: w, height: h)
-                .offset(x: w, y: h)
+            Rectangle().fill(Quadrant.schedule.bgColor).frame(width: w, height: h).offset(x: 0, y: 0)
+            Rectangle().fill(Quadrant.doFirst.bgColor).frame(width: w, height: h).offset(x: w, y: 0)
+            Rectangle().fill(Quadrant.eliminate.bgColor).frame(width: w, height: h).offset(x: 0, y: h)
+            Rectangle().fill(Quadrant.delegate.bgColor).frame(width: w, height: h).offset(x: w, y: h)
         }
     }
 
@@ -139,12 +114,10 @@ struct MatrixView: View {
 
     private func dividers(size: CGSize) -> some View {
         Group {
-            // Horizontal
             Rectangle()
                 .fill(Color.gray.opacity(0.18))
                 .frame(width: size.width, height: 1)
                 .offset(x: 0, y: size.height / 2)
-            // Vertical
             Rectangle()
                 .fill(Color.gray.opacity(0.18))
                 .frame(width: 1, height: size.height)
@@ -159,12 +132,10 @@ struct MatrixView: View {
         let h = size.height / 2
         let w = size.width / 2
         return Group {
-            // Schedule top-left
             quadrantLabel(.schedule, x: pad, y: pad)
 
-            // Do Now top-right — with "tap to add" hint
             HStack(spacing: 4) {
-                Text(Quadrant.doFirst.title)
+                Text(s.quadrantTitle(.doFirst))
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(Quadrant.doFirst.color)
                 Circle()
@@ -173,14 +144,10 @@ struct MatrixView: View {
             }
             .offset(x: w + pad, y: pad)
 
-            // Eliminate bottom-left
             quadrantLabel(.eliminate, x: pad, y: h + pad)
-
-            // Delegate bottom-right
             quadrantLabel(.delegate, x: w + pad, y: h + pad)
 
-            // "tap anywhere to add" hint — centered, very subtle
-            Text("tap anywhere to add")
+            Text(s.tapToAdd)
                 .font(.system(size: 10))
                 .foregroundColor(.secondary.opacity(0.5))
                 .offset(x: w - 55, y: h - 10)
@@ -188,7 +155,7 @@ struct MatrixView: View {
     }
 
     private func quadrantLabel(_ q: Quadrant, x: CGFloat, y: CGFloat) -> some View {
-        Text(q.title)
+        Text(s.quadrantTitle(q))
             .font(.system(size: 11, weight: .semibold))
             .foregroundColor(q.color)
             .offset(x: x, y: y)
@@ -199,31 +166,22 @@ struct MatrixView: View {
     private var axisHeader: some View {
         HStack {
             Spacer()
-            Text("← Not Urgent")
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
+            Text(s.notUrgentLabel).font(.system(size: 10)).foregroundColor(.secondary)
             Spacer()
-            Text("Urgent →")
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
+            Text(s.urgentLabel).font(.system(size: 10)).foregroundColor(.secondary)
             Spacer()
         }
     }
 
     private var axisBottom: some View {
         HStack {
-            Text("Important ↑")
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
+            Text(s.importantLabel).font(.system(size: 10)).foregroundColor(.secondary)
             Spacer()
-            Text("↓ Not Important")
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
+            Text(s.notImportantLabel).font(.system(size: 10)).foregroundColor(.secondary)
         }
     }
 }
 
 #Preview {
-    MatrixView()
-        .environmentObject(TaskStore())
+    MatrixView().environmentObject(TaskStore())
 }

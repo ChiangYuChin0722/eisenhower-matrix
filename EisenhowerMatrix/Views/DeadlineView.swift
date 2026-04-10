@@ -2,13 +2,13 @@ import SwiftUI
 
 struct DeadlineView: View {
     @EnvironmentObject var taskStore: TaskStore
+    @AppStorage("appLanguage") private var lang: String = "en"
     @State private var editingTask: EisTask? = nil
     @State private var showAddTask   = false
     @State private var showCompleted = false
 
     private let cal = Calendar.current
-
-    // MARK: - Deadline groups
+    private var s: Str { Str(lang) }
 
     private var allDeadlineTasks: [EisTask] {
         let base = taskStore.tasksWithDeadlines
@@ -36,14 +36,8 @@ struct DeadlineView: View {
         return allDeadlineTasks.filter { $0.dueDate! > end }
     }
 
-    private var startOfToday: Date {
-        cal.startOfDay(for: Date())
-    }
-    private var startOfTomorrow: Date {
-        cal.date(byAdding: .day, value: 1, to: startOfToday)!
-    }
-
-    // MARK: - Body
+    private var startOfToday: Date    { cal.startOfDay(for: Date()) }
+    private var startOfTomorrow: Date { cal.date(byAdding: .day, value: 1, to: startOfToday)! }
 
     var body: some View {
         NavigationView {
@@ -54,13 +48,13 @@ struct DeadlineView: View {
                     deadlineList
                 }
             }
-            .navigationTitle("Deadlines")
+            .navigationTitle(s.tabDeadlines)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         withAnimation { showCompleted.toggle() }
                     } label: {
-                        Label(showCompleted ? "Hide Done" : "Show Done",
+                        Label(showCompleted ? s.hideDoneTitle : s.showDoneTitle,
                               systemImage: showCompleted ? "eye.slash" : "eye")
                         .font(.caption)
                     }
@@ -80,46 +74,42 @@ struct DeadlineView: View {
         }
     }
 
-    // MARK: - Empty state
-
     private var emptyState: some View {
         VStack(spacing: 16) {
             Image(systemName: "clock.badge.checkmark")
                 .font(.system(size: 56))
                 .foregroundColor(.secondary.opacity(0.3))
-            Text("No deadlines")
+            Text(s.noDeadlines)
                 .font(.title3).fontWeight(.medium)
-            Text("Add due dates to tasks to track\nthem here.")
+            Text(s.noDeadlinesSub)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
-            Button("Add Task with Deadline") { showAddTask = true }
+            Button(s.addWithDeadline) { showAddTask = true }
                 .buttonStyle(.borderedProminent)
         }
         .padding()
     }
 
-    // MARK: - Deadline list
-
     private var deadlineList: some View {
         List {
             if !overdue.isEmpty {
-                deadlineSection("Overdue", tasks: overdue, color: .red, icon: "exclamationmark.circle.fill")
+                deadlineSection(s.overdue, tasks: overdue,   color: .red,      icon: "exclamationmark.circle.fill")
             }
             if !today.isEmpty {
-                deadlineSection("Today", tasks: today, color: .orange, icon: "sun.max.fill")
+                deadlineSection(s.today,   tasks: today,     color: .orange,   icon: "sun.max.fill")
             }
             if !tomorrow.isEmpty {
-                deadlineSection("Tomorrow", tasks: tomorrow, color: .yellow, icon: "sunrise.fill")
+                deadlineSection(s.tomorrow,tasks: tomorrow,  color: .yellow,   icon: "sunrise.fill")
             }
             if !thisWeek.isEmpty {
-                deadlineSection("This Week", tasks: thisWeek, color: .blue, icon: "calendar.badge.clock")
+                deadlineSection(s.thisWeek,tasks: thisWeek,  color: .blue,     icon: "calendar.badge.clock")
             }
             if !later.isEmpty {
-                deadlineSection("Later", tasks: later, color: .secondary, icon: "calendar")
+                deadlineSection(s.later,   tasks: later,     color: .secondary,icon: "calendar")
             }
             if allDeadlineTasks.isEmpty && showCompleted {
-                Text("All tasks completed!")
+                Text(s.allDoneMsg)
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding()
@@ -130,10 +120,7 @@ struct DeadlineView: View {
     }
 
     private func deadlineSection(
-        _ title: String,
-        tasks: [EisTask],
-        color: Color,
-        icon: String
+        _ title: String, tasks: [EisTask], color: Color, icon: String
     ) -> some View {
         Section {
             ForEach(tasks) { task in
@@ -142,7 +129,7 @@ struct DeadlineView: View {
                         Button {
                             taskStore.toggleCompletion(id: task.id)
                         } label: {
-                            Label(task.isCompleted ? "Undo" : "Done",
+                            Label(task.isCompleted ? s.undo : s.done,
                                   systemImage: task.isCompleted ? "arrow.uturn.backward" : "checkmark")
                         }
                         .tint(.green)
@@ -151,10 +138,10 @@ struct DeadlineView: View {
                         Button(role: .destructive) {
                             taskStore.deleteTask(id: task.id)
                         } label: {
-                            Label("Delete", systemImage: "trash")
+                            Label(s.delete, systemImage: "trash")
                         }
                         Button { editingTask = task } label: {
-                            Label("Edit", systemImage: "pencil")
+                            Label(s.edit, systemImage: "pencil")
                         }
                         .tint(.blue)
                     }
@@ -170,11 +157,8 @@ struct DeadlineView: View {
         }
     }
 
-    // MARK: - Row
-
     private func deadlineRow(_ task: EisTask) -> some View {
         HStack(spacing: 12) {
-            // Quadrant color dot
             Circle()
                 .fill(task.isCompleted ? Color.secondary.opacity(0.4) : task.quadrant.color)
                 .frame(width: 10, height: 10)
@@ -193,14 +177,12 @@ struct DeadlineView: View {
                             .foregroundColor(deadlineColor(due, completed: task.isCompleted))
                         if !cal.isDateInToday(due) && !cal.isDateInTomorrow(due) {
                             Text(due, style: .date)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .font(.caption).foregroundColor(.secondary)
                         }
                         let timeComps = cal.dateComponents([.hour, .minute], from: due)
                         if (timeComps.hour ?? 0) != 0 || (timeComps.minute ?? 0) != 0 {
                             Text(due, style: .time)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .font(.caption).foregroundColor(.secondary)
                         }
                     }
                 }
@@ -208,8 +190,7 @@ struct DeadlineView: View {
 
             Spacer()
 
-            // Quadrant label badge
-            Text(task.quadrant.title)
+            Text(s.quadrantTitle(task.quadrant))
                 .font(.caption2)
                 .foregroundColor(task.quadrant.color)
                 .padding(.horizontal, 6).padding(.vertical, 2)
@@ -220,14 +201,12 @@ struct DeadlineView: View {
         .onTapGesture { editingTask = task }
     }
 
-    // MARK: - Helpers
-
     private func deadlineLabel(_ date: Date) -> String {
-        if date < startOfToday && !cal.isDateInToday(date) { return "Overdue" }
-        if cal.isDateInToday(date)     { return "Today" }
-        if cal.isDateInTomorrow(date)  { return "Tomorrow" }
+        if date < startOfToday && !cal.isDateInToday(date) { return s.overdue }
+        if cal.isDateInToday(date)    { return s.today }
+        if cal.isDateInTomorrow(date) { return s.tomorrow }
         let days = cal.dateComponents([.day], from: startOfToday, to: date).day ?? 0
-        return "In \(days) days"
+        return s.inDays(days)
     }
 
     private func deadlineColor(_ date: Date, completed: Bool) -> Color {

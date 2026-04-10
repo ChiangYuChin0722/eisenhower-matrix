@@ -2,22 +2,22 @@ import SwiftUI
 
 struct ChecklistView: View {
     @EnvironmentObject var taskStore: TaskStore
-    @State private var showAddTask       = false
+    @AppStorage("appLanguage") private var lang: String = "en"
+    @State private var showAddTask           = false
     @State private var editingTask: EisTask? = nil
-    @State private var showCompleted     = false
-    @State private var newItemTitle      = ""
-    @State private var selectedCategoryId: UUID? = nil   // nil = All
-    @State private var showAddCategory   = false
-    @State private var newCategoryName   = ""
-    @State private var newCategoryIcon   = "list.bullet"
+    @State private var showCompleted         = false
+    @State private var newItemTitle          = ""
+    @State private var selectedCategoryId: UUID? = nil
+    @State private var showAddCategory       = false
+    @State private var newCategoryName       = ""
+    @State private var newCategoryIcon       = "list.bullet"
     @FocusState private var quickAddFocused: Bool
 
-    // Category being displayed (nil = all)
-    private var activeCategoryId: UUID? { selectedCategoryId }
+    private var s: Str { Str(lang) }
 
     private var displayedTasks: [EisTask] {
         var base = taskStore.checklistTasks
-        if let catId = activeCategoryId {
+        if let catId = selectedCategoryId {
             base = base.filter { $0.checklistCategoryId == catId }
         }
         if !showCompleted { base = base.filter { !$0.isCompleted } }
@@ -27,18 +27,13 @@ struct ChecklistView: View {
         }
     }
 
-    private var completedCount: Int {
-        let base = activeCategoryId == nil
+    private var filteredBase: [EisTask] {
+        selectedCategoryId == nil
             ? taskStore.checklistTasks
-            : taskStore.checklistTasks.filter { $0.checklistCategoryId == activeCategoryId }
-        return base.filter { $0.isCompleted }.count
+            : taskStore.checklistTasks.filter { $0.checklistCategoryId == selectedCategoryId }
     }
-    private var totalCount: Int {
-        let base = activeCategoryId == nil
-            ? taskStore.checklistTasks
-            : taskStore.checklistTasks.filter { $0.checklistCategoryId == activeCategoryId }
-        return base.count
-    }
+    private var completedCount: Int { filteredBase.filter { $0.isCompleted }.count }
+    private var totalCount: Int     { filteredBase.count }
     private var progress: Double {
         guard totalCount > 0 else { return 0 }
         return Double(completedCount) / Double(totalCount)
@@ -49,13 +44,11 @@ struct ChecklistView: View {
             VStack(spacing: 0) {
                 categoryPicker
 
-                if totalCount > 0 {
-                    progressBar
-                }
+                if totalCount > 0 { progressBar }
 
                 if taskStore.checklistTasks.isEmpty {
                     emptyState
-                } else if displayedTasks.isEmpty && !taskStore.checklistTasks.isEmpty {
+                } else if displayedTasks.isEmpty {
                     emptyCategory
                 } else {
                     taskList
@@ -63,15 +56,14 @@ struct ChecklistView: View {
 
                 quickAddBar
             }
-            .navigationTitle("Checklist")
+            .navigationTitle(s.tabChecklist)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         withAnimation { showCompleted.toggle() }
                     } label: {
                         Image(systemName: showCompleted ? "eye.slash" : "eye")
-                        Text(showCompleted ? "Hide done" : "Show done")
-                            .font(.caption)
+                        Text(showCompleted ? s.hideDone : s.showDone).font(.caption)
                     }
                     .foregroundColor(.secondary)
                 }
@@ -83,14 +75,10 @@ struct ChecklistView: View {
             }
             .sheet(isPresented: $showAddTask) {
                 AddTaskView(defaultQuadrant: .doFirst, forceChecklist: true,
-                            defaultCategoryId: activeCategoryId)
+                            defaultCategoryId: selectedCategoryId)
             }
-            .sheet(item: $editingTask) { task in
-                AddTaskView(editingTask: task)
-            }
-            .sheet(isPresented: $showAddCategory) {
-                addCategorySheet
-            }
+            .sheet(item: $editingTask) { task in AddTaskView(editingTask: task) }
+            .sheet(isPresented: $showAddCategory) { addCategorySheet }
         }
     }
 
@@ -99,8 +87,7 @@ struct ChecklistView: View {
     private var categoryPicker: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                // "All" chip
-                categoryChip(id: nil, name: "All", icon: "tray.full")
+                categoryChip(id: nil, name: s.allCategory, icon: "tray.full")
 
                 ForEach(taskStore.checklistCategories) { cat in
                     categoryChip(id: cat.id, name: cat.name, icon: cat.icon)
@@ -109,12 +96,11 @@ struct ChecklistView: View {
                                 taskStore.deleteCategory(id: cat.id)
                                 if selectedCategoryId == cat.id { selectedCategoryId = nil }
                             } label: {
-                                Label("Delete \"\(cat.name)\"", systemImage: "trash")
+                                Label("\(s.delete) \"\(cat.name)\"", systemImage: "trash")
                             }
                         }
                 }
 
-                // Add category button
                 Button {
                     newCategoryName = ""
                     newCategoryIcon = "list.bullet"
@@ -122,7 +108,7 @@ struct ChecklistView: View {
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "plus")
-                        Text("New List")
+                        Text(s.newList)
                     }
                     .font(.caption).fontWeight(.medium)
                     .padding(.horizontal, 12).padding(.vertical, 6)
@@ -140,9 +126,7 @@ struct ChecklistView: View {
     private func categoryChip(id: UUID?, name: String, icon: String) -> some View {
         let isSelected = selectedCategoryId == id
         return Button {
-            withAnimation(.easeInOut(duration: 0.15)) {
-                selectedCategoryId = id
-            }
+            withAnimation(.easeInOut(duration: 0.15)) { selectedCategoryId = id }
         } label: {
             HStack(spacing: 4) {
                 Image(systemName: icon).font(.caption2)
@@ -160,21 +144,19 @@ struct ChecklistView: View {
 
     private var addCategorySheet: some View {
         let iconOptions = [
-            "list.bullet", "cart", "briefcase", "house", "heart",
-            "book", "dumbbell", "fork.knife", "car", "airplane",
-            "gift", "star", "music.note", "gamecontroller", "camera"
+            "list.bullet","cart","briefcase","house","heart",
+            "book","dumbbell","fork.knife","car","airplane",
+            "gift","star","music.note","gamecontroller","camera"
         ]
         return NavigationView {
             Form {
-                Section("List Name") {
-                    TextField("e.g. Groceries", text: $newCategoryName)
+                Section(s.listNameLabel) {
+                    TextField(s.egGroceries, text: $newCategoryName)
                 }
-                Section("Icon") {
+                Section(s.iconLabel) {
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 12) {
                         ForEach(iconOptions, id: \.self) { icon in
-                            Button {
-                                newCategoryIcon = icon
-                            } label: {
+                            Button { newCategoryIcon = icon } label: {
                                 ZStack {
                                     Circle()
                                         .fill(newCategoryIcon == icon ? Color.blue : Color.secondary.opacity(0.1))
@@ -189,16 +171,18 @@ struct ChecklistView: View {
                     .padding(.vertical, 4)
                 }
             }
-            .navigationTitle("New List")
+            .navigationTitle(s.newList)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { showAddCategory = false }
+                    Button(s.cancel) { showAddCategory = false }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Add") {
-                        let cat = ChecklistCategory(name: newCategoryName.trimmingCharacters(in: .whitespaces),
-                                                    icon: newCategoryIcon)
+                    Button(s.add) {
+                        let cat = ChecklistCategory(
+                            name: newCategoryName.trimmingCharacters(in: .whitespaces),
+                            icon: newCategoryIcon
+                        )
                         taskStore.addCategory(cat)
                         selectedCategoryId = cat.id
                         showAddCategory = false
@@ -216,23 +200,17 @@ struct ChecklistView: View {
         VStack(spacing: 0) {
             VStack(spacing: 6) {
                 HStack {
-                    Text("\(completedCount) / \(totalCount) done")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    Text("\(completedCount) / \(totalCount) \(s.done.lowercased())")
+                        .font(.caption).foregroundColor(.secondary)
                     Spacer()
                     Text("\(Int(progress * 100))%")
-                        .font(.caption).fontWeight(.semibold)
-                        .foregroundColor(.blue)
+                        .font(.caption).fontWeight(.semibold).foregroundColor(.blue)
                 }
                 .padding(.horizontal, 16)
-
-                ProgressView(value: progress)
-                    .tint(.blue)
-                    .padding(.horizontal, 16)
+                ProgressView(value: progress).tint(.blue).padding(.horizontal, 16)
             }
             .padding(.vertical, 10)
             .background(Color(uiColor: .systemBackground))
-
             Divider()
         }
     }
@@ -249,19 +227,17 @@ struct ChecklistView: View {
                         Button {
                             withAnimation { taskStore.toggleCompletion(id: task.id) }
                         } label: {
-                            Label(task.isCompleted ? "Undo" : "Done",
+                            Label(task.isCompleted ? s.undo : s.done,
                                   systemImage: task.isCompleted ? "arrow.uturn.backward" : "checkmark")
                         }
                         .tint(.green)
                     }
                     .swipeActions(edge: .trailing) {
-                        Button(role: .destructive) {
-                            taskStore.deleteTask(id: task.id)
-                        } label: {
-                            Label("Delete", systemImage: "trash")
+                        Button(role: .destructive) { taskStore.deleteTask(id: task.id) } label: {
+                            Label(s.delete, systemImage: "trash")
                         }
                         Button { editingTask = task } label: {
-                            Label("Edit", systemImage: "pencil")
+                            Label(s.edit, systemImage: "pencil")
                         }
                         .tint(.blue)
                     }
@@ -281,18 +257,14 @@ struct ChecklistView: View {
     private func checklistRow(_ task: EisTask) -> some View {
         HStack(spacing: 14) {
             Button {
-                withAnimation(.spring(response: 0.25)) {
-                    taskStore.toggleCompletion(id: task.id)
-                }
+                withAnimation(.spring(response: 0.25)) { taskStore.toggleCompletion(id: task.id) }
             } label: {
                 ZStack {
                     Circle()
                         .stroke(task.isCompleted ? task.quadrant.color : Color.gray.opacity(0.35), lineWidth: 1.5)
                         .frame(width: 24, height: 24)
                     if task.isCompleted {
-                        Circle()
-                            .fill(task.quadrant.color.opacity(0.15))
-                            .frame(width: 24, height: 24)
+                        Circle().fill(task.quadrant.color.opacity(0.15)).frame(width: 24, height: 24)
                         Image(systemName: "checkmark")
                             .font(.system(size: 11, weight: .bold))
                             .foregroundColor(task.quadrant.color)
@@ -309,22 +281,18 @@ struct ChecklistView: View {
                     .animation(.easeInOut(duration: 0.2), value: task.isCompleted)
 
                 HStack(spacing: 8) {
-                    Text(task.quadrant.emoji + " " + task.quadrant.title)
+                    Text(task.quadrant.emoji + " " + s.quadrantTitle(task.quadrant))
                         .font(.caption2)
                         .foregroundColor(task.quadrant.color.opacity(0.8))
 
                     if task.recurrence != .none {
                         Text("·").foregroundColor(.secondary)
-                        Image(systemName: task.recurrence.icon)
-                            .font(.caption2)
-                            .foregroundColor(.blue)
+                        Image(systemName: task.recurrence.icon).font(.caption2).foregroundColor(.blue)
                     }
 
                     if let due = task.dueDate {
                         Text("·").foregroundColor(.secondary)
-                        Image(systemName: "calendar")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
+                        Image(systemName: "calendar").font(.caption2).foregroundColor(.secondary)
                         Text(due, style: .date)
                             .font(.caption2)
                             .foregroundColor(due < Date() && !task.isCompleted ? .red : .secondary)
@@ -332,9 +300,7 @@ struct ChecklistView: View {
 
                     if !task.notes.isEmpty {
                         Text("·").foregroundColor(.secondary)
-                        Image(systemName: "note.text")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
+                        Image(systemName: "note.text").font(.caption2).foregroundColor(.secondary)
                     }
                 }
             }
@@ -342,9 +308,7 @@ struct ChecklistView: View {
             Spacer()
 
             if task.colorTag != .none {
-                Circle()
-                    .fill(task.colorTag.color)
-                    .frame(width: 8, height: 8)
+                Circle().fill(task.colorTag.color).frame(width: 8, height: 8)
             }
         }
         .padding(.vertical, 11)
@@ -359,20 +323,14 @@ struct ChecklistView: View {
         VStack(spacing: 0) {
             Divider()
             HStack(spacing: 12) {
-                Image(systemName: "plus.circle.fill")
-                    .foregroundColor(.blue)
-                    .font(.title3)
-
-                TextField("Quick add item…", text: $newItemTitle)
+                Image(systemName: "plus.circle.fill").foregroundColor(.blue).font(.title3)
+                TextField(s.quickAddPlaceholder, text: $newItemTitle)
                     .focused($quickAddFocused)
                     .submitLabel(.done)
                     .onSubmit { commitQuickAdd() }
-
                 if !newItemTitle.isEmpty {
                     Button(action: commitQuickAdd) {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.title3)
-                            .foregroundColor(.blue)
+                        Image(systemName: "arrow.up.circle.fill").font(.title3).foregroundColor(.blue)
                     }
                 }
             }
@@ -386,7 +344,7 @@ struct ChecklistView: View {
         let t = newItemTitle.trimmingCharacters(in: .whitespaces)
         guard !t.isEmpty else { return }
         taskStore.addTask(EisTask(title: t, quadrant: .doFirst, isInChecklist: true,
-                                  checklistCategoryId: activeCategoryId ?? taskStore.checklistCategories.first?.id))
+                                  checklistCategoryId: selectedCategoryId ?? taskStore.checklistCategories.first?.id))
         newItemTitle = ""
     }
 
@@ -395,29 +353,19 @@ struct ChecklistView: View {
     private var emptyState: some View {
         VStack(spacing: 16) {
             Spacer()
-            Image(systemName: "checklist")
-                .font(.system(size: 52))
-                .foregroundColor(.secondary.opacity(0.25))
-            Text("Your checklist is empty")
-                .font(.title3).fontWeight(.medium)
-            Text("Type below to quickly add an item,\nor tap + to add a full task.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
+            Image(systemName: "checklist").font(.system(size: 52)).foregroundColor(.secondary.opacity(0.25))
+            Text(s.emptyChecklistTitle).font(.title3).fontWeight(.medium)
+            Text(s.emptyChecklistSub).font(.subheadline).foregroundColor(.secondary).multilineTextAlignment(.center)
             Spacer()
         }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding().frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var emptyCategory: some View {
         VStack(spacing: 14) {
             Spacer()
-            Image(systemName: "tray")
-                .font(.system(size: 44))
-                .foregroundColor(.secondary.opacity(0.3))
-            Text("No items in this list")
-                .font(.subheadline).foregroundColor(.secondary)
+            Image(systemName: "tray").font(.system(size: 44)).foregroundColor(.secondary.opacity(0.3))
+            Text(s.emptyCategoryMsg).font(.subheadline).foregroundColor(.secondary)
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
