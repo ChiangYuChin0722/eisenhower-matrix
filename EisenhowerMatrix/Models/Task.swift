@@ -118,6 +118,9 @@ struct EisTask: Identifiable, Codable, Equatable {
     var canvasX: Double
     var canvasY: Double
 
+    var completedSubtaskCount: Int { subtasks.filter { $0.isCompleted }.count }
+    var totalSubtaskCount: Int     { subtasks.count }
+
     init(
         title: String,
         quadrant: Quadrant,
