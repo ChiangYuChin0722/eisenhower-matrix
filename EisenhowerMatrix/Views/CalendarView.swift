@@ -212,7 +212,7 @@ struct CalendarView: View {
                     .font(.subheadline)
                     .strikethrough(task.isCompleted)
                     .foregroundColor(task.isCompleted ? .secondary : .primary)
-                if let due = task.dueDate, !cal.dateComponents([.hour, .minute], from: due).hour.map({ $0 == 0 }) ?? false {
+                if let due = task.dueDate, (cal.component(.hour, from: due) != 0 || cal.component(.minute, from: due) != 0) {
                     Text(due, style: .time)
                         .font(.caption).foregroundColor(.secondary)
                 }
