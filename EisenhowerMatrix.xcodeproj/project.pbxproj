@@ -1,0 +1,401 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AAAA020000000001 /* EisenhowerMatrixApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000001 /* EisenhowerMatrixApp.swift */; };
+		AAAA020000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000002 /* ContentView.swift */; };
+		AAAA020000000003 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000003 /* Task.swift */; };
+		AAAA020000000004 /* TaskStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000004 /* TaskStore.swift */; };
+		AAAA020000000005 /* MatrixView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000005 /* MatrixView.swift */; };
+		AAAA020000000006 /* QuadrantSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000006 /* QuadrantSectionView.swift */; };
+		AAAA020000000007 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000007 /* DashboardView.swift */; };
+		AAAA020000000008 /* TreeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000008 /* TreeView.swift */; };
+		AAAA020000000009 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000009 /* CalendarView.swift */; };
+		AAAA02000000000A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA01000000000A /* SettingsView.swift */; };
+		AAAA02000000000B /* AddTaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA01000000000B /* AddTaskView.swift */; };
+		AAAA02000000000C /* TaskRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA01000000000C /* TaskRowView.swift */; };
+		AAAA02000000000D /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA01000000000D /* ChatView.swift */; };
+		AAAA02000000000E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAAA01000000000E /* Assets.xcassets */; };
+		AAAA02000000000F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAAA01000000000F /* Preview Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AAAA010000000001 /* EisenhowerMatrixApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EisenhowerMatrixApp.swift; sourceTree = "<group>"; };
+		AAAA010000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AAAA010000000003 /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
+		AAAA010000000004 /* TaskStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskStore.swift; sourceTree = "<group>"; };
+		AAAA010000000005 /* MatrixView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixView.swift; sourceTree = "<group>"; };
+		AAAA010000000006 /* QuadrantSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuadrantSectionView.swift; sourceTree = "<group>"; };
+		AAAA010000000007 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		AAAA010000000008 /* TreeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreeView.swift; sourceTree = "<group>"; };
+		AAAA010000000009 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
+		AAAA01000000000A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AAAA01000000000B /* AddTaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTaskView.swift; sourceTree = "<group>"; };
+		AAAA01000000000C /* TaskRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRowView.swift; sourceTree = "<group>"; };
+		AAAA01000000000D /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		AAAA01000000000E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AAAA01000000000F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		AAAA010000000010 /* EisenhowerMatrix.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EisenhowerMatrix.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AAAA000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AAAA030000000001 /* root */ = {
+			isa = PBXGroup;
+			children = (
+				AAAA030000000002 /* EisenhowerMatrix */,
+				AAAA030000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AAAA030000000002 /* EisenhowerMatrix */ = {
+			isa = PBXGroup;
+			children = (
+				AAAA010000000001 /* EisenhowerMatrixApp.swift */,
+				AAAA010000000002 /* ContentView.swift */,
+				AAAA030000000004 /* Models */,
+				AAAA030000000005 /* Views */,
+				AAAA01000000000E /* Assets.xcassets */,
+				AAAA030000000006 /* Preview Content */,
+			);
+			path = EisenhowerMatrix;
+			sourceTree = "<group>";
+		};
+		AAAA030000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AAAA010000000010 /* EisenhowerMatrix.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AAAA030000000004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AAAA010000000003 /* Task.swift */,
+				AAAA010000000004 /* TaskStore.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AAAA030000000005 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				AAAA010000000005 /* MatrixView.swift */,
+				AAAA010000000006 /* QuadrantSectionView.swift */,
+				AAAA010000000007 /* DashboardView.swift */,
+				AAAA010000000008 /* TreeView.swift */,
+				AAAA010000000009 /* CalendarView.swift */,
+				AAAA01000000000A /* SettingsView.swift */,
+				AAAA01000000000B /* AddTaskView.swift */,
+				AAAA01000000000C /* TaskRowView.swift */,
+				AAAA01000000000D /* ChatView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AAAA030000000006 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				AAAA01000000000F /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AAAA040000000001 /* EisenhowerMatrix */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AAAA050000000002 /* Build configuration list for PBXNativeTarget "EisenhowerMatrix" */;
+			buildPhases = (
+				AAAA000000000002 /* Sources */,
+				AAAA000000000003 /* Resources */,
+				AAAA000000000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = EisenhowerMatrix;
+			productName = EisenhowerMatrix;
+			productReference = AAAA010000000010 /* EisenhowerMatrix.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AAAA060000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					AAAA040000000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = AAAA050000000001 /* Build configuration list for PBXProject "EisenhowerMatrix" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AAAA030000000001;
+			productRefGroup = AAAA030000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AAAA040000000001 /* EisenhowerMatrix */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AAAA000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AAAA02000000000E /* Assets.xcassets in Resources */,
+				AAAA02000000000F /* Preview Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AAAA000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AAAA020000000001 /* EisenhowerMatrixApp.swift in Sources */,
+				AAAA020000000002 /* ContentView.swift in Sources */,
+				AAAA020000000003 /* Task.swift in Sources */,
+				AAAA020000000004 /* TaskStore.swift in Sources */,
+				AAAA020000000005 /* MatrixView.swift in Sources */,
+				AAAA020000000006 /* QuadrantSectionView.swift in Sources */,
+				AAAA020000000007 /* DashboardView.swift in Sources */,
+				AAAA020000000008 /* TreeView.swift in Sources */,
+				AAAA020000000009 /* CalendarView.swift in Sources */,
+				AAAA02000000000A /* SettingsView.swift in Sources */,
+				AAAA02000000000B /* AddTaskView.swift in Sources */,
+				AAAA02000000000C /* TaskRowView.swift in Sources */,
+				AAAA02000000000D /* ChatView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AAAA070000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_CYCLE = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AAAA070000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_CYCLE = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		AAAA070000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"EisenhowerMatrix/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.EisenhowerMatrix;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AAAA070000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"EisenhowerMatrix/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.EisenhowerMatrix;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AAAA050000000001 /* Build configuration list for PBXProject "EisenhowerMatrix" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AAAA070000000001 /* Debug */,
+				AAAA070000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AAAA050000000002 /* Build configuration list for PBXNativeTarget "EisenhowerMatrix" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AAAA070000000003 /* Debug */,
+				AAAA070000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = AAAA060000000001 /* Project object */;
+}
