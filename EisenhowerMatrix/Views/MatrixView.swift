@@ -19,7 +19,7 @@ struct MatrixView: View {
     private var s: Str { Str(lang) }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 axisHeader
                     .padding(.horizontal, 8)
