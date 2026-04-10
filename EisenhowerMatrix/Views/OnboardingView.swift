@@ -139,7 +139,7 @@ struct OnboardingView: View {
     private func quadrantCell(_ q: Quadrant) -> some View {
         let color = q.color(theme: "classic")
         return VStack(spacing: 6) {
-            Text(q.emoji).font(.title2)
+            Circle().fill(color).frame(width: 16, height: 16)
             Text(s.quadrantTitle(q))
                 .font(.caption).fontWeight(.semibold)
                 .foregroundColor(color)

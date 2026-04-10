@@ -11,6 +11,7 @@ struct MatrixTheme: Identifiable {
     let schedule: Color
     let delegateQ: Color   // 'delegate' is a Swift keyword
     let eliminate: Color
+    let accentId: String   // drives app-wide accent when theme is chosen
 
     func color(for quadrant: Quadrant) -> Color {
         switch quadrant {
@@ -30,43 +31,50 @@ let matrixThemes: [MatrixTheme] = [
         doFirst:  Color(red: 0.85, green: 0.22, blue: 0.22),
         schedule: Color(red: 0.20, green: 0.44, blue: 0.85),
         delegateQ:Color(red: 0.92, green: 0.55, blue: 0.14),
-        eliminate:Color(red: 0.36, green: 0.36, blue: 0.38)),
+        eliminate:Color(red: 0.36, green: 0.36, blue: 0.38),
+        accentId: "red"),
 
     MatrixTheme(id: "ocean",    nameEN: "Ocean",    nameZH: "海洋",
         doFirst:  Color(red: 0.00, green: 0.50, blue: 0.70),
         schedule: Color(red: 0.10, green: 0.32, blue: 0.78),
         delegateQ:Color(red: 0.00, green: 0.68, blue: 0.78),
-        eliminate:Color(red: 0.35, green: 0.48, blue: 0.58)),
+        eliminate:Color(red: 0.35, green: 0.48, blue: 0.58),
+        accentId: "teal"),
 
     MatrixTheme(id: "forest",   nameEN: "Forest",   nameZH: "森林",
         doFirst:  Color(red: 0.12, green: 0.52, blue: 0.18),
         schedule: Color(red: 0.08, green: 0.38, blue: 0.12),
         delegateQ:Color(red: 0.55, green: 0.70, blue: 0.18),
-        eliminate:Color(red: 0.42, green: 0.50, blue: 0.35)),
+        eliminate:Color(red: 0.42, green: 0.50, blue: 0.35),
+        accentId: "green"),
 
     MatrixTheme(id: "sunset",   nameEN: "Sunset",   nameZH: "夕陽",
         doFirst:  Color(red: 0.90, green: 0.22, blue: 0.18),
         schedule: Color(red: 0.62, green: 0.18, blue: 0.68),
         delegateQ:Color(red: 0.96, green: 0.56, blue: 0.10),
-        eliminate:Color(red: 0.54, green: 0.34, blue: 0.28)),
+        eliminate:Color(red: 0.54, green: 0.34, blue: 0.28),
+        accentId: "orange"),
 
     MatrixTheme(id: "pastel",   nameEN: "Pastel",   nameZH: "粉彩",
         doFirst:  Color(red: 0.94, green: 0.48, blue: 0.52),
         schedule: Color(red: 0.50, green: 0.68, blue: 0.96),
         delegateQ:Color(red: 0.98, green: 0.76, blue: 0.44),
-        eliminate:Color(red: 0.68, green: 0.68, blue: 0.74)),
+        eliminate:Color(red: 0.68, green: 0.68, blue: 0.74),
+        accentId: "pink"),
 
     MatrixTheme(id: "candy",    nameEN: "Candy",    nameZH: "糖果",
         doFirst:  Color(red: 0.96, green: 0.18, blue: 0.58),
         schedule: Color(red: 0.22, green: 0.50, blue: 0.96),
         delegateQ:Color(red: 0.20, green: 0.82, blue: 0.50),
-        eliminate:Color(red: 0.65, green: 0.30, blue: 0.90)),
+        eliminate:Color(red: 0.65, green: 0.30, blue: 0.90),
+        accentId: "purple"),
 
     MatrixTheme(id: "mono",     nameEN: "Mono",     nameZH: "單色",
         doFirst:  Color(red: 0.12, green: 0.12, blue: 0.12),
         schedule: Color(red: 0.33, green: 0.33, blue: 0.33),
         delegateQ:Color(red: 0.54, green: 0.54, blue: 0.54),
-        eliminate:Color(red: 0.70, green: 0.70, blue: 0.70)),
+        eliminate:Color(red: 0.70, green: 0.70, blue: 0.70),
+        accentId: "blue"),
 ]
 
 extension Quadrant {
@@ -156,6 +164,7 @@ struct Str {
 
     // MARK: - CalendarView
     var monthMode:       String { zh ? "月" : "Month" }
+    var weekMode:        String { zh ? "週" : "Week" }
     var dayMode:         String { zh ? "日" : "Day" }
     var allDay:          String { zh ? "全天" : "All Day" }
     var timeline:        String { zh ? "時間軸" : "Timeline" }

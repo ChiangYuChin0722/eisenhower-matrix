@@ -15,6 +15,7 @@ struct CalendarView: View {
 
     enum ViewMode: String, CaseIterable {
         case month = "Month"
+        case week  = "Week"
         case day   = "Day"
     }
 
@@ -34,6 +35,7 @@ struct CalendarView: View {
                 // Mode toggle
                 Picker("", selection: $viewMode) {
                     Text(s.monthMode).tag(ViewMode.month)
+                    Text(s.weekMode).tag(ViewMode.week)
                     Text(s.dayMode).tag(ViewMode.day)
                 }
                 .pickerStyle(.segmented)
@@ -42,6 +44,8 @@ struct CalendarView: View {
 
                 if viewMode == .month {
                     monthView
+                } else if viewMode == .week {
+                    weekView
                 } else {
                     dayTimelineView
                 }
@@ -240,6 +244,99 @@ struct CalendarView: View {
         .background(Color(uiColor: .systemBackground))
         .contentShape(Rectangle())
         .onTapGesture { editingTask = task }
+    }
+
+    // MARK: - Week View
+
+    private var weekView: some View {
+        VStack(spacing: 0) {
+            weekNavHeader
+            weekStrip
+                .padding(.horizontal, 6)
+                .padding(.bottom, 8)
+            Divider()
+            dayTaskSection
+        }
+    }
+
+    private var weekNavHeader: some View {
+        HStack {
+            Button { moveWeek(-1) } label: {
+                Image(systemName: "chevron.left").frame(width: 36, height: 36)
+            }
+            Spacer()
+            Text(weekRangeTitle).font(.headline)
+            Spacer()
+            Button { moveWeek(1) } label: {
+                Image(systemName: "chevron.right").frame(width: 36, height: 36)
+            }
+        }
+        .padding(.horizontal, 8)
+    }
+
+    private var weekStrip: some View {
+        HStack(spacing: 0) {
+            ForEach(daysInWeek, id: \.self) { date in
+                weekDayCell(date)
+            }
+        }
+    }
+
+    private func weekDayCell(_ date: Date) -> some View {
+        let isToday    = cal.isDateInToday(date)
+        let isSelected = cal.isDate(date, inSameDayAs: selectedDate)
+        let hasTasks   = !taskStore.tasks(for: date).isEmpty
+
+        return Button { selectedDate = date } label: {
+            VStack(spacing: 4) {
+                Text(weekdayAbbr(date))
+                    .font(.system(size: 11))
+                    .foregroundColor(isSelected ? accent : .secondary)
+                ZStack {
+                    Circle()
+                        .fill(isSelected ? accent : (isToday ? accent.opacity(0.12) : .clear))
+                        .frame(width: 32, height: 32)
+                    Text("\(cal.component(.day, from: date))")
+                        .font(.system(size: 15, weight: isToday ? .bold : .regular))
+                        .foregroundColor(isSelected ? .white : (isToday ? accent : .primary))
+                }
+                Circle()
+                    .fill(hasTasks ? accent : .clear)
+                    .frame(width: 4, height: 4)
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func weekdayAbbr(_ date: Date) -> String {
+        let abbrs = weekdays  // reuses the existing weekdays property
+        let weekday = cal.component(.weekday, from: date) - 1
+        return abbrs[weekday]
+    }
+
+    private var daysInWeek: [Date] {
+        let weekday = cal.component(.weekday, from: selectedDate)
+        guard let start = cal.date(byAdding: .day, value: -(weekday - 1), to: selectedDate) else { return [] }
+        return (0..<7).compactMap { cal.date(byAdding: .day, value: $0, to: start) }
+    }
+
+    private func moveWeek(_ n: Int) {
+        if let d = cal.date(byAdding: .day, value: n * 7, to: selectedDate) {
+            selectedDate   = d
+            displayedMonth = d
+        }
+    }
+
+    private var weekRangeTitle: String {
+        let days = daysInWeek
+        guard let first = days.first, let last = days.last else { return "" }
+        let f = DateFormatter()
+        f.dateFormat = "MMM d"
+        let firstStr = f.string(from: first)
+        f.dateFormat = "d, yyyy"
+        let lastStr = f.string(from: last)
+        return "\(firstStr) – \(lastStr)"
     }
 
     // MARK: - Day Timeline View

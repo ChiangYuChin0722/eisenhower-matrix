@@ -134,7 +134,7 @@ struct DashboardView: View {
 
         return VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text(q.emoji)
+                Circle().fill(qColor(q)).frame(width: 10, height: 10)
                 Text(s.quadrantTitle(q))
                     .font(.subheadline).fontWeight(.semibold)
                     .foregroundColor(qColor(q))

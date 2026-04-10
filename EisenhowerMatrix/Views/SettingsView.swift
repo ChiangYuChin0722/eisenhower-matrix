@@ -85,13 +85,13 @@ struct SettingsView: View {
 
                 // MARK: About
                 Section(s.aboutSection) {
-                    InfoRow(icon: "🚀", title: s.quadrantTitle(.doFirst),
+                    InfoRow(icon: "bolt.fill",     color: .red,    title: s.quadrantTitle(.doFirst),
                             subtitle: s.quadrantSubtitle(.doFirst))
-                    InfoRow(icon: "🔥", title: s.quadrantTitle(.schedule),
+                    InfoRow(icon: "calendar",      color: .blue,   title: s.quadrantTitle(.schedule),
                             subtitle: s.quadrantSubtitle(.schedule))
-                    InfoRow(icon: "👥", title: s.quadrantTitle(.delegate),
+                    InfoRow(icon: "person.2.fill", color: .orange, title: s.quadrantTitle(.delegate),
                             subtitle: s.quadrantSubtitle(.delegate))
-                    InfoRow(icon: "🗂️", title: s.quadrantTitle(.eliminate),
+                    InfoRow(icon: "minus.circle",  color: .secondary, title: s.quadrantTitle(.eliminate),
                             subtitle: s.quadrantSubtitle(.eliminate))
                 }
 
@@ -142,7 +142,10 @@ struct SettingsView: View {
             HStack(spacing: 12) {
                 ForEach(matrixThemes) { theme in
                     Button {
-                        withAnimation(.easeInOut(duration: 0.15)) { matrixTheme = theme.id }
+                        withAnimation(.easeInOut(duration: 0.15)) {
+                            matrixTheme = theme.id
+                            appAccent   = theme.accentId
+                        }
                     } label: {
                         VStack(spacing: 6) {
                             // 2×2 colour swatch
@@ -237,12 +240,20 @@ struct SettingsView: View {
 
 struct InfoRow: View {
     let icon: String
+    let color: Color
     let title: String
     let subtitle: String
 
     var body: some View {
         HStack(spacing: 10) {
-            Text(icon).font(.title3)
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(color.opacity(0.12))
+                    .frame(width: 36, height: 36)
+                Image(systemName: icon)
+                    .font(.system(size: 16))
+                    .foregroundColor(color)
+            }
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.subheadline).fontWeight(.medium)
                 Text(subtitle).font(.caption).foregroundColor(.secondary)

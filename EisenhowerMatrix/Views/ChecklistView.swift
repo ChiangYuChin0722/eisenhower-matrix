@@ -265,7 +265,7 @@ struct ChecklistView: View {
     @ViewBuilder
     private func metaRow(_ task: EisTask) -> some View {
         HStack(spacing: 6) {
-            Text(task.quadrant.emoji + " " + s.quadrantTitle(task.quadrant))
+            Text(s.quadrantTitle(task.quadrant))
                 .font(.caption2)
                 .foregroundColor(qColor(task.quadrant).opacity(0.8))
 
@@ -539,7 +539,9 @@ private struct ChecklistQuickAddSheet: View {
                                 quadrant = q
                             } label: {
                                 HStack(spacing: 8) {
-                                    Text(q.emoji).font(.title3)
+                                    Circle()
+                                        .fill(qColor(q))
+                                        .frame(width: 10, height: 10)
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(s.quadrantTitle(q))
                                             .font(.caption).fontWeight(.semibold)

@@ -4,6 +4,8 @@ struct AddTaskView: View {
     @EnvironmentObject var taskStore: TaskStore
     @Environment(\.dismiss) var dismiss
     @AppStorage("appLanguage") private var lang: String = "en"
+    @AppStorage("matrixTheme") private var matrixTheme: String = "classic"
+    private func qColor(_ q: Quadrant) -> Color { q.color(theme: matrixTheme) }
 
     var editingTask: EisTask?       = nil
     var defaultQuadrant: Quadrant    = .doFirst
@@ -47,7 +49,11 @@ struct AddTaskView: View {
                                     Text(s.quadrantSubtitle(q))
                                         .font(.caption).foregroundColor(.secondary)
                                 }
-                            } icon: { Text(q.emoji) }
+                            } icon: {
+                                Circle()
+                                    .fill(qColor(q))
+                                    .frame(width: 12, height: 12)
+                            }
                             .tag(q)
                         }
                     }
