@@ -47,7 +47,7 @@ struct MatrixView: View {
                     .padding(.horizontal, 8)
                     .padding(.bottom, 4)
             }
-            .background(Color(uiColor: .systemGroupedBackground))
+            .background(Color.appBackground)
             .navigationTitle(s.matrixNavTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

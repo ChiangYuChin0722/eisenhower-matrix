@@ -121,6 +121,8 @@ struct SearchView: View {
                 }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.appBackground)
     }
 
     private func searchRow(_ task: EisTask) -> some View {

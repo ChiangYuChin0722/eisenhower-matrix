@@ -143,6 +143,8 @@ struct DeadlineView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .background(Color.appBackground)
     }
 
     private func deadlineSection(

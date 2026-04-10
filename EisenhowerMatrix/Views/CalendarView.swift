@@ -50,7 +50,7 @@ struct CalendarView: View {
                     dayTimelineView
                 }
             }
-            .background(Color(uiColor: .systemGroupedBackground))
+            .background(Color.appBackground)
             .navigationTitle(s.tabCalendar)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -200,7 +200,7 @@ struct CalendarView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(uiColor: .systemGroupedBackground))
+            .background(Color.appBackground)
         }
     }
 
@@ -417,7 +417,7 @@ struct CalendarView: View {
             .padding(.top, 4)
             .padding(.bottom, 8)
         }
-        .background(Color(uiColor: .systemGroupedBackground).opacity(0.5))
+        .background(Color.appBackground.opacity(0.5))
     }
 
     private func timelineHourRow(hour: Int, tasks: [EisTask]) -> some View {

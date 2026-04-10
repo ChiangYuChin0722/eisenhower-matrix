@@ -173,6 +173,8 @@ struct ChecklistView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .background(Color.appBackground)
         .environment(\.editMode, .constant(isReorderMode ? .active : .inactive))
     }
 
@@ -387,7 +389,7 @@ struct ChecklistView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
         }
-        .background(Color(uiColor: .systemGroupedBackground))
+        .background(Color.appBackground)
     }
 
     private func categoryChip(id: UUID?, name: String, icon: String) -> some View {
@@ -423,7 +425,7 @@ struct ChecklistView: View {
                 ProgressView(value: progress).tint(accent).padding(.horizontal, 16)
             }
             .padding(.vertical, 10)
-            .background(Color(uiColor: .systemGroupedBackground))
+            .background(Color.appBackground)
             Divider()
         }
     }
@@ -577,6 +579,8 @@ private struct ChecklistQuickAddSheet: View {
                     .listRowBackground(Color.clear)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Color.appBackground)
             .navigationTitle(s.addTask)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

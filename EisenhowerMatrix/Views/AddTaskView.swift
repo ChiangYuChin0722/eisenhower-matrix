@@ -132,6 +132,8 @@ struct AddTaskView: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Color.appBackground)
             .navigationTitle(isEditing ? s.editTaskTitle : s.newTaskTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
