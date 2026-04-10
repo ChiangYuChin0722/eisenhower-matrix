@@ -336,14 +336,14 @@ extension View {
 
 // MARK: - Previews
 
-#Preview("Small", as: .systemSmall) {
-    EisenhowerMatrixWidget()
-} timeline: {
-    EisenhowerEntry(date: .now, snapshot: .placeholder)
-}
-
-#Preview("Medium", as: .systemMedium) {
-    EisenhowerMatrixWidget()
-} timeline: {
-    EisenhowerEntry(date: .now, snapshot: .placeholder)
+struct EisenhowerWidget_Previews: PreviewProvider {
+    static let entry = EisenhowerEntry(date: .now, snapshot: .placeholder)
+    static var previews: some View {
+        SmallWidgetView(entry: entry)
+            .previewContext(WidgetPreviewContext(family: .systemSmall))
+            .previewDisplayName("Small")
+        MediumWidgetView(entry: entry)
+            .previewContext(WidgetPreviewContext(family: .systemMedium))
+            .previewDisplayName("Medium")
+    }
 }
