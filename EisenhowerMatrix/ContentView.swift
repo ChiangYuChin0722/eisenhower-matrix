@@ -2,9 +2,10 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var taskStore: TaskStore
-    @AppStorage("appTheme")    private var appTheme: String  = "system"
-    @AppStorage("appLanguage") private var lang: String      = "en"
-    @AppStorage("appAccent")   private var appAccent: String = "blue"
+    @AppStorage("appTheme")           private var appTheme: String  = "system"
+    @AppStorage("appLanguage")        private var lang: String      = "en"
+    @AppStorage("appAccent")          private var appAccent: String = "blue"
+    @AppStorage("hasSeenOnboarding")  private var hasSeenOnboarding = false
     @State private var showSearch = false
 
     private var s: Str { Str(lang) }
@@ -46,6 +47,12 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showSearch) {
             SearchView()
+        }
+        .fullScreenCover(isPresented: .init(
+            get: { !hasSeenOnboarding },
+            set: { _ in }
+        )) {
+            OnboardingView()
         }
     }
 

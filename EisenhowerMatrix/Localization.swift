@@ -229,6 +229,22 @@ struct Str {
         return zh ? t.nameZH : t.nameEN
     }
 
+    // MARK: - Onboarding
+    var skip:       String { zh ? "略過" : "Skip" }
+    var next:       String { zh ? "繼續" : "Next" }
+    var getStarted: String { zh ? "開始使用" : "Get Started" }
+    var onboardWelcomeTitle: String { zh ? "Eisenhower 矩陣" : "Eisenhower Matrix" }
+    var onboardWelcomeSub:   String { zh ? "用緊急與重要性整理你的任務，聚焦在真正重要的事。" : "Organize tasks by urgency and importance.\nFocus on what truly matters." }
+    var onboardMatrixTitle:  String { zh ? "四個象限" : "Four Quadrants" }
+    var onboardMatrixSub:    String { zh ? "每個任務都屬於其中一個象限。拖曳方塊到對應位置。" : "Every task belongs in one of four quadrants.\nDrag dots to reposition them." }
+    var onboardFeatTitle:    String { zh ? "功能一覽" : "Everything You Need" }
+    var onboardStartTitle:   String { zh ? "準備好了！" : "You're all set!" }
+    var onboardStartSub:     String { zh ? "開始整理你的任務，讓每一天更有效率。" : "Start organizing your tasks and make every day more productive." }
+    var onboardFeatureCalendar:  String { zh ? "用月曆與時間軸檢視有期限的任務" : "Monthly & timeline views for scheduled tasks" }
+    var onboardFeatureDeadlines: String { zh ? "依日期分組追蹤截止任務" : "Deadline tracking grouped by urgency" }
+    var onboardFeatureChecklist: String { zh ? "多個清單、子任務、備註一次管理" : "Multiple lists with subtasks & notes" }
+    var onboardFeatureDashboard: String { zh ? "完成率、連續天數與象限統計一覽" : "Streaks, completion rates & quadrant stats" }
+
     // MARK: - Checklist extras (reorder / subtasks)
     var doneReorder: String { zh ? "完成" : "Done" }
     func subtasksOf(_ done: Int, _ total: Int) -> String {

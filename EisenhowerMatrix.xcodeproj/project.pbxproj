@@ -25,6 +25,8 @@
 		AAAA020000000013 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000013 /* NotificationManager.swift */; };
 		AAAA020000000014 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000014 /* SearchView.swift */; };
 		AAAA020000000015 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000015 /* Localization.swift */; };
+		AAAA020000000016 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000016 /* HapticManager.swift */; };
+		AAAA020000000017 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000017 /* OnboardingView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +49,8 @@
 		AAAA010000000013 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		AAAA010000000014 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
 		AAAA010000000015 /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
+		AAAA010000000016 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		AAAA010000000017 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				AAAA010000000013 /* NotificationManager.swift */,
+				AAAA010000000016 /* HapticManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -121,6 +126,7 @@
 				AAAA01000000000B /* AddTaskView.swift */,
 				AAAA01000000000C /* TaskRowView.swift */,
 				AAAA010000000014 /* SearchView.swift */,
+				AAAA010000000017 /* OnboardingView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -219,6 +225,8 @@
 				AAAA020000000013 /* NotificationManager.swift in Sources */,
 				AAAA020000000014 /* SearchView.swift in Sources */,
 				AAAA020000000015 /* Localization.swift in Sources */,
+				AAAA020000000016 /* HapticManager.swift in Sources */,
+				AAAA020000000017 /* OnboardingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

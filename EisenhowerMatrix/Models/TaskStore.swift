@@ -88,6 +88,7 @@ class TaskStore: ObservableObject {
 
     func addTask(_ task: EisTask) {
         tasks.append(task)
+        HapticManager.shared.impact(.light)
         NotificationManager.shared.scheduleNotification(for: task)
         save()
     }
@@ -105,6 +106,7 @@ class TaskStore: ObservableObject {
             NotificationManager.shared.cancelNotification(for: task)
         }
         tasks.removeAll { $0.id == id }
+        HapticManager.shared.impact(.medium)
         save()
     }
 
@@ -113,6 +115,9 @@ class TaskStore: ObservableObject {
         let wasCompleted = tasks[idx].isCompleted
         tasks[idx].isCompleted.toggle()
         tasks[idx].completedAt = tasks[idx].isCompleted ? Date() : nil
+        wasCompleted
+            ? HapticManager.shared.impact(.light)
+            : HapticManager.shared.notification(.success)
 
         // Recurring: when just completed, spawn next occurrence
         if !wasCompleted,

@@ -54,6 +54,7 @@ struct TaskDotView: View {
         .gesture(
             DragGesture(minimumDistance: 4)
                 .updating($dragOffset) { value, state, _ in
+                    if state == .zero { HapticManager.shared.selection() }
                     state = value.translation
                 }
                 .onEnded { value in
@@ -64,8 +65,14 @@ struct TaskDotView: View {
                     var updated = task
                     updated.canvasX = newX
                     updated.canvasY = newY
-                    updated.quadrant = Quadrant.from(canvasX: newX, canvasY: newY)
+                    let newQuadrant = Quadrant.from(canvasX: newX, canvasY: newY)
+                    updated.quadrant = newQuadrant
                     taskStore.updateTask(updated)
+                    if newQuadrant != task.quadrant {
+                        HapticManager.shared.impact(.medium)
+                    } else {
+                        HapticManager.shared.impact(.light)
+                    }
                 }
         )
     }
