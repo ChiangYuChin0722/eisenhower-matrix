@@ -20,6 +20,8 @@
 		AAAA02000000000C /* TaskRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA01000000000C /* TaskRowView.swift */; };
 		AAAA02000000000E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAAA01000000000E /* Assets.xcassets */; };
 		AAAA02000000000F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAAA01000000000F /* Preview Assets.xcassets */; };
+		AAAA020000000011 /* ChecklistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000011 /* ChecklistView.swift */; };
+		AAAA020000000012 /* DeadlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000012 /* DeadlineView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +39,8 @@
 		AAAA01000000000E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AAAA01000000000F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		AAAA010000000010 /* EisenhowerMatrix.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EisenhowerMatrix.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AAAA010000000011 /* ChecklistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChecklistView.swift; sourceTree = "<group>"; };
+		AAAA010000000012 /* DeadlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadlineView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +99,8 @@
 				AAAA010000000006 /* TaskDotView.swift */,
 				AAAA010000000007 /* DashboardView.swift */,
 				AAAA010000000009 /* CalendarView.swift */,
+				AAAA010000000011 /* ChecklistView.swift */,
+				AAAA010000000012 /* DeadlineView.swift */,
 				AAAA01000000000A /* SettingsView.swift */,
 				AAAA01000000000B /* AddTaskView.swift */,
 				AAAA01000000000C /* TaskRowView.swift */,
@@ -188,6 +194,8 @@
 				AAAA020000000006 /* TaskDotView.swift in Sources */,
 				AAAA020000000007 /* DashboardView.swift in Sources */,
 				AAAA020000000009 /* CalendarView.swift in Sources */,
+				AAAA020000000011 /* ChecklistView.swift in Sources */,
+				AAAA020000000012 /* DeadlineView.swift in Sources */,
 				AAAA02000000000A /* SettingsView.swift in Sources */,
 				AAAA02000000000B /* AddTaskView.swift in Sources */,
 				AAAA02000000000C /* TaskRowView.swift in Sources */,
@@ -201,7 +209,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
@@ -261,7 +268,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;

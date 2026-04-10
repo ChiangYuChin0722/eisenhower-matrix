@@ -4,8 +4,8 @@ import Combine
 class TaskStore: ObservableObject {
     @Published var tasks: [EisTask] = []
 
-    // v2: added canvasX/canvasY — clears legacy data on first launch
-    private let saveKey = "eisenhower_tasks_v2"
+    // v3: added isInChecklist field
+    private let saveKey = "eisenhower_tasks_v3"
 
     init() {
         loadTasks()
@@ -23,6 +23,12 @@ class TaskStore: ObservableObject {
             guard let d = $0.dueDate else { return false }
             return Calendar.current.isDate(d, inSameDayAs: date)
         }
+    }
+
+    var checklistTasks: [EisTask] { tasks.filter { $0.isInChecklist } }
+
+    var tasksWithDeadlines: [EisTask] {
+        tasks.filter { $0.dueDate != nil }.sorted { $0.dueDate! < $1.dueDate! }
     }
 
     var totalCount: Int     { tasks.count }
@@ -69,8 +75,8 @@ class TaskStore: ObservableObject {
     // MARK: - Persistence
 
     private func save() {
-        if let encoded = try? JSONEncoder().encode(tasks) {
-            UserDefaults.standard.set(encoded, forKey: saveKey)
+        if let data = try? JSONEncoder().encode(tasks) {
+            UserDefaults.standard.set(data, forKey: saveKey)
         }
     }
 
@@ -85,32 +91,46 @@ class TaskStore: ObservableObject {
 
     private func loadSampleData() {
         let now = Date()
-        func days(_ n: Int) -> Date {
-            Calendar.current.date(byAdding: .day, value: n, to: now)!
+        let cal = Calendar.current
+        func days(_ n: Int, hour: Int = 0, min: Int = 0) -> Date {
+            var d = cal.date(byAdding: .day, value: n, to: now)!
+            d = cal.date(bySettingHour: hour, minute: min, second: 0, of: d)!
+            return d
         }
 
         tasks = [
-            // Do Now — top-right quadrant
-            EisTask(title: "Handle server outage",       quadrant: .doFirst,   canvasX: 0.78, canvasY: 0.16, dueDate: days(1)),
-            EisTask(title: "Prepare client meeting",     quadrant: .doFirst,   canvasX: 0.65, canvasY: 0.30, dueDate: days(1)),
-            EisTask(title: "Submit final project",       quadrant: .doFirst,   canvasX: 0.82, canvasY: 0.42, dueDate: days(2)),
-            EisTask(title: "Urgent bug hotfix",          quadrant: .doFirst,   canvasX: 0.70, canvasY: 0.22, dueDate: now),
+            // Do Now
+            EisTask(title: "Handle server outage",    quadrant: .doFirst,   canvasX: 0.78, canvasY: 0.16,
+                    dueDate: days(1, hour: 9,  min: 0), isInChecklist: true),
+            EisTask(title: "Prepare client meeting",  quadrant: .doFirst,   canvasX: 0.65, canvasY: 0.30,
+                    dueDate: days(1, hour: 14, min: 0), isInChecklist: true),
+            EisTask(title: "Submit final project",    quadrant: .doFirst,   canvasX: 0.82, canvasY: 0.42,
+                    dueDate: days(2, hour: 17, min: 0), isInChecklist: true),
+            EisTask(title: "Urgent bug hotfix",       quadrant: .doFirst,   canvasX: 0.70, canvasY: 0.22,
+                    dueDate: days(0, hour: 18, min: 30)),
 
-            // Schedule — top-left quadrant
-            EisTask(title: "AWS certification",          quadrant: .schedule,  canvasX: 0.32, canvasY: 0.18, dueDate: days(10)),
-            EisTask(title: "Read final!!!!!",            quadrant: .schedule,  canvasX: 0.44, canvasY: 0.28),
-            EisTask(title: "CFA take a look",            quadrant: .schedule,  canvasX: 0.14, canvasY: 0.40),
-            EisTask(title: "Update my CV",               quadrant: .schedule,  canvasX: 0.38, canvasY: 0.46),
+            // Schedule
+            EisTask(title: "AWS certification",       quadrant: .schedule,  canvasX: 0.32, canvasY: 0.18,
+                    dueDate: days(10), isInChecklist: true),
+            EisTask(title: "Read final!!!!!",         quadrant: .schedule,  canvasX: 0.44, canvasY: 0.28),
+            EisTask(title: "CFA take a look",         quadrant: .schedule,  canvasX: 0.14, canvasY: 0.40,
+                    isInChecklist: true),
+            EisTask(title: "Update my CV",            quadrant: .schedule,  canvasX: 0.38, canvasY: 0.46,
+                    dueDate: days(7)),
 
-            // Delegate — bottom-right quadrant
-            EisTask(title: "Book hair appointment",      quadrant: .delegate,  canvasX: 0.68, canvasY: 0.62, dueDate: days(4)),
-            EisTask(title: "Schedule tax consultation",  quadrant: .delegate,  canvasX: 0.80, canvasY: 0.74),
-            EisTask(title: "Drop off dry cleaning",      quadrant: .delegate,  canvasX: 0.60, canvasY: 0.82),
+            // Delegate
+            EisTask(title: "Book hair appointment",   quadrant: .delegate,  canvasX: 0.68, canvasY: 0.62,
+                    dueDate: days(4, hour: 10, min: 0)),
+            EisTask(title: "Tax consultation",        quadrant: .delegate,  canvasX: 0.80, canvasY: 0.74,
+                    dueDate: days(6)),
+            EisTask(title: "Drop off dry cleaning",   quadrant: .delegate,  canvasX: 0.60, canvasY: 0.82,
+                    dueDate: days(1, hour: 8, min: 0), isInChecklist: true),
 
-            // Eliminate — bottom-left quadrant
-            EisTask(title: "做清單",                     quadrant: .eliminate, canvasX: 0.30, canvasY: 0.60),
-            EisTask(title: "把食譜歸檔案",               quadrant: .eliminate, canvasX: 0.18, canvasY: 0.76),
-            EisTask(title: "Clean spam emails",          quadrant: .eliminate, canvasX: 0.36, canvasY: 0.88),
+            // Eliminate
+            EisTask(title: "做清單",                  quadrant: .eliminate, canvasX: 0.30, canvasY: 0.60,
+                    isInChecklist: true),
+            EisTask(title: "把食譜歸檔案",            quadrant: .eliminate, canvasX: 0.18, canvasY: 0.76),
+            EisTask(title: "Clean spam emails",       quadrant: .eliminate, canvasX: 0.36, canvasY: 0.88),
         ]
         save()
     }

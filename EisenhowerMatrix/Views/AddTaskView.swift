@@ -4,18 +4,21 @@ struct AddTaskView: View {
     @EnvironmentObject var taskStore: TaskStore
     @Environment(\.dismiss) var dismiss
 
-    var editingTask: EisTask? = nil
+    var editingTask: EisTask?    = nil
     var defaultQuadrant: Quadrant = .doFirst
-    var initialCanvasX: Double? = nil
-    var initialCanvasY: Double? = nil
+    var initialCanvasX: Double?  = nil
+    var initialCanvasY: Double?  = nil
+    var forceCalendar: Bool      = false   // pre-open calendar toggle (from DeadlineView)
+    var forceChecklist: Bool     = false   // pre-check checklist toggle (from ChecklistView)
 
-    @State private var title       = ""
-    @State private var notes       = ""
-    @State private var quadrant    = Quadrant.doFirst
-    @State private var hasDueDate  = false
-    @State private var dueDate     = Date()
-    @State private var colorTag    = TaskColor.none
-    @State private var subtaskText = ""
+    @State private var title        = ""
+    @State private var notes        = ""
+    @State private var quadrant     = Quadrant.doFirst
+    @State private var addToCalendar = false
+    @State private var dueDate      = roundedNextHour()
+    @State private var addToChecklist = false
+    @State private var colorTag     = TaskColor.none
+    @State private var subtaskText  = ""
     @State private var subtasks: [EisTask] = []
 
     var isEditing: Bool { editingTask != nil }
@@ -23,12 +26,14 @@ struct AddTaskView: View {
     var body: some View {
         NavigationView {
             Form {
+                // MARK: Task basics
                 Section("Task") {
                     TextField("Title", text: $title)
                     TextField("Notes (optional)", text: $notes, axis: .vertical)
                         .lineLimit(3, reservesSpace: false)
                 }
 
+                // MARK: Quadrant
                 Section("Quadrant") {
                     Picker("Quadrant", selection: $quadrant) {
                         ForEach(Quadrant.allCases) { q in
@@ -45,14 +50,25 @@ struct AddTaskView: View {
                     .labelsHidden()
                 }
 
-                Section("Due Date") {
-                    Toggle("Set due date", isOn: $hasDueDate)
-                    if hasDueDate {
-                        DatePicker("Date", selection: $dueDate,
+                // MARK: Add to Calendar
+                Section {
+                    Toggle(isOn: $addToCalendar) {
+                        Label("Add to Calendar", systemImage: "calendar")
+                    }
+                    if addToCalendar {
+                        DatePicker("Date & Time", selection: $dueDate,
                                    displayedComponents: [.date, .hourAndMinute])
                     }
                 }
 
+                // MARK: Add to Checklist
+                Section {
+                    Toggle(isOn: $addToChecklist) {
+                        Label("Add to Checklist", systemImage: "checklist")
+                    }
+                }
+
+                // MARK: Color tag
                 Section("Color Tag") {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
@@ -64,6 +80,7 @@ struct AddTaskView: View {
                     }
                 }
 
+                // MARK: Subtasks
                 Section("Subtasks") {
                     ForEach(subtasks) { sub in
                         HStack {
@@ -117,20 +134,28 @@ struct AddTaskView: View {
         .onTapGesture { colorTag = c }
     }
 
-    // MARK: - Helpers
+    // MARK: - Populate when editing
 
     private func populate() {
-        guard let t = editingTask else {
-            quadrant = defaultQuadrant
-            return
+        if let t = editingTask {
+            title           = t.title
+            notes           = t.notes
+            quadrant        = t.quadrant
+            colorTag        = t.colorTag
+            subtasks        = t.subtasks
+            addToChecklist  = t.isInChecklist
+            if let d = t.dueDate {
+                addToCalendar = true
+                dueDate       = d
+            }
+        } else {
+            quadrant        = defaultQuadrant
+            addToCalendar   = forceCalendar
+            addToChecklist  = forceChecklist
         }
-        title    = t.title
-        notes    = t.notes
-        quadrant = t.quadrant
-        colorTag = t.colorTag
-        subtasks = t.subtasks
-        if let d = t.dueDate { hasDueDate = true; dueDate = d }
     }
+
+    // MARK: - Save
 
     private func save() {
         var task = editingTask ?? EisTask(
@@ -139,14 +164,14 @@ struct AddTaskView: View {
             canvasX: initialCanvasX,
             canvasY: initialCanvasY
         )
-        task.title    = title.trimmingCharacters(in: .whitespaces)
-        task.notes    = notes
-        task.quadrant = quadrant
-        task.dueDate  = hasDueDate ? dueDate : nil
-        task.colorTag = colorTag
-        task.subtasks = subtasks
+        task.title         = title.trimmingCharacters(in: .whitespaces)
+        task.notes         = notes
+        task.quadrant      = quadrant
+        task.dueDate       = addToCalendar ? dueDate : nil
+        task.isInChecklist = addToChecklist
+        task.colorTag      = colorTag
+        task.subtasks      = subtasks
 
-        // If editing, keep existing position; only apply initial position for new tasks
         if !isEditing {
             if let x = initialCanvasX { task.canvasX = x }
             if let y = initialCanvasY { task.canvasY = y }
@@ -156,9 +181,17 @@ struct AddTaskView: View {
         else         { taskStore.addTask(task) }
         dismiss()
     }
+
+    // MARK: - Helpers
+
+    private static func roundedNextHour() -> Date {
+        let cal  = Calendar.current
+        let now  = Date()
+        let next = cal.date(byAdding: .hour, value: 1, to: now)!
+        return cal.date(bySetting: .minute, value: 0, of: next) ?? next
+    }
 }
 
 #Preview {
-    AddTaskView()
-        .environmentObject(TaskStore())
+    AddTaskView().environmentObject(TaskStore())
 }

@@ -57,16 +57,13 @@ enum Quadrant: String, Codable, CaseIterable, Identifiable {
     var isUrgent: Bool    { self == .doFirst || self == .delegate }
     var isImportant: Bool { self == .doFirst || self == .schedule }
 
-    /// Default canvas fraction position for this quadrant
     static func randomPosition(for quadrant: Quadrant) -> (x: Double, y: Double) {
-        // x: 0 = not urgent (left), 1 = urgent (right)
-        // y: 0 = important (top),   1 = not important (bottom)
         let r = { Double.random(in: 0.08...0.35) }
         switch quadrant {
-        case .doFirst:   return (0.5 + r(), r())          // top-right
-        case .schedule:  return (r(),       r())           // top-left
-        case .delegate:  return (0.5 + r(), 0.5 + r())    // bottom-right
-        case .eliminate: return (r(),       0.5 + r())     // bottom-left
+        case .doFirst:   return (0.5 + r(), r())
+        case .schedule:  return (r(),       r())
+        case .delegate:  return (0.5 + r(), 0.5 + r())
+        case .eliminate: return (r(),       0.5 + r())
         }
     }
 
@@ -81,13 +78,7 @@ enum Quadrant: String, Codable, CaseIterable, Identifiable {
 }
 
 enum TaskColor: String, Codable, CaseIterable {
-    case none   = "none"
-    case red    = "red"
-    case orange = "orange"
-    case blue   = "blue"
-    case green  = "green"
-    case purple = "purple"
-    case pink   = "pink"
+    case none, red, orange, blue, green, purple, pink
 
     var color: Color {
         switch self {
@@ -103,18 +94,16 @@ enum TaskColor: String, Codable, CaseIterable {
 }
 
 struct EisTask: Identifiable, Codable, Equatable {
-    var id: UUID = UUID()
+    var id: UUID          = UUID()
     var title: String
-    var notes: String = ""
+    var notes: String     = ""
     var quadrant: Quadrant
     var isCompleted: Bool = false
-    var dueDate: Date? = nil
-    var createdAt: Date = Date()
+    var dueDate: Date?    = nil
+    var createdAt: Date   = Date()
     var subtasks: [EisTask] = []
-    var colorTag: TaskColor = .none
-
-    // Canvas position: x in [0,1] (left=not urgent, right=urgent)
-    //                  y in [0,1] (top=important, bottom=not important)
+    var colorTag: TaskColor  = .none
+    var isInChecklist: Bool  = false   // shows in Checklist tab
     var canvasX: Double
     var canvasY: Double
 
@@ -124,20 +113,22 @@ struct EisTask: Identifiable, Codable, Equatable {
     init(
         title: String,
         quadrant: Quadrant,
-        canvasX: Double? = nil,
-        canvasY: Double? = nil,
+        canvasX: Double?  = nil,
+        canvasY: Double?  = nil,
         isCompleted: Bool = false,
-        dueDate: Date? = nil,
-        notes: String = ""
+        dueDate: Date?    = nil,
+        notes: String     = "",
+        isInChecklist: Bool = false
     ) {
-        self.title       = title
-        self.quadrant    = quadrant
-        self.isCompleted = isCompleted
-        self.dueDate     = dueDate
-        self.notes       = notes
-        let (defaultX, defaultY) = Quadrant.randomPosition(for: quadrant)
-        self.canvasX = canvasX ?? defaultX
-        self.canvasY = canvasY ?? defaultY
+        self.title         = title
+        self.quadrant      = quadrant
+        self.isCompleted   = isCompleted
+        self.dueDate       = dueDate
+        self.notes         = notes
+        self.isInChecklist = isInChecklist
+        let pos = Quadrant.randomPosition(for: quadrant)
+        self.canvasX = canvasX ?? pos.x
+        self.canvasY = canvasY ?? pos.y
     }
 
     static func == (lhs: EisTask, rhs: EisTask) -> Bool { lhs.id == rhs.id }
