@@ -8,6 +8,8 @@ class TaskStore: ObservableObject {
     // v4: added Recurrence, ChecklistCategory, completedAt
     private let saveKey       = "eisenhower_tasks_v4"
     private let categoriesKey = "eisenhower_categories_v1"
+    // Shared with Widget Extension via App Group (set up group in Xcode → Signing & Capabilities)
+    private let defaults = UserDefaults(suiteName: "group.com.eisenhower.matrix") ?? .standard
 
     init() {
         loadCategories()
@@ -151,12 +153,12 @@ class TaskStore: ObservableObject {
 
     private func save() {
         if let data = try? JSONEncoder().encode(tasks) {
-            UserDefaults.standard.set(data, forKey: saveKey)
+            defaults.set(data, forKey: saveKey)
         }
     }
 
     private func loadTasks() {
-        guard let data    = UserDefaults.standard.data(forKey: saveKey),
+        guard let data    = defaults.data(forKey: saveKey),
               let decoded = try? JSONDecoder().decode([EisTask].self, from: data)
         else { return }
         tasks = decoded
@@ -164,12 +166,12 @@ class TaskStore: ObservableObject {
 
     private func saveCategories() {
         if let data = try? JSONEncoder().encode(checklistCategories) {
-            UserDefaults.standard.set(data, forKey: categoriesKey)
+            defaults.set(data, forKey: categoriesKey)
         }
     }
 
     private func loadCategories() {
-        if let data    = UserDefaults.standard.data(forKey: categoriesKey),
+        if let data    = defaults.data(forKey: categoriesKey),
            let decoded = try? JSONDecoder().decode([ChecklistCategory].self, from: data) {
             checklistCategories = decoded
         } else {
