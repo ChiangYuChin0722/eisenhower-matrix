@@ -18,6 +18,8 @@ struct ChecklistView: View {
     @State private var expandedIds           = Set<UUID>()
     @State private var isReorderMode         = false
     @State private var showSearch            = false
+    @State private var showPomodoro          = false
+    @State private var pomodoroTask: EisTask? = nil
 
     private var s: Str { Str(lang) }
     private var accent: Color { .accent(appAccent) }
@@ -125,6 +127,9 @@ struct ChecklistView: View {
                 ChecklistQuickAddSheet(defaultCategoryId: selectedCategoryId)
             }
             .sheet(isPresented: $showSearch) { SearchView() }
+            .sheet(isPresented: $showPomodoro) {
+                PomodoroView(initialTask: pomodoroTask)
+            }
         }
     }
 
@@ -168,6 +173,13 @@ struct ChecklistView: View {
                                 Label(s.edit, systemImage: "pencil")
                             }
                             .tint(accent)
+                            Button {
+                                pomodoroTask = task
+                                showPomodoro = true
+                            } label: {
+                                Label(s.focusLabel, systemImage: "timer")
+                            }
+                            .tint(.purple)
                         }
                 }
             }

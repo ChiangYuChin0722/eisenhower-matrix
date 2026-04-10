@@ -10,6 +10,8 @@ struct DeadlineView: View {
     @State private var editingTask: EisTask? = nil
     @State private var showAddTask   = false
     @State private var showCompleted = false
+    @State private var showPomodoro  = false
+    @State private var pomodoroTask: EisTask? = nil
 
     private let cal = Calendar.current
     private var s: Str { Str(lang) }
@@ -84,6 +86,9 @@ struct DeadlineView: View {
             }
             .sheet(item: $editingTask) { task in
                 AddTaskView(editingTask: task)
+            }
+            .sheet(isPresented: $showPomodoro) {
+                PomodoroView(initialTask: pomodoroTask)
             }
         }
     }
@@ -172,6 +177,13 @@ struct DeadlineView: View {
                             Label(s.edit, systemImage: "pencil")
                         }
                         .tint(.blue)
+                        Button {
+                            pomodoroTask = task
+                            showPomodoro = true
+                        } label: {
+                            Label(s.focusLabel, systemImage: "timer")
+                        }
+                        .tint(.purple)
                     }
             }
         } header: {

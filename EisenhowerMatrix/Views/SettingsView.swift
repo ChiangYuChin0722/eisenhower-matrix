@@ -4,11 +4,18 @@ import UserNotifications
 struct SettingsView: View {
     @EnvironmentObject var taskStore: TaskStore
     @Environment(\.dismiss) var dismiss
-    @AppStorage("showCompletedTasks") private var showCompletedTasks = true
-    @AppStorage("appTheme")           private var appTheme           = "system"
-    @AppStorage("appLanguage")        private var lang               = "en"
-    @AppStorage("appAccent")          private var appAccent          = "blue"
-    @AppStorage("matrixTheme")        private var matrixTheme        = "classic"
+    @AppStorage("showCompletedTasks")    private var showCompletedTasks = true
+    @AppStorage("appTheme")             private var appTheme           = "system"
+    @AppStorage("appLanguage")          private var lang               = "en"
+    @AppStorage("appAccent")            private var appAccent          = "blue"
+    @AppStorage("matrixTheme")          private var matrixTheme        = "classic"
+    @AppStorage("quadrantName_do")      private var nameDoFirst        = ""
+    @AppStorage("quadrantName_schedule")private var nameSchedule       = ""
+    @AppStorage("quadrantName_delegate")private var nameDelegate       = ""
+    @AppStorage("quadrantName_eliminate")private var nameEliminate     = ""
+    @AppStorage("pomodoroWork")         private var pomodoroWork       = 25
+    @AppStorage("pomodoroShortBreak")   private var pomodoroShort      = 5
+    @AppStorage("pomodoroLongBreak")    private var pomodoroLong       = 15
     @State private var showingResetConfirm   = false
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
 
@@ -35,6 +42,14 @@ struct SettingsView: View {
                         .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                 }
 
+                // MARK: Custom quadrant names
+                Section(s.customQuadrantSection) {
+                    quadrantNameRow(.doFirst,   $nameDoFirst)
+                    quadrantNameRow(.schedule,  $nameSchedule)
+                    quadrantNameRow(.delegate,  $nameDelegate)
+                    quadrantNameRow(.eliminate, $nameEliminate)
+                }
+
                 // MARK: Accent colour
                 Section(s.accentSection) {
                     accentColorPicker
@@ -51,6 +66,13 @@ struct SettingsView: View {
                     .pickerStyle(.segmented)
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                }
+
+                // MARK: Pomodoro
+                Section(s.pomodoroSection) {
+                    pomodoroStepper(s.workDuration,       icon: "brain.head.profile", value: $pomodoroWork,  range: 5...90,  step: 5)
+                    pomodoroStepper(s.shortBreakDuration, icon: "cup.and.saucer",     value: $pomodoroShort, range: 1...30,  step: 1)
+                    pomodoroStepper(s.longBreakDuration,  icon: "moon.zzz",           value: $pomodoroLong,  range: 5...60,  step: 5)
                 }
 
                 // MARK: Notifications
@@ -226,6 +248,23 @@ struct SettingsView: View {
                 Text(s.notifOff).foregroundColor(.red).font(.subheadline)
             default:
                 Text(s.notifNotSet).foregroundColor(.secondary).font(.subheadline)
+            }
+        }
+    }
+
+    private func quadrantNameRow(_ q: Quadrant, _ binding: Binding<String>) -> some View {
+        HStack(spacing: 10) {
+            Circle().fill(q.color(theme: matrixTheme)).frame(width: 10, height: 10)
+            TextField(s.quadrantDefaultTitle(q), text: binding)
+        }
+    }
+
+    private func pomodoroStepper(_ label: String, icon: String, value: Binding<Int>, range: ClosedRange<Int>, step: Int) -> some View {
+        Stepper(value: value, in: range, step: step) {
+            HStack {
+                Label(label, systemImage: icon)
+                Spacer()
+                Text("\(value.wrappedValue) min").foregroundColor(.secondary).font(.subheadline)
             }
         }
     }

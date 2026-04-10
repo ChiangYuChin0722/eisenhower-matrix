@@ -268,6 +268,22 @@ struct Str {
         zh ? "\(done)/\(total) 子任務" : "\(done)/\(total) subtasks"
     }
 
+    // MARK: - Custom quadrant names
+    var customQuadrantSection:  String { zh ? "自訂象限名稱" : "Custom Quadrant Names" }
+    var quadrantNamePlaceholder:String { zh ? "預設" : "Default" }
+
+    // MARK: - Pomodoro
+    var pomodoroTitle:       String { zh ? "專注計時" : "Focus Timer" }
+    var pomodoroSection:     String { zh ? "專注計時器" : "Focus Timer" }
+    var focusMode:           String { zh ? "專注" : "Focus" }
+    var shortBreakLabel:     String { zh ? "短休息" : "Short Break" }
+    var longBreakLabel:      String { zh ? "長休息" : "Long Break" }
+    var workDuration:        String { zh ? "專注時長" : "Work Duration" }
+    var shortBreakDuration:  String { zh ? "短休息時長" : "Short Break" }
+    var longBreakDuration:   String { zh ? "長休息時長" : "Long Break" }
+    var focusLabel:          String { zh ? "專注" : "Focus" }
+    var sessionLabel:        String { zh ? "回合" : "Sessions" }
+
     // MARK: - AddTaskView
     var newTaskTitle:      String { zh ? "新增任務"  : "New Task" }
     var editTaskTitle:     String { zh ? "編輯任務"  : "Edit Task" }
@@ -287,6 +303,12 @@ struct Str {
 
     // MARK: - Quadrant names (localized)
     func quadrantTitle(_ q: Quadrant) -> String {
+        let custom = UserDefaults.standard.string(forKey: "quadrantName_\(q.rawValue)") ?? ""
+        if !custom.isEmpty { return custom }
+        return quadrantDefaultTitle(q)
+    }
+    /// Returns the built-in default name (ignores user customisation).
+    func quadrantDefaultTitle(_ q: Quadrant) -> String {
         guard zh else { return q.title }
         switch q {
         case .doFirst:   return "立刻執行"
