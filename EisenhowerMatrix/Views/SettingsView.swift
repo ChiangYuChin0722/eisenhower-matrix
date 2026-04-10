@@ -3,6 +3,7 @@ import UserNotifications
 
 struct SettingsView: View {
     @EnvironmentObject var taskStore: TaskStore
+    @EnvironmentObject var authManager: AuthManager
     @AppStorage("showCompletedTasks")     private var showCompletedTasks = true
     @AppStorage("appTheme")              private var appTheme           = "system"
     @AppStorage("appLanguage")           private var lang               = "en"
@@ -134,6 +135,30 @@ struct SettingsView: View {
                         showingResetConfirm = true
                     } label: {
                         Label(s.resetButton, systemImage: "arrow.counterclockwise")
+                    }
+                }
+
+                // MARK: Account
+                Section(lang == "zh" ? "帳號" : "Account") {
+                    if let user = authManager.user {
+                        HStack(spacing: 10) {
+                            Image(systemName: "person.circle.fill")
+                                .font(.system(size: 20))
+                                .foregroundColor(.secondary)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(user.displayName ?? (lang == "zh" ? "使用者" : "User"))
+                                    .font(.subheadline)
+                                Text(user.email ?? "")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    Button(role: .destructive) {
+                        try? authManager.signOut()
+                    } label: {
+                        Label(lang == "zh" ? "登出" : "Sign Out",
+                              systemImage: "rectangle.portrait.and.arrow.right")
                     }
                 }
         }
@@ -329,5 +354,7 @@ struct InfoRow: View {
 }
 
 #Preview {
-    SettingsView().environmentObject(TaskStore())
+    SettingsView()
+        .environmentObject(TaskStore())
+        .environmentObject(AuthManager())
 }
