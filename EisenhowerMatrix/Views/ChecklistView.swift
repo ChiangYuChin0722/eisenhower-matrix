@@ -213,25 +213,28 @@ struct ChecklistView: View {
     // MARK: - Progress bar
 
     private var progressBar: some View {
-        VStack(spacing: 6) {
-            HStack {
-                Text("\(completedCount) / \(totalCount) done")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                Spacer()
-                Text("\(Int(progress * 100))%")
-                    .font(.caption).fontWeight(.semibold)
-                    .foregroundColor(.blue)
-            }
-            .padding(.horizontal, 16)
-
-            ProgressView(value: progress)
-                .tint(.blue)
+        VStack(spacing: 0) {
+            VStack(spacing: 6) {
+                HStack {
+                    Text("\(completedCount) / \(totalCount) done")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Text("\(Int(progress * 100))%")
+                        .font(.caption).fontWeight(.semibold)
+                        .foregroundColor(.blue)
+                }
                 .padding(.horizontal, 16)
+
+                ProgressView(value: progress)
+                    .tint(.blue)
+                    .padding(.horizontal, 16)
+            }
+            .padding(.vertical, 10)
+            .background(Color(uiColor: .systemBackground))
+
+            Divider()
         }
-        .padding(.vertical, 10)
-        .background(Color(uiColor: .systemBackground))
-        Divider()
     }
 
     // MARK: - Task list
