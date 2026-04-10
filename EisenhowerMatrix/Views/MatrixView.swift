@@ -3,6 +3,9 @@ import SwiftUI
 struct MatrixView: View {
     @EnvironmentObject var taskStore: TaskStore
     @AppStorage("appLanguage") private var lang: String = "en"
+    @AppStorage("matrixTheme") private var matrixTheme: String = "classic"
+    private func qColor(_ q: Quadrant) -> Color { q.color(theme: matrixTheme) }
+    private func qBg(_ q: Quadrant)    -> Color { q.bgColor(theme: matrixTheme) }
 
     @State private var showAddTask     = false
     @State private var editingTask: EisTask? = nil
@@ -103,10 +106,10 @@ struct MatrixView: View {
         let w = size.width / 2
         let h = size.height / 2
         return Group {
-            Rectangle().fill(Quadrant.schedule.bgColor).frame(width: w, height: h).offset(x: 0, y: 0)
-            Rectangle().fill(Quadrant.doFirst.bgColor).frame(width: w, height: h).offset(x: w, y: 0)
-            Rectangle().fill(Quadrant.eliminate.bgColor).frame(width: w, height: h).offset(x: 0, y: h)
-            Rectangle().fill(Quadrant.delegate.bgColor).frame(width: w, height: h).offset(x: w, y: h)
+            Rectangle().fill(qBg(.schedule)).frame(width: w, height: h).offset(x: 0, y: 0)
+            Rectangle().fill(qBg(.doFirst)).frame(width: w, height: h).offset(x: w, y: 0)
+            Rectangle().fill(qBg(.eliminate)).frame(width: w, height: h).offset(x: 0, y: h)
+            Rectangle().fill(qBg(.delegate)).frame(width: w, height: h).offset(x: w, y: h)
         }
     }
 
@@ -137,9 +140,9 @@ struct MatrixView: View {
             HStack(spacing: 4) {
                 Text(s.quadrantTitle(.doFirst))
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(Quadrant.doFirst.color)
+                    .foregroundColor(qColor(.doFirst))
                 Circle()
-                    .fill(Quadrant.doFirst.color)
+                    .fill(qColor(.doFirst))
                     .frame(width: 6, height: 6)
             }
             .offset(x: w + pad, y: pad)
@@ -157,7 +160,7 @@ struct MatrixView: View {
     private func quadrantLabel(_ q: Quadrant, x: CGFloat, y: CGFloat) -> some View {
         Text(s.quadrantTitle(q))
             .font(.system(size: 11, weight: .semibold))
-            .foregroundColor(q.color)
+            .foregroundColor(qColor(q))
             .offset(x: x, y: y)
     }
 

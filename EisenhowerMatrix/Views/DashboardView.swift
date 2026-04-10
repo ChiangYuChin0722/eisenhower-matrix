@@ -5,6 +5,9 @@ struct DashboardView: View {
     @EnvironmentObject var taskStore: TaskStore
     @AppStorage("appLanguage") private var lang: String = "en"
     @AppStorage("appAccent")   private var appAccent: String = "blue"
+    @AppStorage("matrixTheme") private var matrixTheme: String = "classic"
+    private func qColor(_ q: Quadrant) -> Color { q.color(theme: matrixTheme) }
+    private func qBg(_ q: Quadrant)    -> Color { q.bgColor(theme: matrixTheme) }
 
     private var s: Str { Str(lang) }
     private var accent: Color { .accent(appAccent) }
@@ -133,22 +136,22 @@ struct DashboardView: View {
                 Text(q.emoji)
                 Text(s.quadrantTitle(q))
                     .font(.subheadline).fontWeight(.semibold)
-                    .foregroundColor(q.color)
+                    .foregroundColor(qColor(q))
                 Spacer()
             }
             Text(s.quadrantSubtitle(q))
                 .font(.caption).foregroundColor(.secondary).lineLimit(1)
-            ProgressView(value: rate).tint(q.color).scaleEffect(x: 1, y: 1.5)
+            ProgressView(value: rate).tint(qColor(q)).scaleEffect(x: 1, y: 1.5)
             HStack {
                 Text("\(done)/\(total)").font(.caption).foregroundColor(.secondary)
                 Spacer()
-                Text("\(Int(rate * 100))%").font(.caption).fontWeight(.semibold).foregroundColor(q.color)
+                Text("\(Int(rate * 100))%").font(.caption).fontWeight(.semibold).foregroundColor(qColor(q))
             }
         }
         .padding()
         .background(Color(uiColor: .systemBackground))
         .cornerRadius(12)
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(q.color.opacity(0.2), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(qColor(q).opacity(0.2), lineWidth: 1))
     }
 
     private var recentActivity: some View {
@@ -158,14 +161,14 @@ struct DashboardView: View {
             let recent = taskStore.tasks.sorted { $0.createdAt > $1.createdAt }.prefix(8)
             ForEach(Array(recent)) { task in
                 HStack(spacing: 10) {
-                    Circle().fill(task.quadrant.color).frame(width: 8, height: 8)
+                    Circle().fill(qColor(task.quadrant)).frame(width: 8, height: 8)
                     Text(task.title)
                         .font(.subheadline).lineLimit(1)
                         .strikethrough(task.isCompleted)
                         .foregroundColor(task.isCompleted ? .secondary : .primary)
                     Spacer()
                     Text(s.quadrantTitle(task.quadrant))
-                        .font(.caption).foregroundColor(task.quadrant.color)
+                        .font(.caption).foregroundColor(qColor(task.quadrant))
                         .padding(.horizontal, 6).padding(.vertical, 2)
                         .background(task.quadrant.color.opacity(0.1))
                         .cornerRadius(4)

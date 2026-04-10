@@ -2,10 +2,12 @@ import SwiftUI
 
 struct TaskDotView: View {
     @EnvironmentObject var taskStore: TaskStore
+    @AppStorage("matrixTheme") private var matrixTheme: String = "classic"
     let task: EisTask
     let canvasSize: CGSize
 
     @GestureState private var dragOffset: CGSize = .zero
+    private func qColor(_ q: Quadrant) -> Color { q.color(theme: matrixTheme) }
 
     private var dotX: CGFloat { CGFloat(task.canvasX) * canvasSize.width }
     private var dotY: CGFloat { CGFloat(task.canvasY) * canvasSize.height }
@@ -16,10 +18,10 @@ struct TaskDotView: View {
             Circle()
                 .fill(task.isCompleted
                       ? Color.secondary.opacity(0.4)
-                      : task.quadrant.color)
+                      : qColor(task.quadrant))
                 .frame(width: 14, height: 14)
                 .shadow(
-                    color: task.quadrant.color.opacity(isDragging ? 0.5 : 0.25),
+                    color: qColor(task.quadrant).opacity(isDragging ? 0.5 : 0.25),
                     radius: isDragging ? 10 : 4,
                     y: isDragging ? 4 : 1
                 )

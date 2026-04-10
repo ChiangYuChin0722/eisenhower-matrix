@@ -1,7 +1,83 @@
 import Foundation
 import SwiftUI
 
-// MARK: - Accent colour helpers
+// MARK: - Matrix colour themes
+
+struct MatrixTheme: Identifiable {
+    let id: String
+    let nameEN: String
+    let nameZH: String
+    let doFirst: Color
+    let schedule: Color
+    let delegateQ: Color   // 'delegate' is a Swift keyword
+    let eliminate: Color
+
+    func color(for quadrant: Quadrant) -> Color {
+        switch quadrant {
+        case .doFirst:   return doFirst
+        case .schedule:  return schedule
+        case .delegate:  return delegateQ
+        case .eliminate: return eliminate
+        }
+    }
+    func bgColor(for quadrant: Quadrant) -> Color {
+        color(for: quadrant).opacity(0.07)
+    }
+}
+
+let matrixThemes: [MatrixTheme] = [
+    MatrixTheme(id: "classic",  nameEN: "Classic",  nameZH: "經典",
+        doFirst:  Color(red: 0.85, green: 0.22, blue: 0.22),
+        schedule: Color(red: 0.20, green: 0.44, blue: 0.85),
+        delegateQ:Color(red: 0.92, green: 0.55, blue: 0.14),
+        eliminate:Color(red: 0.36, green: 0.36, blue: 0.38)),
+
+    MatrixTheme(id: "ocean",    nameEN: "Ocean",    nameZH: "海洋",
+        doFirst:  Color(red: 0.00, green: 0.50, blue: 0.70),
+        schedule: Color(red: 0.10, green: 0.32, blue: 0.78),
+        delegateQ:Color(red: 0.00, green: 0.68, blue: 0.78),
+        eliminate:Color(red: 0.35, green: 0.48, blue: 0.58)),
+
+    MatrixTheme(id: "forest",   nameEN: "Forest",   nameZH: "森林",
+        doFirst:  Color(red: 0.12, green: 0.52, blue: 0.18),
+        schedule: Color(red: 0.08, green: 0.38, blue: 0.12),
+        delegateQ:Color(red: 0.55, green: 0.70, blue: 0.18),
+        eliminate:Color(red: 0.42, green: 0.50, blue: 0.35)),
+
+    MatrixTheme(id: "sunset",   nameEN: "Sunset",   nameZH: "夕陽",
+        doFirst:  Color(red: 0.90, green: 0.22, blue: 0.18),
+        schedule: Color(red: 0.62, green: 0.18, blue: 0.68),
+        delegateQ:Color(red: 0.96, green: 0.56, blue: 0.10),
+        eliminate:Color(red: 0.54, green: 0.34, blue: 0.28)),
+
+    MatrixTheme(id: "pastel",   nameEN: "Pastel",   nameZH: "粉彩",
+        doFirst:  Color(red: 0.94, green: 0.48, blue: 0.52),
+        schedule: Color(red: 0.50, green: 0.68, blue: 0.96),
+        delegateQ:Color(red: 0.98, green: 0.76, blue: 0.44),
+        eliminate:Color(red: 0.68, green: 0.68, blue: 0.74)),
+
+    MatrixTheme(id: "candy",    nameEN: "Candy",    nameZH: "糖果",
+        doFirst:  Color(red: 0.96, green: 0.18, blue: 0.58),
+        schedule: Color(red: 0.22, green: 0.50, blue: 0.96),
+        delegateQ:Color(red: 0.20, green: 0.82, blue: 0.50),
+        eliminate:Color(red: 0.65, green: 0.30, blue: 0.90)),
+
+    MatrixTheme(id: "mono",     nameEN: "Mono",     nameZH: "單色",
+        doFirst:  Color(red: 0.12, green: 0.12, blue: 0.12),
+        schedule: Color(red: 0.33, green: 0.33, blue: 0.33),
+        delegateQ:Color(red: 0.54, green: 0.54, blue: 0.54),
+        eliminate:Color(red: 0.70, green: 0.70, blue: 0.70)),
+]
+
+extension Quadrant {
+    /// Returns the theme-aware color for this quadrant.
+    func color(theme: String) -> Color {
+        matrixThemes.first { $0.id == theme }?.color(for: self) ?? self.color
+    }
+    func bgColor(theme: String) -> Color {
+        color(theme: theme).opacity(0.07)
+    }
+}
 
 struct AccentOption: Identifiable {
     let id: String   // stored in AppStorage
@@ -146,7 +222,12 @@ struct Str {
     var resetConfirmMsg:    String { zh ? "所有任務將被刪除，並還原成範例資料。" : "All tasks will be deleted and sample data restored." }
     var resetConfirmAction: String { zh ? "重置" : "Reset" }
     var doneButton:         String { zh ? "完成" : "Done" }
-    var accentSection:      String { zh ? "主題色" : "Accent Color" }
+    var accentSection:       String { zh ? "主題色"  : "Accent Color" }
+    var matrixThemeSection:  String { zh ? "象限色系" : "Matrix Colors" }
+    func themeName(_ id: String) -> String {
+        guard let t = matrixThemes.first(where: { $0.id == id }) else { return id }
+        return zh ? t.nameZH : t.nameEN
+    }
 
     // MARK: - AddTaskView
     var newTaskTitle:      String { zh ? "新增任務"  : "New Task" }

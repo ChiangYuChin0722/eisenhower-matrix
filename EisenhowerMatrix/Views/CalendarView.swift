@@ -4,6 +4,9 @@ struct CalendarView: View {
     @EnvironmentObject var taskStore: TaskStore
     @AppStorage("appLanguage") private var lang: String = "en"
     @AppStorage("appAccent")   private var appAccent: String = "blue"
+    @AppStorage("matrixTheme") private var matrixTheme: String = "classic"
+    private func qColor(_ q: Quadrant) -> Color { q.color(theme: matrixTheme) }
+    private func qBg(_ q: Quadrant)    -> Color { q.bgColor(theme: matrixTheme) }
     @State private var selectedDate    = Date()
     @State private var displayedMonth  = Date()
     @State private var viewMode: ViewMode = .month
@@ -141,7 +144,7 @@ struct CalendarView: View {
                 }
                 HStack(spacing: 2) {
                     ForEach(dots, id: \.self) { q in
-                        Circle().fill(q.color).frame(width: 4, height: 4)
+                        Circle().fill(qColor(q)).frame(width: 4, height: 4)
                     }
                 }
                 .frame(height: 4)
@@ -214,7 +217,7 @@ struct CalendarView: View {
     private func dayTaskRow(_ task: EisTask) -> some View {
         HStack(spacing: 12) {
             Circle()
-                .fill(task.isCompleted ? Color.secondary.opacity(0.4) : task.quadrant.color)
+                .fill(task.isCompleted ? Color.secondary.opacity(0.4) : qColor(task.quadrant))
                 .frame(width: 10, height: 10)
             VStack(alignment: .leading, spacing: 2) {
                 Text(task.title)
@@ -228,9 +231,9 @@ struct CalendarView: View {
             }
             Spacer()
             Text(task.quadrant.title)
-                .font(.caption2).foregroundColor(task.quadrant.color)
+                .font(.caption2).foregroundColor(qColor(task.quadrant))
                 .padding(.horizontal, 6).padding(.vertical, 2)
-                .background(task.quadrant.color.opacity(0.1))
+                .background(qColor(task.quadrant).opacity(0.1))
                 .cornerRadius(4)
         }
         .padding(.horizontal, 16).padding(.vertical, 10)
@@ -353,7 +356,7 @@ struct CalendarView: View {
     private func timelineCard(_ task: EisTask) -> some View {
         HStack(spacing: 0) {
             Rectangle()
-                .fill(task.quadrant.color)
+                .fill(qColor(task.quadrant))
                 .frame(width: 3)
                 .cornerRadius(1.5)
 
@@ -373,14 +376,14 @@ struct CalendarView: View {
                     taskStore.toggleCompletion(id: task.id)
                 } label: {
                     Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                        .foregroundColor(task.isCompleted ? task.quadrant.color : .secondary)
+                        .foregroundColor(task.isCompleted ? qColor(task.quadrant) : .secondary)
                 }
                 .buttonStyle(.plain)
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
         }
-        .background(task.quadrant.color.opacity(0.06))
+        .background(qColor(task.quadrant).opacity(0.06))
         .cornerRadius(8)
         .padding(.trailing, 16)
         .contentShape(Rectangle())

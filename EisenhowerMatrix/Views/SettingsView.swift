@@ -8,6 +8,7 @@ struct SettingsView: View {
     @AppStorage("appTheme")           private var appTheme           = "system"
     @AppStorage("appLanguage")        private var lang               = "en"
     @AppStorage("appAccent")          private var appAccent          = "blue"
+    @AppStorage("matrixTheme")        private var matrixTheme        = "classic"
     @State private var showingResetConfirm   = false
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
 
@@ -25,6 +26,13 @@ struct SettingsView: View {
                         Text(s.themeLight).tag("light")
                         Text(s.themeDark).tag("dark")
                     }
+                }
+
+                // MARK: Matrix colour theme
+                Section(s.matrixThemeSection) {
+                    matrixThemePicker
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                 }
 
                 // MARK: Accent colour
@@ -126,6 +134,55 @@ struct SettingsView: View {
             .onAppear { refreshNotificationStatus() }
         }
     }
+
+    // MARK: - Matrix theme picker
+
+    private var matrixThemePicker: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+                ForEach(matrixThemes) { theme in
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.15)) { matrixTheme = theme.id }
+                    } label: {
+                        VStack(spacing: 6) {
+                            // 2×2 colour swatch
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color(uiColor: .secondarySystemBackground))
+                                    .frame(width: 58, height: 58)
+                                if matrixTheme == theme.id {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.primary, lineWidth: 2)
+                                        .frame(width: 58, height: 58)
+                                }
+                                Grid(horizontalSpacing: 3, verticalSpacing: 3) {
+                                    GridRow {
+                                        // top-left = Schedule, top-right = Do Now
+                                        RoundedRectangle(cornerRadius: 3).fill(theme.schedule)
+                                        RoundedRectangle(cornerRadius: 3).fill(theme.doFirst)
+                                    }
+                                    GridRow {
+                                        // bottom-left = Eliminate, bottom-right = Delegate
+                                        RoundedRectangle(cornerRadius: 3).fill(theme.eliminate)
+                                        RoundedRectangle(cornerRadius: 3).fill(theme.delegateQ)
+                                    }
+                                }
+                                .frame(width: 40, height: 40)
+                            }
+                            Text(s.themeName(theme.id))
+                                .font(.caption2)
+                                .foregroundColor(matrixTheme == theme.id ? .primary : .secondary)
+                                .fontWeight(matrixTheme == theme.id ? .semibold : .regular)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.vertical, 4)
+        }
+    }
+
+    // MARK: - Accent colour picker
 
     private var accentColorPicker: some View {
         ScrollView(.horizontal, showsIndicators: false) {

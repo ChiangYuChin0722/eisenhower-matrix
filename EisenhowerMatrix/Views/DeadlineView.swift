@@ -3,6 +3,9 @@ import SwiftUI
 struct DeadlineView: View {
     @EnvironmentObject var taskStore: TaskStore
     @AppStorage("appLanguage") private var lang: String = "en"
+    @AppStorage("matrixTheme") private var matrixTheme: String = "classic"
+    private func qColor(_ q: Quadrant) -> Color { q.color(theme: matrixTheme) }
+    private func qBg(_ q: Quadrant)    -> Color { q.bgColor(theme: matrixTheme) }
     @State private var editingTask: EisTask? = nil
     @State private var showAddTask   = false
     @State private var showCompleted = false
@@ -160,7 +163,7 @@ struct DeadlineView: View {
     private func deadlineRow(_ task: EisTask) -> some View {
         HStack(spacing: 12) {
             Circle()
-                .fill(task.isCompleted ? Color.secondary.opacity(0.4) : task.quadrant.color)
+                .fill(task.isCompleted ? Color.secondary.opacity(0.4) : qColor(task.quadrant))
                 .frame(width: 10, height: 10)
 
             VStack(alignment: .leading, spacing: 3) {
@@ -192,7 +195,7 @@ struct DeadlineView: View {
 
             Text(s.quadrantTitle(task.quadrant))
                 .font(.caption2)
-                .foregroundColor(task.quadrant.color)
+                .foregroundColor(qColor(task.quadrant))
                 .padding(.horizontal, 6).padding(.vertical, 2)
                 .background(task.quadrant.color.opacity(0.1))
                 .cornerRadius(4)

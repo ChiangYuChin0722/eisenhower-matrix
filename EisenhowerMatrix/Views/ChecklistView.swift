@@ -4,6 +4,9 @@ struct ChecklistView: View {
     @EnvironmentObject var taskStore: TaskStore
     @AppStorage("appLanguage") private var lang: String = "en"
     @AppStorage("appAccent")   private var appAccent: String = "blue"
+    @AppStorage("matrixTheme") private var matrixTheme: String = "classic"
+    private func qColor(_ q: Quadrant) -> Color { q.color(theme: matrixTheme) }
+    private func qBg(_ q: Quadrant)    -> Color { q.bgColor(theme: matrixTheme) }
     @State private var showAddTask           = false
     @State private var editingTask: EisTask? = nil
     @State private var showCompleted         = false
@@ -263,13 +266,13 @@ struct ChecklistView: View {
             } label: {
                 ZStack {
                     Circle()
-                        .stroke(task.isCompleted ? task.quadrant.color : Color.gray.opacity(0.35), lineWidth: 1.5)
+                        .stroke(task.isCompleted ? qColor(task.quadrant) : Color.gray.opacity(0.35), lineWidth: 1.5)
                         .frame(width: 24, height: 24)
                     if task.isCompleted {
-                        Circle().fill(task.quadrant.color.opacity(0.15)).frame(width: 24, height: 24)
+                        Circle().fill(qColor(task.quadrant).opacity(0.15)).frame(width: 24, height: 24)
                         Image(systemName: "checkmark")
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(task.quadrant.color)
+                            .foregroundColor(qColor(task.quadrant))
                     }
                 }
             }
@@ -285,7 +288,7 @@ struct ChecklistView: View {
                 HStack(spacing: 8) {
                     Text(task.quadrant.emoji + " " + s.quadrantTitle(task.quadrant))
                         .font(.caption2)
-                        .foregroundColor(task.quadrant.color.opacity(0.8))
+                        .foregroundColor(qColor(task.quadrant).opacity(0.8))
 
                     if task.recurrence != .none {
                         Text("·").foregroundColor(.secondary)
