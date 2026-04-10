@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import WidgetKit
 
 class TaskStore: ObservableObject {
     @Published var tasks: [EisTask]                      = []
@@ -206,6 +207,32 @@ class TaskStore: ObservableObject {
         if let data = try? JSONEncoder().encode(tasks) {
             defaults.set(data, forKey: saveKey)
         }
+        writeWidgetData()
+    }
+
+    private func writeWidgetData() {
+        struct Item: Codable {
+            let id: String; let title: String; let dueDate: Date
+            let quadrantRaw: String; let isOverdue: Bool
+        }
+        struct Snap: Codable {
+            let totalCount: Int; let completedCount: Int; let pendingCount: Int
+            let currentStreak: Int; let upcomingDeadlines: [Item]
+        }
+        let now = Date()
+        let upcoming = tasksWithDeadlines
+            .filter { !$0.isCompleted }
+            .prefix(5)
+            .map { t in Item(id: t.id.uuidString, title: t.title, dueDate: t.dueDate!,
+                             quadrantRaw: t.quadrant.rawValue,
+                             isOverdue: t.dueDate! < now) }
+        let snap = Snap(totalCount: totalCount, completedCount: completedCount,
+                        pendingCount: pendingCount, currentStreak: currentStreak,
+                        upcomingDeadlines: Array(upcoming))
+        if let data = try? JSONEncoder().encode(snap) {
+            defaults.set(data, forKey: "widgetSnapshot")
+        }
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func loadTasks() {

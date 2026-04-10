@@ -28,6 +28,9 @@
 		AAAA020000000016 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000016 /* HapticManager.swift */; };
 		AAAA020000000017 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000017 /* OnboardingView.swift */; };
 		AAAA020000000018 /* PomodoroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000018 /* PomodoroView.swift */; };
+		BBBB020000000001 /* EisenhowerMatrixWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB010000000001 /* EisenhowerMatrixWidget.swift */; };
+		BBBB020000000002 /* WidgetDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB010000000002 /* WidgetDataModel.swift */; };
+		BBBB020000000003 /* EisenhowerMatrixWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BBBB010000000005 /* EisenhowerMatrixWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,10 +56,37 @@
 		AAAA010000000016 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
 		AAAA010000000017 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		AAAA010000000018 /* PomodoroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroView.swift; sourceTree = "<group>"; };
+		AAAA010000000019 /* EisenhowerMatrix.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EisenhowerMatrix.entitlements; sourceTree = "<group>"; };
+		BBBB010000000001 /* EisenhowerMatrixWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EisenhowerMatrixWidget.swift; sourceTree = "<group>"; };
+		BBBB010000000002 /* WidgetDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDataModel.swift; sourceTree = "<group>"; };
+		BBBB010000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BBBB010000000004 /* EisenhowerMatrixWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EisenhowerMatrixWidget.entitlements; sourceTree = "<group>"; };
+		BBBB010000000005 /* EisenhowerMatrixWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = EisenhowerMatrixWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		BBBB000000000004 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				BBBB020000000003 /* EisenhowerMatrixWidget.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		AAAA000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BBBB000000000002 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -70,6 +100,7 @@
 			isa = PBXGroup;
 			children = (
 				AAAA030000000002 /* EisenhowerMatrix */,
+				BBBB030000000001 /* EisenhowerMatrixWidget */,
 				AAAA030000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -85,6 +116,7 @@
 				AAAA030000000005 /* Views */,
 				AAAA01000000000E /* Assets.xcassets */,
 				AAAA030000000006 /* Preview Content */,
+				AAAA010000000019 /* EisenhowerMatrix.entitlements */,
 			);
 			path = EisenhowerMatrix;
 			sourceTree = "<group>";
@@ -93,6 +125,7 @@
 			isa = PBXGroup;
 			children = (
 				AAAA010000000010 /* EisenhowerMatrix.app */,
+				BBBB010000000005 /* EisenhowerMatrixWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -142,6 +175,17 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
+		BBBB030000000001 /* EisenhowerMatrixWidget */ = {
+			isa = PBXGroup;
+			children = (
+				BBBB010000000001 /* EisenhowerMatrixWidget.swift */,
+				BBBB010000000002 /* WidgetDataModel.swift */,
+				BBBB010000000003 /* Info.plist */,
+				BBBB010000000004 /* EisenhowerMatrixWidget.entitlements */,
+			);
+			path = EisenhowerMatrixWidget;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -152,15 +196,34 @@
 				AAAA000000000002 /* Sources */,
 				AAAA000000000003 /* Resources */,
 				AAAA000000000001 /* Frameworks */,
+				BBBB000000000004 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				BBBB040000000002 /* PBXTargetDependency */,
 			);
 			name = EisenhowerMatrix;
 			productName = EisenhowerMatrix;
 			productReference = AAAA010000000010 /* EisenhowerMatrix.app */;
 			productType = "com.apple.product-type.application";
+		};
+		BBBB040000000001 /* EisenhowerMatrixWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BBBB050000000001 /* Build configuration list for PBXNativeTarget "EisenhowerMatrixWidget" */;
+			buildPhases = (
+				BBBB000000000001 /* Sources */,
+				BBBB000000000002 /* Frameworks */,
+				BBBB000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = EisenhowerMatrixWidget;
+			productName = EisenhowerMatrixWidget;
+			productReference = BBBB010000000005 /* EisenhowerMatrixWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -173,6 +236,9 @@
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					AAAA040000000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					BBBB040000000001 = {
 						CreatedOnToolsVersion = 15.0;
 					};
 				};
@@ -191,6 +257,7 @@
 			projectRoot = "";
 			targets = (
 				AAAA040000000001 /* EisenhowerMatrix */,
+				BBBB040000000001 /* EisenhowerMatrixWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -202,6 +269,13 @@
 			files = (
 				AAAA02000000000E /* Assets.xcassets in Resources */,
 				AAAA02000000000F /* Preview Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BBBB000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -234,7 +308,34 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BBBB000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BBBB020000000001 /* EisenhowerMatrixWidget.swift in Sources */,
+				BBBB020000000002 /* WidgetDataModel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BBBB040000000002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BBBB040000000001 /* EisenhowerMatrixWidget */;
+			targetProxy = BBBB040000000003 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXContainerItemProxy section */
+		BBBB040000000003 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AAAA060000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BBBB040000000001;
+			remoteInfo = EisenhowerMatrixWidget;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin XCBuildConfiguration section */
 		AAAA070000000001 /* Debug */ = {
@@ -352,6 +453,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = EisenhowerMatrix/EisenhowerMatrix.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"EisenhowerMatrix/Preview Content\"";
@@ -380,6 +482,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = EisenhowerMatrix/EisenhowerMatrix.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"EisenhowerMatrix/Preview Content\"";
@@ -403,6 +506,56 @@
 			};
 			name = Release;
 		};
+		BBBB070000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = EisenhowerMatrixWidget/EisenhowerMatrixWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = EisenhowerMatrixWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.EisenhowerMatrix.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BBBB070000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = EisenhowerMatrixWidget/EisenhowerMatrixWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = EisenhowerMatrixWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.EisenhowerMatrix.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -420,6 +573,15 @@
 			buildConfigurations = (
 				AAAA070000000003 /* Debug */,
 				AAAA070000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BBBB050000000001 /* Build configuration list for PBXNativeTarget "EisenhowerMatrixWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BBBB070000000001 /* Debug */,
+				BBBB070000000002 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
