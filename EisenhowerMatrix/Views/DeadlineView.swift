@@ -158,14 +158,14 @@ struct DeadlineView: View {
         Section {
             ForEach(tasks) { task in
                 deadlineRow(task)
-                    .swipeActions(edge: .leading) {
+                    .swipeActions(edge: .leading, allowsFullSwipe: true) {
                         Button {
-                            taskStore.toggleCompletion(id: task.id)
+                            pomodoroTask = task
+                            showPomodoro = true
                         } label: {
-                            Label(task.isCompleted ? s.undo : s.done,
-                                  systemImage: task.isCompleted ? "arrow.uturn.backward" : "checkmark")
+                            Label(s.focusLabel, systemImage: "timer")
                         }
-                        .tint(.green)
+                        .tint(.purple)
                     }
                     .swipeActions(edge: .trailing) {
                         Button(role: .destructive) {
@@ -177,13 +177,6 @@ struct DeadlineView: View {
                             Label(s.edit, systemImage: "pencil")
                         }
                         .tint(.blue)
-                        Button {
-                            pomodoroTask = task
-                            showPomodoro = true
-                        } label: {
-                            Label(s.focusLabel, systemImage: "timer")
-                        }
-                        .tint(.purple)
                     }
             }
         } header: {

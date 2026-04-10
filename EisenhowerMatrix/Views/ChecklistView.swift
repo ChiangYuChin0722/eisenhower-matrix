@@ -155,12 +155,12 @@ struct ChecklistView: View {
                         .listRowSeparator(.hidden)
                         .swipeActions(edge: .leading, allowsFullSwipe: true) {
                             Button {
-                                withAnimation { taskStore.toggleCompletion(id: task.id) }
+                                pomodoroTask = task
+                                showPomodoro = true
                             } label: {
-                                Label(task.isCompleted ? s.undo : s.done,
-                                      systemImage: task.isCompleted ? "arrow.uturn.backward" : "checkmark")
+                                Label(s.focusLabel, systemImage: "timer")
                             }
-                            .tint(.green)
+                            .tint(.purple)
                         }
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
@@ -173,13 +173,6 @@ struct ChecklistView: View {
                                 Label(s.edit, systemImage: "pencil")
                             }
                             .tint(accent)
-                            Button {
-                                pomodoroTask = task
-                                showPomodoro = true
-                            } label: {
-                                Label(s.focusLabel, systemImage: "timer")
-                            }
-                            .tint(.purple)
                         }
                 }
             }

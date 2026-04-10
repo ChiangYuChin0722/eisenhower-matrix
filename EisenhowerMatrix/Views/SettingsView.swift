@@ -17,6 +17,7 @@ struct SettingsView: View {
     @AppStorage("pomodoroShortBreak")   private var pomodoroShort      = 5
     @AppStorage("pomodoroLongBreak")    private var pomodoroLong       = 15
     @State private var showingResetConfirm   = false
+    @State private var showingQuadrantEdit   = false
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
 
     private var s: Str { Str(lang) }
@@ -43,11 +44,24 @@ struct SettingsView: View {
                 }
 
                 // MARK: Custom quadrant names
-                Section(s.customQuadrantSection) {
-                    quadrantNameRow(.doFirst,   $nameDoFirst)
-                    quadrantNameRow(.schedule,  $nameSchedule)
-                    quadrantNameRow(.delegate,  $nameDelegate)
-                    quadrantNameRow(.eliminate, $nameEliminate)
+                Section {
+                    ForEach(Quadrant.allCases) { q in
+                        HStack(spacing: 10) {
+                            Circle()
+                                .fill(q.color(theme: matrixTheme))
+                                .frame(width: 10, height: 10)
+                            Text(s.quadrantTitle(q))
+                                .font(.subheadline)
+                        }
+                    }
+                    Button {
+                        showingQuadrantEdit = true
+                    } label: {
+                        Label(lang == "zh" ? "編輯象限名稱" : "Edit Quadrant Names",
+                              systemImage: "pencil")
+                    }
+                } header: {
+                    Text(s.customQuadrantSection)
                 }
 
                 // MARK: Accent colour
@@ -105,26 +119,6 @@ struct SettingsView: View {
                     Text(s.notifSection)
                 }
 
-                // MARK: About
-                Section(s.aboutSection) {
-                    InfoRow(icon: "bolt.fill",     color: .red,    title: s.quadrantTitle(.doFirst),
-                            subtitle: s.quadrantSubtitle(.doFirst))
-                    InfoRow(icon: "calendar",      color: .blue,   title: s.quadrantTitle(.schedule),
-                            subtitle: s.quadrantSubtitle(.schedule))
-                    InfoRow(icon: "person.2.fill", color: .orange, title: s.quadrantTitle(.delegate),
-                            subtitle: s.quadrantSubtitle(.delegate))
-                    InfoRow(icon: "minus.circle",  color: .secondary, title: s.quadrantTitle(.eliminate),
-                            subtitle: s.quadrantSubtitle(.eliminate))
-                }
-
-                // MARK: Statistics
-                Section(s.statsSection) {
-                    LabeledContent(s.totalTasksLabel,    value: "\(taskStore.totalCount)")
-                    LabeledContent(s.completedLabel,     value: "\(taskStore.completedCount)")
-                    LabeledContent(s.completionRateLabel,value: "\(Int(taskStore.completionRate * 100))%")
-                    LabeledContent(s.currentStreakLabel, value: s.streak(taskStore.currentStreak))
-                }
-
                 // MARK: Reset
                 Section(s.resetSectionTitle) {
                     Button(role: .destructive) {
@@ -156,6 +150,34 @@ struct SettingsView: View {
                 Text(s.resetConfirmMsg)
             }
             .onAppear { refreshNotificationStatus() }
+            .sheet(isPresented: $showingQuadrantEdit) {
+                quadrantEditSheet
+            }
+        }
+    }
+
+    // MARK: - Quadrant name edit sheet
+
+    private var quadrantEditSheet: some View {
+        NavigationView {
+            Form {
+                Section(footer: Text(lang == "zh" ? "留空以使用預設名稱" : "Leave blank to use default names").font(.caption).foregroundColor(.secondary)) {
+                    quadrantNameRow(.doFirst,   $nameDoFirst)
+                    quadrantNameRow(.schedule,  $nameSchedule)
+                    quadrantNameRow(.delegate,  $nameDelegate)
+                    quadrantNameRow(.eliminate, $nameEliminate)
+                }
+            }
+            .scrollContentBackground(.hidden)
+            .background(Color.appBackground)
+            .navigationTitle(lang == "zh" ? "編輯象限名稱" : "Edit Quadrant Names")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(s.doneButton) { showingQuadrantEdit = false }
+                        .fontWeight(.semibold)
+                }
+            }
         }
     }
 
