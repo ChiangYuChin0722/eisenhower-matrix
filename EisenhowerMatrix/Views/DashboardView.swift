@@ -15,14 +15,16 @@ struct DashboardView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: 12) {
                     overallCard
                     streakCard
                     completionChart
                     quadrantCards
                     recentActivity
                 }
-                .padding()
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 16)
             }
             .navigationTitle(s.tabDashboard)
             .navigationBarTitleDisplayMode(.inline)
@@ -31,7 +33,7 @@ struct DashboardView: View {
     }
 
     private var overallCard: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(s.overallProgress).font(.headline)
@@ -58,7 +60,8 @@ struct DashboardView: View {
                 statBadge(value: taskStore.completedCount, label: s.completedLabel, color: .green)
             }
         }
-        .padding()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
         .background(Color(uiColor: .systemBackground))
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
@@ -77,7 +80,8 @@ struct DashboardView: View {
             }
             Spacer()
         }
-        .padding()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
         .background(Color(uiColor: .systemBackground))
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
@@ -107,9 +111,10 @@ struct DashboardView: View {
                     AxisGridLine()
                 }
             }
-            .frame(height: 120)
+            .frame(height: 110)
         }
-        .padding()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
         .background(Color(uiColor: .systemBackground))
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
@@ -156,7 +161,7 @@ struct DashboardView: View {
     }
 
     private var recentActivity: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(s.recentTasks).font(.headline)
 
             let recent = taskStore.tasks.sorted { $0.createdAt > $1.createdAt }.prefix(8)
@@ -176,7 +181,8 @@ struct DashboardView: View {
                 }
             }
         }
-        .padding()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
         .background(Color(uiColor: .systemBackground))
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.05), radius: 6, y: 2)

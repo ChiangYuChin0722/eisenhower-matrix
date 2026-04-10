@@ -147,7 +147,7 @@ struct DeadlineView: View {
                     .listRowBackground(Color.clear)
             }
         }
-        .listStyle(.insetGrouped)
+        .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .background(Color.appBackground)
     }
@@ -195,6 +195,10 @@ struct DeadlineView: View {
                     .animation(.spring(response: 0.4, dampingFraction: 0.7), value: tasks.count)
             }
             .font(.caption)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
+            .background(Color.appBackground)
+            .listRowInsets(EdgeInsets())
         }
     }
 

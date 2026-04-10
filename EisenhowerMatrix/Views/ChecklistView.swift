@@ -58,7 +58,6 @@ struct ChecklistView: View {
             ZStack(alignment: .bottomTrailing) {
                 VStack(spacing: 0) {
                     if !isReorderMode { categoryPicker }
-                    if totalCount > 0 { progressBar }
 
                     if taskStore.checklistTasks.isEmpty {
                         emptyState
@@ -137,6 +136,30 @@ struct ChecklistView: View {
 
     private var taskList: some View {
         List {
+            // Progress bar inline — no gap between it and the first row
+            if totalCount > 0 {
+                HStack(spacing: 0) {
+                    Text("\(completedCount) / \(totalCount) \(s.done.lowercased())")
+                        .font(.caption).foregroundColor(.secondary)
+                    Spacer()
+                    Text("\(Int(progress * 100))%")
+                        .font(.caption).fontWeight(.semibold).foregroundColor(accent)
+                        .contentTransition(.numericText())
+                        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: completedCount)
+                }
+                .padding(.horizontal, 16)
+                .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 2, trailing: 0))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+
+                ProgressView(value: progress).tint(accent)
+                    .padding(.horizontal, 16)
+                    .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 6, trailing: 0))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .animation(.spring(response: 0.5, dampingFraction: 0.7), value: progress)
+            }
+
             if isReorderMode {
                 ForEach(displayedTasks) { task in
                     checklistRow(task)
@@ -182,7 +205,7 @@ struct ChecklistView: View {
                 .animation(.spring(response: 0.38, dampingFraction: 0.78), value: displayedTasks.map(\.id))
             }
         }
-        .listStyle(.insetGrouped)
+        .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .background(Color.appBackground)
         .environment(\.editMode, .constant(isReorderMode ? .active : .inactive))
@@ -424,29 +447,6 @@ struct ChecklistView: View {
             .cornerRadius(20)
         }
         .buttonStyle(.plain)
-    }
-
-    // MARK: - Progress bar
-
-    private var progressBar: some View {
-        VStack(spacing: 0) {
-            VStack(spacing: 6) {
-                HStack {
-                    Text("\(completedCount) / \(totalCount) \(s.done.lowercased())")
-                        .font(.caption).foregroundColor(.secondary)
-                    Spacer()
-                    Text("\(Int(progress * 100))%")
-                        .font(.caption).fontWeight(.semibold).foregroundColor(accent)
-                        .contentTransition(.numericText())
-                        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: completedCount)
-                }
-                .padding(.horizontal, 16)
-                ProgressView(value: progress).tint(accent).padding(.horizontal, 16)
-            }
-            .padding(.vertical, 10)
-            .background(Color.appBackground)
-            Divider()
-        }
     }
 
     // MARK: - Add-category sheet
