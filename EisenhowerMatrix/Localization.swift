@@ -229,12 +229,8 @@ struct Str {
         return zh ? t.nameZH : t.nameEN
     }
 
-    // MARK: - Checklist extras (batch select / reorder / subtasks)
-    var reorderButton:    String { zh ? "排序"   : "Reorder" }
-    var cancelSelectBtn:  String { zh ? "取消"   : "Cancel" }
-    var doneReorder:      String { zh ? "完成"   : "Done" }
-    func completeSelected(_ n: Int) -> String { zh ? "完成 (\(n))" : "Complete (\(n))" }
-    func deleteSelected(_ n: Int)   -> String { zh ? "刪除 (\(n))" : "Delete (\(n))" }
+    // MARK: - Checklist extras (reorder / subtasks)
+    var doneReorder: String { zh ? "完成" : "Done" }
     func subtasksOf(_ done: Int, _ total: Int) -> String {
         zh ? "\(done)/\(total) 子任務" : "\(done)/\(total) subtasks"
     }

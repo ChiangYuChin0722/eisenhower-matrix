@@ -16,10 +16,8 @@ struct ChecklistView: View {
     @State private var showAddCategory       = false
     @State private var newCategoryName       = ""
     @State private var newCategoryIcon       = "list.bullet"
-    // Expand / select / reorder
+    // Expand / reorder
     @State private var expandedIds           = Set<UUID>()
-    @State private var isSelectMode          = false
-    @State private var selectedIds           = Set<UUID>()
     @State private var isReorderMode         = false
     @FocusState private var quickAddFocused: Bool
 
@@ -72,9 +70,7 @@ struct ChecklistView: View {
                     taskList
                 }
 
-                if isSelectMode {
-                    batchActionBar
-                } else if !isReorderMode {
+                if !isReorderMode {
                     quickAddBar
                 }
             }
@@ -83,11 +79,7 @@ struct ChecklistView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Group {
-                        if isSelectMode {
-                            Button(s.cancelSelectBtn) {
-                                withAnimation { isSelectMode = false; selectedIds = [] }
-                            }
-                        } else if isReorderMode {
+                        if isReorderMode {
                             Button(s.doneReorder) {
                                 withAnimation { isReorderMode = false }
                             }
@@ -105,7 +97,7 @@ struct ChecklistView: View {
                         }
                     }
                 }
-                if !isSelectMode && !isReorderMode {
+                if !isReorderMode {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         HStack(spacing: 2) {
                             Button {
@@ -182,16 +174,7 @@ struct ChecklistView: View {
 
         return VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 14) {
-                // Left: selection checkbox OR completion button
-                if isSelectMode {
-                    Image(systemName: selectedIds.contains(task.id)
-                          ? "checkmark.circle.fill" : "circle")
-                        .font(.title3)
-                        .foregroundColor(selectedIds.contains(task.id) ? accent : Color.gray.opacity(0.4))
-                        .onTapGesture { toggleSelection(task.id) }
-                } else {
-                    completionButton(task)
-                }
+                completionButton(task)
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(task.title)
@@ -228,9 +211,7 @@ struct ChecklistView: View {
             .padding(.vertical, 11)
             .contentShape(Rectangle())
             .onTapGesture {
-                if isSelectMode {
-                    toggleSelection(task.id)
-                } else if hasExtra {
+                if hasExtra {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         if expandedIds.contains(task.id) {
                             expandedIds.remove(task.id)
@@ -240,13 +221,6 @@ struct ChecklistView: View {
                     }
                 } else {
                     editingTask = task
-                }
-            }
-            .onLongPressGesture {
-                guard !isReorderMode else { return }
-                withAnimation {
-                    isSelectMode = true
-                    selectedIds  = [task.id]
                 }
             }
 
@@ -359,41 +333,6 @@ struct ChecklistView: View {
         .contentShape(Rectangle())
     }
 
-    // MARK: - Batch action bar
-
-    private var batchActionBar: some View {
-        VStack(spacing: 0) {
-            Divider()
-            HStack(spacing: 12) {
-                let n = selectedIds.count
-                Button {
-                    taskStore.completeMultiple(ids: selectedIds)
-                    withAnimation { isSelectMode = false; selectedIds = [] }
-                } label: {
-                    Label(s.completeSelected(n), systemImage: "checkmark.circle")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .tint(.green)
-                .disabled(n == 0)
-
-                Button {
-                    taskStore.deleteMultiple(ids: selectedIds)
-                    withAnimation { isSelectMode = false; selectedIds = [] }
-                } label: {
-                    Label(s.deleteSelected(n), systemImage: "trash")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .tint(.red)
-                .disabled(n == 0)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color(uiColor: .systemBackground))
-        }
-    }
-
     // MARK: - Quick add bar
 
     private var quickAddBar: some View {
@@ -423,11 +362,6 @@ struct ChecklistView: View {
         taskStore.addTask(EisTask(title: t, quadrant: .doFirst, isInChecklist: true,
                                   checklistCategoryId: selectedCategoryId ?? taskStore.checklistCategories.first?.id))
         newItemTitle = ""
-    }
-
-    private func toggleSelection(_ id: UUID) {
-        if selectedIds.contains(id) { selectedIds.remove(id) }
-        else { selectedIds.insert(id) }
     }
 
     // MARK: - Category picker
