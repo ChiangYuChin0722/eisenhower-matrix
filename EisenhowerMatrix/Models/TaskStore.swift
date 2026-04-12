@@ -23,7 +23,12 @@ class TaskStore: ObservableObject {
     init() {
         loadCategories()
         loadTasks()
-        if tasks.isEmpty { loadSampleData() }
+        // Only show sample data on the very first launch — not after reset or re-launch
+        let hasLaunched = defaults.bool(forKey: "hasLaunchedBefore")
+        if tasks.isEmpty && !hasLaunched {
+            loadSampleData()
+            defaults.set(true, forKey: "hasLaunchedBefore")
+        }
         NotificationManager.shared.requestPermission()
 
         // Auto-connect/disconnect Firestore when auth changes
