@@ -88,9 +88,16 @@ struct CalendarView: View {
 
             Divider()
 
-            // Day task list — FIXED: use ScrollView not List
             dayTaskSection
         }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 40, coordinateSpace: .local)
+                .onEnded { v in
+                    guard abs(v.translation.width) > abs(v.translation.height) else { return }
+                    if v.translation.width < -40     { withAnimation(.easeInOut) { changeMonth(1) } }
+                    else if v.translation.width > 40 { withAnimation(.easeInOut) { changeMonth(-1) } }
+                }
+        )
     }
 
     private var monthNavHeader: some View {
@@ -249,25 +256,27 @@ struct CalendarView: View {
 
     // MARK: - Week Timeline View
 
-    private let timeColW: CGFloat = 44
+    private let timeColW: CGFloat = 36
 
     private var weekView: some View {
         VStack(spacing: 0) {
-            // Navigation row
-            HStack {
+            // Navigation row — fixed height, anchored background
+            HStack(spacing: 0) {
                 Button { moveWeek(-1) } label: {
-                    Image(systemName: "chevron.left").frame(width: 36, height: 36)
+                    Image(systemName: "chevron.left").frame(width: 44, height: 44)
                 }
                 Spacer()
                 Text(weekRangeTitle).font(.headline)
                 Spacer()
                 Button { moveWeek(1) } label: {
-                    Image(systemName: "chevron.right").frame(width: 36, height: 36)
+                    Image(systemName: "chevron.right").frame(width: 44, height: 44)
                 }
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 4)
+            .frame(height: 44)
+            .background(Color(uiColor: .systemBackground))
 
-            // Day header columns
+            // Day column headers — flush to nav row
             HStack(spacing: 0) {
                 Color.clear.frame(width: timeColW)
                 ForEach(daysInWeek, id: \.self) { date in
@@ -275,25 +284,22 @@ struct CalendarView: View {
                 }
             }
             .padding(.trailing, 4)
+            .background(Color(uiColor: .systemBackground))
 
             Divider()
 
-            // Scrollable timeline body
+            // Scrollable hour grid
+            // Use VStack (not Lazy) so scrollTo() always finds the target row
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(spacing: 0) {
-                        // All-day row
+                    VStack(spacing: 0) {
                         weekAllDayRow
-
-                        // Hour rows 6 AM – 10 PM
                         ForEach(6...22, id: \.self) { hour in
-                            weekHourRow(hour: hour)
-                                .id(hour)
+                            weekHourRow(hour: hour).id(hour)
                         }
                         Color.clear.frame(height: 40)
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .onAppear {
                     let h = min(max(cal.component(.hour, from: Date()), 6), 22)
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -304,8 +310,18 @@ struct CalendarView: View {
                     proxy.scrollTo(6, anchor: .top)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .layoutPriority(1)
         }
+        .simultaneousGesture(swipeWeekGesture)
+    }
+
+    private var swipeWeekGesture: some Gesture {
+        DragGesture(minimumDistance: 40, coordinateSpace: .local)
+            .onEnded { v in
+                guard abs(v.translation.width) > abs(v.translation.height) else { return }
+                if v.translation.width < -40       { withAnimation(.easeInOut) { moveWeek(1) } }
+                else if v.translation.width > 40   { withAnimation(.easeInOut) { moveWeek(-1) } }
+            }
     }
 
     private func weekHeaderCell(_ date: Date) -> some View {
@@ -313,28 +329,27 @@ struct CalendarView: View {
         let isSelected = cal.isDate(date, inSameDayAs: selectedDate)
 
         return Button { selectedDate = date } label: {
-            VStack(spacing: 2) {
+            VStack(spacing: 1) {
                 Text(weekdayAbbr(date))
-                    .font(.system(size: 11))
+                    .font(.system(size: 10))
                     .foregroundColor(isSelected ? accent : .secondary)
                 ZStack {
                     Circle()
                         .fill(isSelected ? accent : (isToday ? accent.opacity(0.15) : .clear))
-                        .frame(width: 28, height: 28)
+                        .frame(width: 26, height: 26)
                     Text("\(cal.component(.day, from: date))")
-                        .font(.system(size: 13, weight: isToday ? .bold : .regular))
+                        .font(.system(size: 12, weight: isToday ? .bold : .regular))
                         .foregroundColor(isSelected ? .white : (isToday ? accent : .primary))
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 4)
+            .padding(.vertical, 5)
         }
         .buttonStyle(.plain)
     }
 
-    @ViewBuilder
-    private var weekAllDayRow: some View {
-        let tasksByDay: [(Date, [EisTask])] = daysInWeek.map { date in
+    private var weekAllDayTasksByDay: [(Date, [EisTask])] {
+        daysInWeek.map { date in
             let tasks = taskStore.tasks(for: date).filter { task in
                 guard let d = task.dueDate else { return false }
                 let c = cal.dateComponents([.hour, .minute], from: d)
@@ -342,7 +357,11 @@ struct CalendarView: View {
             }
             return (date, tasks)
         }
-        if tasksByDay.contains(where: { !$0.1.isEmpty }) {
+    }
+
+    @ViewBuilder
+    private var weekAllDayRow: some View {
+        if weekAllDayTasksByDay.contains(where: { !$0.1.isEmpty }) {
             HStack(alignment: .top, spacing: 0) {
                 Text(s.allDay)
                     .font(.system(size: 9, weight: .medium))
@@ -351,7 +370,7 @@ struct CalendarView: View {
                     .padding(.trailing, 4)
                     .padding(.top, 4)
 
-                ForEach(tasksByDay, id: \.0) { (_, tasks) in
+                ForEach(weekAllDayTasksByDay, id: \.0) { (_, tasks) in
                     VStack(spacing: 2) {
                         ForEach(tasks) { task in weekTaskChip(task) }
                     }
@@ -460,6 +479,18 @@ struct CalendarView: View {
     // MARK: - Day Timeline View
 
     private var dayTimelineView: some View {
+        dayTimelineContent
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 40, coordinateSpace: .local)
+                    .onEnded { v in
+                        guard abs(v.translation.width) > abs(v.translation.height) else { return }
+                        if v.translation.width < -40     { withAnimation(.easeInOut) { moveDay(1) } }
+                        else if v.translation.width > 40 { withAnimation(.easeInOut) { moveDay(-1) } }
+                    }
+            )
+    }
+
+    private var dayTimelineContent: some View {
         VStack(spacing: 0) {
             // Date navigation bar
             HStack(spacing: 0) {
