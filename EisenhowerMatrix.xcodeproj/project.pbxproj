@@ -36,6 +36,7 @@
 		AAAA020000000019 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA01000000001A /* AuthManager.swift */; };
 		AAAA020000000020 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA01000000001B /* LoginView.swift */; };
 		AAAA020000000021 /* ProfileEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA01000000001D /* ProfileEditView.swift */; };
+		AAAA020000000022 /* FirestoreConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA01000000001E /* FirestoreConversion.swift */; };
 		BBBB020000000001 /* EisenhowerMatrixWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB010000000001 /* EisenhowerMatrixWidget.swift */; };
 		BBBB020000000002 /* WidgetDataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBB010000000002 /* WidgetDataModel.swift */; };
 		BBBB020000000003 /* EisenhowerMatrixWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BBBB010000000005 /* EisenhowerMatrixWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -70,6 +71,7 @@
 		AAAA010000000001 /* EisenhowerMatrixApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EisenhowerMatrixApp.swift; sourceTree = "<group>"; };
 		AAAA010000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		AAAA010000000003 /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
+		AAAA01000000001E /* FirestoreConversion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreConversion.swift; sourceTree = "<group>"; };
 		AAAA010000000004 /* TaskStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskStore.swift; sourceTree = "<group>"; };
 		AAAA010000000005 /* MatrixView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixView.swift; sourceTree = "<group>"; };
 		AAAA010000000006 /* TaskDotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDotView.swift; sourceTree = "<group>"; };
@@ -164,6 +166,7 @@
 			children = (
 				AAAA010000000003 /* Task.swift */,
 				AAAA010000000004 /* TaskStore.swift */,
+				AAAA01000000001E /* FirestoreConversion.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -345,6 +348,7 @@
 				AAAA020000000019 /* AuthManager.swift in Sources */,
 				AAAA020000000020 /* LoginView.swift in Sources */,
 				AAAA020000000021 /* ProfileEditView.swift in Sources */,
+				AAAA020000000022 /* FirestoreConversion.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

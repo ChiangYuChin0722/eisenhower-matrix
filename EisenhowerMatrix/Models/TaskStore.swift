@@ -1,22 +1,125 @@
 import Foundation
 import Combine
 import WidgetKit
+import FirebaseFirestore
+import FirebaseAuth
 
 class TaskStore: ObservableObject {
-    @Published var tasks: [EisTask]                      = []
+    @Published var tasks: [EisTask]                        = []
     @Published var checklistCategories: [ChecklistCategory] = []
+    @Published var isSyncing                               = false
 
     // v4: added Recurrence, ChecklistCategory, completedAt
     private let saveKey       = "eisenhower_tasks_v4"
     private let categoriesKey = "eisenhower_categories_v1"
-    // Shared with Widget Extension via App Group (set up group in Xcode → Signing & Capabilities)
+    // Shared with Widget Extension via App Group
     private let defaults = UserDefaults(suiteName: "group.com.eisenhower.matrix") ?? .standard
+
+    private var db           = Firestore.firestore()
+    private var taskListener: ListenerRegistration?
+    private var catListener:  ListenerRegistration?
+    private var authHandle:   AuthStateDidChangeListenerHandle?
 
     init() {
         loadCategories()
         loadTasks()
         if tasks.isEmpty { loadSampleData() }
         NotificationManager.shared.requestPermission()
+
+        // Auto-connect/disconnect Firestore when auth changes
+        authHandle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
+            DispatchQueue.main.async {
+                if let user = user { self?.startSync(uid: user.uid) }
+                else               { self?.stopSync() }
+            }
+        }
+    }
+
+    deinit {
+        stopSync()
+        if let h = authHandle { Auth.auth().removeStateDidChangeListener(h) }
+    }
+
+    // MARK: - Firestore Sync
+
+    private var uid: String? { Auth.auth().currentUser?.uid }
+
+    func startSync(uid: String) {
+        stopSync()
+        isSyncing = true
+        let base = db.collection("users").document(uid)
+
+        // Real-time task listener
+        taskListener = base.collection("tasks")
+            .addSnapshotListener { [weak self] snap, error in
+                guard let self = self, let snap = snap else { return }
+                DispatchQueue.main.async {
+                    let migratedKey = "migrated_\(uid)"
+                    if snap.documents.isEmpty && !self.defaults.bool(forKey: migratedKey) {
+                        // First login – push local data to Firestore
+                        for task in self.tasks { self.fsWrite(task, uid: uid) }
+                        for cat  in self.checklistCategories { self.fsWriteCat(cat, uid: uid) }
+                        self.defaults.set(true, forKey: migratedKey)
+                    } else if !snap.documents.isEmpty {
+                        let fetched = snap.documents
+                            .compactMap { EisTask.from(firestoreData: $0.data()) }
+                            .sorted { $0.createdAt < $1.createdAt }
+                        self.tasks = fetched
+                        self.saveLocalCache()
+                    }
+                    self.isSyncing = false
+                }
+            }
+
+        // Real-time category listener
+        catListener = base.collection("categories")
+            .addSnapshotListener { [weak self] snap, _ in
+                guard let self = self, let snap = snap else { return }
+                let fetched = snap.documents
+                    .compactMap { ChecklistCategory.from(firestoreData: $0.data()) }
+                    .sorted { $0.name < $1.name }
+                DispatchQueue.main.async {
+                    if !fetched.isEmpty {
+                        self.checklistCategories = fetched
+                        self.saveCategories()
+                    }
+                }
+            }
+    }
+
+    func stopSync() {
+        taskListener?.remove(); taskListener = nil
+        catListener?.remove();  catListener  = nil
+    }
+
+    // MARK: - Firestore write helpers
+
+    private func fsWrite(_ task: EisTask, uid: String? = nil) {
+        guard let uid = uid ?? self.uid else { return }
+        db.collection("users").document(uid)
+          .collection("tasks").document(task.id.uuidString)
+          .setData(task.firestoreData)
+    }
+
+    private func fsDelete(taskId: UUID) {
+        guard let uid = self.uid else { return }
+        db.collection("users").document(uid)
+          .collection("tasks").document(taskId.uuidString)
+          .delete()
+    }
+
+    private func fsWriteCat(_ cat: ChecklistCategory, uid: String? = nil) {
+        guard let uid = uid ?? self.uid else { return }
+        db.collection("users").document(uid)
+          .collection("categories").document(cat.id.uuidString)
+          .setData(cat.firestoreData)
+    }
+
+    private func fsDeleteCat(id: UUID) {
+        guard let uid = self.uid else { return }
+        db.collection("users").document(uid)
+          .collection("categories").document(id.uuidString)
+          .delete()
     }
 
     // MARK: - Queries
@@ -53,7 +156,6 @@ class TaskStore: ObservableObject {
         return Double(q.filter { $0.isCompleted }.count) / Double(q.count)
     }
 
-    /// Returns completion counts for the last `days` days (index 0 = oldest day).
     func completionsPerDay(days: Int = 7) -> [(date: Date, count: Int)] {
         let cal   = Calendar.current
         let today = cal.startOfDay(for: Date())
@@ -67,7 +169,6 @@ class TaskStore: ObservableObject {
         }
     }
 
-    /// Consecutive days ending today where at least 1 task was completed.
     var currentStreak: Int {
         let cal = Calendar.current
         var streak = 0
@@ -91,15 +192,17 @@ class TaskStore: ObservableObject {
         tasks.append(task)
         HapticManager.shared.impact(.light)
         NotificationManager.shared.scheduleNotification(for: task)
-        save()
+        fsWrite(task)
+        saveLocalCache()
     }
 
     func updateTask(_ task: EisTask) {
         if let idx = tasks.firstIndex(where: { $0.id == task.id }) {
             tasks[idx] = task
             NotificationManager.shared.scheduleNotification(for: task)
-            save()
         }
+        fsWrite(task)
+        saveLocalCache()
     }
 
     func deleteTask(id: UUID) {
@@ -108,7 +211,8 @@ class TaskStore: ObservableObject {
         }
         tasks.removeAll { $0.id == id }
         HapticManager.shared.impact(.medium)
-        save()
+        fsDelete(taskId: id)
+        saveLocalCache()
     }
 
     func toggleCompletion(id: UUID) {
@@ -120,29 +224,29 @@ class TaskStore: ObservableObject {
             ? HapticManager.shared.impact(.light)
             : HapticManager.shared.notification(.success)
 
-        // Recurring: when just completed, spawn next occurrence
+        // Recurring: spawn next occurrence when completed
         if !wasCompleted,
            tasks[idx].recurrence != .none,
-           let due = tasks[idx].dueDate,
+           let due    = tasks[idx].dueDate,
            let nextDue = tasks[idx].recurrence.nextDate(after: due) {
-            var next        = tasks[idx]
-            next.id          = UUID()
-            next.isCompleted = false
-            next.completedAt = nil
-            next.dueDate     = nextDue
-            next.createdAt   = Date()
+            var next = tasks[idx]
+            next.id = UUID(); next.isCompleted = false
+            next.completedAt = nil; next.dueDate = nextDue; next.createdAt = Date()
             tasks.append(next)
             NotificationManager.shared.scheduleNotification(for: next)
+            fsWrite(next)
         }
-        save()
+        fsWrite(tasks[idx])
+        saveLocalCache()
     }
 
     func toggleSubtaskCompletion(taskId: UUID, subtaskId: UUID) {
-        guard let taskIdx = tasks.firstIndex(where: { $0.id == taskId }),
-              let subIdx  = tasks[taskIdx].subtasks.firstIndex(where: { $0.id == subtaskId })
+        guard let ti = tasks.firstIndex(where: { $0.id == taskId }),
+              let si = tasks[ti].subtasks.firstIndex(where: { $0.id == subtaskId })
         else { return }
-        tasks[taskIdx].subtasks[subIdx].isCompleted.toggle()
-        save()
+        tasks[ti].subtasks[si].isCompleted.toggle()
+        fsWrite(tasks[ti])
+        saveLocalCache()
     }
 
     func completeMultiple(ids: Set<UUID>) {
@@ -151,9 +255,10 @@ class TaskStore: ObservableObject {
             if !tasks[idx].isCompleted {
                 tasks[idx].isCompleted = true
                 tasks[idx].completedAt = Date()
+                fsWrite(tasks[idx])
             }
         }
-        save()
+        saveLocalCache()
     }
 
     func deleteMultiple(ids: Set<UUID>) {
@@ -161,54 +266,66 @@ class TaskStore: ObservableObject {
             if let task = tasks.first(where: { $0.id == id }) {
                 NotificationManager.shared.cancelNotification(for: task)
             }
+            fsDelete(taskId: id)
         }
         tasks.removeAll { ids.contains($0.id) }
-        save()
+        saveLocalCache()
     }
 
-    /// Called after the user manually reorders the checklist.
-    /// `reordered` is the new desired order of the visible (filtered) tasks.
     func reorderChecklistTasks(_ reordered: [EisTask]) {
         for (idx, task) in reordered.enumerated() {
-            if let storeIdx = tasks.firstIndex(where: { $0.id == task.id }) {
-                tasks[storeIdx].sortOrder = idx
+            if let si = tasks.firstIndex(where: { $0.id == task.id }) {
+                tasks[si].sortOrder = idx
+                fsWrite(tasks[si])
             }
         }
-        save()
+        saveLocalCache()
     }
 
     // MARK: - Category mutations
 
     func addCategory(_ cat: ChecklistCategory) {
         checklistCategories.append(cat)
+        fsWriteCat(cat)
         saveCategories()
     }
 
     func resetToSampleData() {
+        // Delete all Firestore tasks for this user
+        if let uid = self.uid {
+            for task in tasks {
+                db.collection("users").document(uid)
+                  .collection("tasks").document(task.id.uuidString).delete()
+            }
+        }
         tasks = []
         NotificationManager.shared.cancelAll()
-        save()
+        saveLocalCache()
     }
 
     func deleteCategory(id: UUID) {
         checklistCategories.removeAll { $0.id == id }
-        // Reassign tasks to first remaining category (General)
         let fallbackId = checklistCategories.first?.id
         for i in tasks.indices where tasks[i].checklistCategoryId == id {
             tasks[i].checklistCategoryId = fallbackId
+            fsWrite(tasks[i])
         }
-        save()
+        fsDeleteCat(id: id)
+        saveLocalCache()
         saveCategories()
     }
 
-    // MARK: - Persistence
+    // MARK: - Persistence (local cache)
 
-    private func save() {
+    private func saveLocalCache() {
         if let data = try? JSONEncoder().encode(tasks) {
             defaults.set(data, forKey: saveKey)
         }
         writeWidgetData()
     }
+
+    // Alias kept for backward compatibility with any remaining call sites
+    private func save() { saveLocalCache() }
 
     private func writeWidgetData() {
         struct Item: Codable {
@@ -272,7 +389,6 @@ class TaskStore: ObservableObject {
         let shopId = checklistCategories.first { $0.name == "Shopping" }?.id
 
         tasks = [
-            // Do Now
             EisTask(title: "Handle server outage",    quadrant: .doFirst,   canvasX: 0.78, canvasY: 0.16,
                     dueDate: days(1, hour: 9,  min: 0), isInChecklist: true, checklistCategoryId: genId),
             EisTask(title: "Prepare client meeting",  quadrant: .doFirst,   canvasX: 0.65, canvasY: 0.30,
@@ -281,8 +397,6 @@ class TaskStore: ObservableObject {
                     dueDate: days(2, hour: 17, min: 0), isInChecklist: true, checklistCategoryId: genId),
             EisTask(title: "Urgent bug hotfix",       quadrant: .doFirst,   canvasX: 0.70, canvasY: 0.22,
                     dueDate: days(0, hour: 18, min: 30)),
-
-            // Schedule
             EisTask(title: "AWS certification",       quadrant: .schedule,  canvasX: 0.32, canvasY: 0.18,
                     dueDate: days(10), isInChecklist: true, checklistCategoryId: genId),
             EisTask(title: "Read final!!!!!",         quadrant: .schedule,  canvasX: 0.44, canvasY: 0.28),
@@ -290,16 +404,12 @@ class TaskStore: ObservableObject {
                     isInChecklist: true, checklistCategoryId: genId),
             EisTask(title: "Update my CV",            quadrant: .schedule,  canvasX: 0.38, canvasY: 0.46,
                     dueDate: days(7)),
-
-            // Delegate
             EisTask(title: "Book hair appointment",   quadrant: .delegate,  canvasX: 0.68, canvasY: 0.62,
                     dueDate: days(4, hour: 10, min: 0)),
             EisTask(title: "Tax consultation",        quadrant: .delegate,  canvasX: 0.80, canvasY: 0.74,
                     dueDate: days(6)),
             EisTask(title: "Drop off dry cleaning",   quadrant: .delegate,  canvasX: 0.60, canvasY: 0.82,
                     dueDate: days(1, hour: 8, min: 0), isInChecklist: true, checklistCategoryId: genId),
-
-            // Eliminate — some become shopping list items
             EisTask(title: "Milk & eggs",             quadrant: .eliminate, canvasX: 0.30, canvasY: 0.60,
                     isInChecklist: true, checklistCategoryId: shopId),
             EisTask(title: "Bread & butter",          quadrant: .eliminate, canvasX: 0.22, canvasY: 0.68,
@@ -307,6 +417,6 @@ class TaskStore: ObservableObject {
             EisTask(title: "把食譜歸檔案",            quadrant: .eliminate, canvasX: 0.18, canvasY: 0.76),
             EisTask(title: "Clean spam emails",       quadrant: .eliminate, canvasX: 0.36, canvasY: 0.88),
         ]
-        save()
+        saveLocalCache()
     }
 }
