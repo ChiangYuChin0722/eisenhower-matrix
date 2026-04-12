@@ -22,7 +22,7 @@ struct AddTaskView: View {
     @State private var addToCalendar   = false
     @State private var dueDate         = roundedNextHour()
     @State private var addToChecklist  = false
-    @State private var colorTag        = TaskColor.none
+    @State private var colorTag        = TaskColor.red
     @State private var colorTagLabel   = ""
     @State private var customTagColor  = Color.red
     @State private var useCustomColor  = false
@@ -127,6 +127,7 @@ struct AddTaskView: View {
                             }
                         }
                         .padding(.vertical, 4)
+                        .padding(.horizontal, 4)
                     }
                 }
 

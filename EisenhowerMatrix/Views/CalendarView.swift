@@ -68,7 +68,7 @@ struct CalendarView: View {
                 }
             }
             .sheet(isPresented: $showAddTask) {
-                AddTaskView(defaultQuadrant: .doFirst)
+                AddTaskView(defaultQuadrant: .doFirst, forceCalendar: true)
             }
             .sheet(item: $editingTask) { task in
                 AddTaskView(editingTask: task)
