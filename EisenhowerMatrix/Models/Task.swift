@@ -176,6 +176,16 @@ struct EisTask: Identifiable, Codable, Equatable {
     var recurrence: Recurrence      = .none
     var checklistCategoryId: UUID?  = nil
     var showInMatrix: Bool?         = nil   // nil = true (backward-compatible)
+    var tagHex: String?             = nil   // custom tag color (overrides colorTag)
+
+    /// Resolved tag color: custom hex > preset enum > nil (no tag)
+    var effectiveTagColor: Color? {
+        if let hex = tagHex { return Color(hex: hex) }
+        if colorTag != .none { return colorTag.color }
+        return nil
+    }
+
+    var hasTag: Bool { tagHex != nil || colorTag != .none }
 
     var completedSubtaskCount: Int { subtasks.filter { $0.isCompleted }.count }
     var totalSubtaskCount: Int     { subtasks.count }

@@ -24,6 +24,8 @@ struct AddTaskView: View {
     @State private var addToChecklist  = false
     @State private var colorTag        = TaskColor.none
     @State private var colorTagLabel   = ""
+    @State private var customTagColor  = Color.red
+    @State private var useCustomColor  = false
     @State private var subtaskText     = ""
     @State private var subtasks: [EisTask] = []
     @State private var recurrence      = Recurrence.none
@@ -103,18 +105,48 @@ struct AddTaskView: View {
                 Section(s.colorTagSection) {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
+                            // Preset colour shortcuts
                             ForEach(TaskColor.allCases, id: \.self) { c in
                                 colorCircle(c)
+                            }
+                            // Custom colour picker
+                            ZStack {
+                                ColorPicker("", selection: $customTagColor, supportsOpacity: false)
+                                    .labelsHidden()
+                                    .frame(width: 30, height: 30)
+                                    .onChange(of: customTagColor) { _ in
+                                        useCustomColor = true
+                                        colorTag = .none
+                                    }
+                                // Ring when active
+                                if useCustomColor {
+                                    Circle()
+                                        .stroke(Color.primary, lineWidth: 2)
+                                        .frame(width: 34, height: 34)
+                                }
                             }
                         }
                         .padding(.vertical, 4)
                     }
-                    if colorTag != .none {
+
+                    // Label field — shown when any colour is chosen
+                    if colorTag != .none || useCustomColor {
                         HStack(spacing: 8) {
                             Circle()
-                                .fill(colorTag.color)
+                                .fill(useCustomColor ? customTagColor : colorTag.color)
                                 .frame(width: 10, height: 10)
-                            TextField(s.colorTagLabelField, text: $colorTagLabel)
+                            TextField(lang == "zh" ? "標籤名稱（選填）" : "Tag label (optional)",
+                                      text: $colorTagLabel)
+                            // Clear tag button
+                            Button {
+                                colorTag = .none
+                                useCustomColor = false
+                                colorTagLabel = ""
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.secondary)
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
                 }
@@ -171,6 +203,7 @@ struct AddTaskView: View {
         }
         .onTapGesture {
             colorTag = c
+            useCustomColor = false
             if c == .none { colorTagLabel = "" }
         }
     }
@@ -183,6 +216,11 @@ struct AddTaskView: View {
             addToMatrix        = t.showInMatrix ?? true
             colorTag           = t.colorTag
             colorTagLabel      = t.colorTagLabel
+            if let hex = t.tagHex, let c = Color(hex: hex) {
+                customTagColor = c
+                useCustomColor = true
+                colorTag       = .none
+            }
             subtasks           = t.subtasks
             addToChecklist     = t.isInChecklist
             recurrence         = t.recurrence
@@ -211,8 +249,16 @@ struct AddTaskView: View {
         task.showInMatrix        = addToMatrix
         task.dueDate             = addToCalendar ? dueDate : nil
         task.isInChecklist       = addToChecklist
-        task.colorTag            = colorTag
-        task.colorTagLabel       = colorTag == .none ? "" : colorTagLabel.trimmingCharacters(in: .whitespaces)
+        if useCustomColor {
+            task.colorTag      = .none
+            task.tagHex        = customTagColor.toHex()
+        } else {
+            task.colorTag      = colorTag
+            task.tagHex        = nil
+        }
+        task.colorTagLabel     = (colorTag != .none || useCustomColor)
+                                   ? colorTagLabel.trimmingCharacters(in: .whitespaces)
+                                   : ""
         task.subtasks            = subtasks
         task.recurrence          = addToCalendar ? recurrence : .none
         task.checklistCategoryId = addToChecklist ? selectedCategoryId : nil
