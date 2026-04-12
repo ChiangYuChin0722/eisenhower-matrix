@@ -31,7 +31,7 @@ struct MatrixView: View {
                         dividers(size: geo.size)
                         cornerLabels(size: geo.size)
 
-                        ForEach(taskStore.tasks) { task in
+                        ForEach(taskStore.tasks.filter { $0.showInMatrix != false }) { task in
                             TaskDotView(task: task, canvasSize: geo.size)
                         }
                     }

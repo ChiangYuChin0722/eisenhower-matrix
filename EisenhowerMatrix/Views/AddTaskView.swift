@@ -18,6 +18,7 @@ struct AddTaskView: View {
     @State private var title           = ""
     @State private var notes           = ""
     @State private var quadrant        = Quadrant.doFirst
+    @State private var addToMatrix      = true
     @State private var addToCalendar   = false
     @State private var dueDate         = roundedNextHour()
     @State private var addToChecklist  = false
@@ -40,26 +41,32 @@ struct AddTaskView: View {
                         .lineLimit(3, reservesSpace: false)
                 }
 
-                Section(s.quadrantSection) {
-                    Picker(s.quadrantSection, selection: $quadrant) {
-                        ForEach(Quadrant.allCases) { q in
-                            Label {
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text(s.quadrantTitle(q))
-                                        .font(.subheadline).fontWeight(.medium)
-                                    Text(s.quadrantSubtitle(q))
-                                        .font(.caption).foregroundColor(.secondary)
-                                }
-                            } icon: {
-                                Circle()
-                                    .fill(qColor(q))
-                                    .frame(width: 12, height: 12)
-                            }
-                            .tag(q)
-                        }
+                Section {
+                    Toggle(isOn: $addToMatrix) {
+                        Label(lang == "zh" ? "加入象限矩陣" : "Add to Matrix",
+                              systemImage: "square.grid.2x2")
                     }
-                    .pickerStyle(.inline)
-                    .labelsHidden()
+                    if addToMatrix {
+                        Picker(s.quadrantSection, selection: $quadrant) {
+                            ForEach(Quadrant.allCases) { q in
+                                Label {
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        Text(s.quadrantTitle(q))
+                                            .font(.subheadline).fontWeight(.medium)
+                                        Text(s.quadrantSubtitle(q))
+                                            .font(.caption).foregroundColor(.secondary)
+                                    }
+                                } icon: {
+                                    Circle()
+                                        .fill(qColor(q))
+                                        .frame(width: 12, height: 12)
+                                }
+                                .tag(q)
+                            }
+                        }
+                        .pickerStyle(.inline)
+                        .labelsHidden()
+                    }
                 }
 
                 Section {
@@ -173,6 +180,7 @@ struct AddTaskView: View {
             title              = t.title
             notes              = t.notes
             quadrant           = t.quadrant
+            addToMatrix        = t.showInMatrix ?? true
             colorTag           = t.colorTag
             colorTagLabel      = t.colorTagLabel
             subtasks           = t.subtasks
@@ -185,6 +193,7 @@ struct AddTaskView: View {
             }
         } else {
             quadrant           = defaultQuadrant
+            addToMatrix        = true
             addToCalendar      = forceCalendar
             addToChecklist     = forceChecklist
             selectedCategoryId = defaultCategoryId ?? taskStore.checklistCategories.first?.id
@@ -199,6 +208,7 @@ struct AddTaskView: View {
         task.title               = title.trimmingCharacters(in: .whitespaces)
         task.notes               = notes
         task.quadrant            = quadrant
+        task.showInMatrix        = addToMatrix
         task.dueDate             = addToCalendar ? dueDate : nil
         task.isInChecklist       = addToChecklist
         task.colorTag            = colorTag

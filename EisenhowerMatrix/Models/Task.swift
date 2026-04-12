@@ -175,6 +175,7 @@ struct EisTask: Identifiable, Codable, Equatable {
     var canvasY: Double
     var recurrence: Recurrence      = .none
     var checklistCategoryId: UUID?  = nil
+    var showInMatrix: Bool?         = nil   // nil = true (backward-compatible)
 
     var completedSubtaskCount: Int { subtasks.filter { $0.isCompleted }.count }
     var totalSubtaskCount: Int     { subtasks.count }

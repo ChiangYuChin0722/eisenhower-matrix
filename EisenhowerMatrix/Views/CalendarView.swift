@@ -247,73 +247,190 @@ struct CalendarView: View {
         .onTapGesture { editingTask = task }
     }
 
-    // MARK: - Week View
+    // MARK: - Week Timeline View
+
+    private let timeColW: CGFloat = 44
 
     private var weekView: some View {
         VStack(spacing: 0) {
-            weekNavHeader
-            weekStrip
-                .padding(.horizontal, 6)
-                .padding(.bottom, 8)
+            // Navigation row
+            HStack {
+                Button { moveWeek(-1) } label: {
+                    Image(systemName: "chevron.left").frame(width: 36, height: 36)
+                }
+                Spacer()
+                Text(weekRangeTitle).font(.headline)
+                Spacer()
+                Button { moveWeek(1) } label: {
+                    Image(systemName: "chevron.right").frame(width: 36, height: 36)
+                }
+            }
+            .padding(.horizontal, 8)
+
+            // Day header columns
+            HStack(spacing: 0) {
+                Color.clear.frame(width: timeColW)
+                ForEach(daysInWeek, id: \.self) { date in
+                    weekHeaderCell(date)
+                }
+            }
+            .padding(.trailing, 4)
+
             Divider()
-            dayTaskSection
+
+            // Scrollable timeline body
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(spacing: 0) {
+                        // All-day row
+                        weekAllDayRow
+
+                        // Hour rows 0–23
+                        ForEach(0...23, id: \.self) { hour in
+                            weekHourRow(hour: hour)
+                                .id(hour)
+                        }
+                        Color.clear.frame(height: 40)
+                    }
+                }
+                .onAppear {
+                    let h = min(max(cal.component(.hour, from: Date()), 0), 23)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        proxy.scrollTo(max(h - 1, 6), anchor: .top)
+                    }
+                }
+                .onChange(of: selectedDate) { _ in
+                    proxy.scrollTo(6, anchor: .top)
+                }
+            }
         }
     }
 
-    private var weekNavHeader: some View {
-        HStack {
-            Button { moveWeek(-1) } label: {
-                Image(systemName: "chevron.left").frame(width: 36, height: 36)
-            }
-            Spacer()
-            Text(weekRangeTitle).font(.headline)
-            Spacer()
-            Button { moveWeek(1) } label: {
-                Image(systemName: "chevron.right").frame(width: 36, height: 36)
-            }
-        }
-        .padding(.horizontal, 8)
-    }
-
-    private var weekStrip: some View {
-        HStack(spacing: 0) {
-            ForEach(daysInWeek, id: \.self) { date in
-                weekDayCell(date)
-            }
-        }
-    }
-
-    private func weekDayCell(_ date: Date) -> some View {
+    private func weekHeaderCell(_ date: Date) -> some View {
         let isToday    = cal.isDateInToday(date)
         let isSelected = cal.isDate(date, inSameDayAs: selectedDate)
-        let hasTasks   = !taskStore.tasks(for: date).isEmpty
 
         return Button { selectedDate = date } label: {
-            VStack(spacing: 4) {
+            VStack(spacing: 2) {
                 Text(weekdayAbbr(date))
                     .font(.system(size: 11))
                     .foregroundColor(isSelected ? accent : .secondary)
                 ZStack {
                     Circle()
-                        .fill(isSelected ? accent : (isToday ? accent.opacity(0.12) : .clear))
-                        .frame(width: 32, height: 32)
+                        .fill(isSelected ? accent : (isToday ? accent.opacity(0.15) : .clear))
+                        .frame(width: 28, height: 28)
                     Text("\(cal.component(.day, from: date))")
-                        .font(.system(size: 15, weight: isToday ? .bold : .regular))
+                        .font(.system(size: 13, weight: isToday ? .bold : .regular))
                         .foregroundColor(isSelected ? .white : (isToday ? accent : .primary))
                 }
-                Circle()
-                    .fill(hasTasks ? accent : .clear)
-                    .frame(width: 4, height: 4)
             }
             .frame(maxWidth: .infinity)
+            .padding(.vertical, 4)
         }
         .buttonStyle(.plain)
     }
 
+    private var weekAllDayRow: some View {
+        let tasksByDay: [(Date, [EisTask])] = daysInWeek.map { date in
+            let tasks = taskStore.tasks(for: date).filter { task in
+                guard let d = task.dueDate else { return false }
+                let c = cal.dateComponents([.hour, .minute], from: d)
+                return (c.hour ?? 0) == 0 && (c.minute ?? 0) == 0
+            }
+            return (date, tasks)
+        }
+        let hasAny = tasksByDay.contains { !$0.1.isEmpty }
+        guard hasAny else { return AnyView(EmptyView()) }
+
+        return AnyView(
+            HStack(alignment: .top, spacing: 0) {
+                Text(s.allDay)
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundColor(.secondary)
+                    .frame(width: timeColW, alignment: .trailing)
+                    .padding(.trailing, 4)
+                    .padding(.top, 4)
+
+                ForEach(tasksByDay, id: \.0) { (_, tasks) in
+                    VStack(spacing: 2) {
+                        ForEach(tasks) { task in weekTaskChip(task) }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 3)
+                    .overlay(Rectangle().fill(Color.gray.opacity(0.12)).frame(width: 0.5), alignment: .leading)
+                }
+            }
+            .padding(.trailing, 4)
+            .background(Color(uiColor: .secondarySystemBackground).opacity(0.5))
+        )
+    }
+
+    private func weekHourRow(hour: Int) -> some View {
+        let isCurrentHour = cal.isDateInToday(selectedDate)
+            && cal.component(.hour, from: Date()) == hour
+
+        return HStack(alignment: .top, spacing: 0) {
+            Text(hourLabel(hour))
+                .font(.system(size: 10, weight: isCurrentHour ? .semibold : .regular))
+                .foregroundColor(isCurrentHour ? accent : .secondary)
+                .frame(width: timeColW, alignment: .trailing)
+                .padding(.trailing, 4)
+                .padding(.top, 2)
+
+            ForEach(daysInWeek, id: \.self) { date in
+                let tasks = weekTimedTasks(date: date, hour: hour)
+                let isToday = cal.isDateInToday(date)
+                let isCurHourDay = isToday && cal.component(.hour, from: Date()) == hour
+
+                ZStack(alignment: .topLeading) {
+                    Rectangle()
+                        .fill(isToday ? accent.opacity(0.025) : Color.clear)
+                    Rectangle()
+                        .fill(isCurHourDay ? accent.opacity(0.25) : Color.gray.opacity(0.12))
+                        .frame(height: 0.5)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+
+                    if !tasks.isEmpty {
+                        VStack(spacing: 2) {
+                            ForEach(tasks) { task in weekTaskChip(task) }
+                        }
+                        .padding(.top, 3)
+                        .padding(.horizontal, 1)
+                    }
+                }
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .overlay(Rectangle().fill(Color.gray.opacity(0.12)).frame(width: 0.5), alignment: .leading)
+            }
+        }
+        .padding(.trailing, 4)
+    }
+
+    private func weekTaskChip(_ task: EisTask) -> some View {
+        Text(task.title)
+            .font(.system(size: 9, weight: .medium))
+            .lineLimit(2)
+            .foregroundColor(.white)
+            .padding(.horizontal, 3)
+            .padding(.vertical, 2)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(qColor(task.quadrant).opacity(task.isCompleted ? 0.4 : 0.9))
+            .cornerRadius(3)
+            .onTapGesture { editingTask = task }
+    }
+
+    private func weekTimedTasks(date: Date, hour: Int) -> [EisTask] {
+        taskStore.tasks(for: date).filter { task in
+            guard let d = task.dueDate else { return false }
+            let h = cal.component(.hour, from: d)
+            let m = cal.component(.minute, from: d)
+            guard !(h == 0 && m == 0) else { return false }
+            return h == hour
+        }
+    }
+
     private func weekdayAbbr(_ date: Date) -> String {
-        let abbrs = weekdays  // reuses the existing weekdays property
         let weekday = cal.component(.weekday, from: date) - 1
-        return abbrs[weekday]
+        return weekdays[weekday]
     }
 
     private var daysInWeek: [Date] {
