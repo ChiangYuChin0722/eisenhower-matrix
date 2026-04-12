@@ -272,16 +272,39 @@ struct Str {
     var next:       String { zh ? "繼續" : "Next" }
     var getStarted: String { zh ? "開始使用" : "Get Started" }
     var onboardWelcomeTitle: String { zh ? "Eisenhower 矩陣" : "Eisenhower Matrix" }
-    var onboardWelcomeSub:   String { zh ? "用緊急與重要性整理你的任務，聚焦在真正重要的事。" : "Organize tasks by urgency and importance.\nFocus on what truly matters." }
+    var onboardWelcomeSub:   String { zh ? "由美國總統艾森豪發明的時間管理法則\n以「緊急」與「重要」為軸，將任務分為四個象限\n幫助你聚焦在真正重要的事情上。" : "Based on President Eisenhower's time management method.\nSort tasks by urgency and importance\nto focus on what truly matters." }
     var onboardMatrixTitle:  String { zh ? "四個象限" : "Four Quadrants" }
-    var onboardMatrixSub:    String { zh ? "每個任務都屬於其中一個象限。拖曳方塊到對應位置。" : "Every task belongs in one of four quadrants.\nDrag dots to reposition them." }
+    var onboardMatrixSub:    String { zh ? "根據「緊急」與「重要」的程度，將任務放入對應象限。\n系統會告訴你應該如何處理每類任務。" : "Place each task in the quadrant that matches its\nurgency and importance level." }
+    var onboardHowToTitle:   String { zh ? "新增你的第一個任務" : "Adding Your First Task" }
+    var onboardHowToSub:     String { zh ? "只需幾個步驟，開始整理你的工作" : "Just a few steps to get organized" }
+    var onboardStep1:        String { zh ? "點擊右上角的「＋」按鈕" : "Tap the + button in the top right" }
+    var onboardStep2:        String { zh ? "輸入任務標題（必填）" : "Enter a title for your task" }
+    var onboardStep3:        String { zh ? "選擇對應的象限（緊急×重要）" : "Choose a quadrant based on urgency & importance" }
+    var onboardStep4:        String { zh ? "選擇性加入截止日期或清單" : "Optionally set a due date or add to checklist" }
+    var onboardStep5:        String { zh ? "點擊「新增」完成儲存" : "Tap Add to save — it appears in the Matrix!" }
     var onboardFeatTitle:    String { zh ? "功能一覽" : "Everything You Need" }
-    var onboardStartTitle:   String { zh ? "準備好了！" : "You're all set!" }
-    var onboardStartSub:     String { zh ? "開始整理你的任務，讓每一天更有效率。" : "Start organizing your tasks and make every day more productive." }
-    var onboardFeatureCalendar:  String { zh ? "用月曆與時間軸檢視有期限的任務" : "Monthly & timeline views for scheduled tasks" }
-    var onboardFeatureDeadlines: String { zh ? "依日期分組追蹤截止任務" : "Deadline tracking grouped by urgency" }
-    var onboardFeatureChecklist: String { zh ? "多個清單、子任務、備註一次管理" : "Multiple lists with subtasks & notes" }
-    var onboardFeatureDashboard: String { zh ? "完成率、連續天數與象限統計一覽" : "Streaks, completion rates & quadrant stats" }
+    var onboardStartTitle:   String { zh ? "準備好了！" : "You're All Set!" }
+    var onboardStartSub:     String { zh ? "開始整理你的任務，讓每一天更有效率。\n隨時可在「設定」調整語言、主題與通知。\n現在就新增你的第一個任務吧！" : "Start organizing your tasks and make every day more productive.\nAdjust language, theme & notifications in Settings.\nTry adding your first task now!" }
+    var onboardFeatureCalendar:  String { zh ? "月曆、週視圖、日時間軸\n掌握所有有截止日期的任務" : "Month, week & day timeline views\nfor all your scheduled tasks" }
+    var onboardFeatureDeadlines: String { zh ? "依「逾期」「今天」「本週」自動分組\n不再錯過任何截止日" : "Auto-grouped by overdue, today & upcoming\nNever miss a deadline again" }
+    var onboardFeatureChecklist: String { zh ? "建立多個清單分類\n支援子任務、備註與重複提醒" : "Multiple lists with subtasks, notes\nand recurring reminders" }
+    var onboardFeatureDashboard: String { zh ? "追蹤完成率、連續天數\n與各象限的任務分布統計" : "Track completion rates, streaks\nand quadrant distribution stats" }
+    func quadrantExample(_ q: Quadrant) -> String {
+        guard zh else {
+            switch q {
+            case .doFirst:   return "e.g. Fix a critical bug"
+            case .schedule:  return "e.g. Plan quarterly goals"
+            case .delegate:  return "e.g. Reply routine emails"
+            case .eliminate: return "e.g. Browse social media"
+            }
+        }
+        switch q {
+        case .doFirst:   return "例：處理緊急危機"
+        case .schedule:  return "例：制定季度計畫"
+        case .delegate:  return "例：回覆例行郵件"
+        case .eliminate: return "例：滑社群媒體"
+        }
+    }
 
     // MARK: - Checklist extras (reorder / subtasks)
     var doneReorder: String { zh ? "完成" : "Done" }

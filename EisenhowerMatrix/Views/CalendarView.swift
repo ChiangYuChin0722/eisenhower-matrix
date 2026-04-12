@@ -285,16 +285,17 @@ struct CalendarView: View {
                         // All-day row
                         weekAllDayRow
 
-                        // Hour rows 0–23
-                        ForEach(0...23, id: \.self) { hour in
+                        // Hour rows 6 AM – 10 PM
+                        ForEach(6...22, id: \.self) { hour in
                             weekHourRow(hour: hour)
                                 .id(hour)
                         }
                         Color.clear.frame(height: 40)
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .onAppear {
-                    let h = min(max(cal.component(.hour, from: Date()), 0), 23)
+                    let h = min(max(cal.component(.hour, from: Date()), 6), 22)
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         proxy.scrollTo(max(h - 1, 6), anchor: .top)
                     }
@@ -303,6 +304,7 @@ struct CalendarView: View {
                     proxy.scrollTo(6, anchor: .top)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 
@@ -330,6 +332,7 @@ struct CalendarView: View {
         .buttonStyle(.plain)
     }
 
+    @ViewBuilder
     private var weekAllDayRow: some View {
         let tasksByDay: [(Date, [EisTask])] = daysInWeek.map { date in
             let tasks = taskStore.tasks(for: date).filter { task in
@@ -339,10 +342,7 @@ struct CalendarView: View {
             }
             return (date, tasks)
         }
-        let hasAny = tasksByDay.contains { !$0.1.isEmpty }
-        guard hasAny else { return AnyView(EmptyView()) }
-
-        return AnyView(
+        if tasksByDay.contains(where: { !$0.1.isEmpty }) {
             HStack(alignment: .top, spacing: 0) {
                 Text(s.allDay)
                     .font(.system(size: 9, weight: .medium))
@@ -362,7 +362,7 @@ struct CalendarView: View {
             }
             .padding(.trailing, 4)
             .background(Color(uiColor: .secondarySystemBackground).opacity(0.5))
-        )
+        }
     }
 
     private func weekHourRow(hour: Int) -> some View {

@@ -8,7 +8,7 @@ struct OnboardingView: View {
 
     private var s: Str { Str(lang) }
     private var accent: Color { .accent(appAccent) }
-    private let totalPages = 4
+    private let totalPages = 5
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -34,8 +34,9 @@ struct OnboardingView: View {
                 TabView(selection: $currentPage) {
                     welcomePage.tag(0)
                     quadrantPage.tag(1)
-                    featuresPage.tag(2)
-                    startPage.tag(3)
+                    howToPage.tag(2)
+                    featuresPage.tag(3)
+                    startPage.tag(4)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
 
@@ -138,8 +139,8 @@ struct OnboardingView: View {
 
     private func quadrantCell(_ q: Quadrant) -> some View {
         let color = q.color(theme: "classic")
-        return VStack(spacing: 6) {
-            Circle().fill(color).frame(width: 16, height: 16)
+        return VStack(spacing: 4) {
+            Circle().fill(color).frame(width: 14, height: 14)
             Text(s.quadrantTitle(q))
                 .font(.caption).fontWeight(.semibold)
                 .foregroundColor(color)
@@ -149,13 +150,79 @@ struct OnboardingView: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
+            Text(s.quadrantExample(q))
+                .font(.system(size: 9))
+                .foregroundColor(color.opacity(0.75))
+                .multilineTextAlignment(.center)
+                .lineLimit(1)
+                .italic()
         }
-        .frame(maxWidth: .infinity, minHeight: 100)
+        .frame(maxWidth: .infinity, minHeight: 110)
         .padding(12)
         .background(color.opacity(0.08))
     }
 
-    // MARK: - Page 3: Features
+    // MARK: - Page 3: How to Add a Task
+
+    private var howToPage: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            VStack(spacing: 10) {
+                ZStack {
+                    Circle()
+                        .fill(accent.opacity(0.1))
+                        .frame(width: 100, height: 100)
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 48))
+                        .foregroundColor(accent)
+                }
+                Text(s.onboardHowToTitle)
+                    .font(.title2).fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+                Text(s.onboardHowToSub)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            VStack(alignment: .leading, spacing: 14) {
+                howToStep(1, icon: "plus.circle",        text: s.onboardStep1)
+                howToStep(2, icon: "textformat",         text: s.onboardStep2)
+                howToStep(3, icon: "square.grid.2x2",   text: s.onboardStep3)
+                howToStep(4, icon: "calendar.badge.plus",text: s.onboardStep4)
+                howToStep(5, icon: "checkmark.circle",   text: s.onboardStep5)
+            }
+            .padding(.horizontal, 36)
+
+            Spacer()
+            Spacer()
+        }
+    }
+
+    private func howToStep(_ num: Int, icon: String, text: String) -> some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(accent.opacity(0.12))
+                    .frame(width: 36, height: 36)
+                Text("\(num)")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(accent)
+            }
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.system(size: 14))
+                    .foregroundColor(accent.opacity(0.7))
+                    .frame(width: 18)
+                Text(text)
+                    .font(.subheadline)
+                    .foregroundColor(.primary)
+            }
+            Spacer()
+        }
+    }
+
+    // MARK: - Page 4: Features
 
     private var featuresPage: some View {
         VStack(spacing: 0) {

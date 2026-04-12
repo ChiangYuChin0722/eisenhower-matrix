@@ -116,7 +116,7 @@ enum Recurrence: String, Codable, CaseIterable, Identifiable {
 
     var icon: String {
         switch self {
-        case .none:     return "minus"
+        case .none:     return "xmark.circle"
         case .daily:    return "arrow.clockwise"
         case .weekdays: return "briefcase"
         case .weekly:   return "calendar.badge.clock"
