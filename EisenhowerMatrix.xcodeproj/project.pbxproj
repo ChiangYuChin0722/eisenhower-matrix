@@ -489,8 +489,9 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = EisenhowerMatrix/EisenhowerMatrix.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 1.5;
 				DEVELOPMENT_ASSET_PATHS = "\"EisenhowerMatrix/Preview Content\"";
+				DEVELOPMENT_TEAM = 54J7Z3ZJH9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = EisenhowerMatrix/Info.plist;
@@ -514,8 +515,9 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = EisenhowerMatrix/EisenhowerMatrix.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 1.5;
 				DEVELOPMENT_ASSET_PATHS = "\"EisenhowerMatrix/Preview Content\"";
+				DEVELOPMENT_TEAM = 54J7Z3ZJH9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = EisenhowerMatrix/Info.plist;
@@ -538,7 +540,8 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = EisenhowerMatrixWidget/EisenhowerMatrixWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 1.5;
+				DEVELOPMENT_TEAM = 54J7Z3ZJH9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = EisenhowerMatrixWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
@@ -563,7 +566,8 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = EisenhowerMatrixWidget/EisenhowerMatrixWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 1.5;
+				DEVELOPMENT_TEAM = 54J7Z3ZJH9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = EisenhowerMatrixWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
