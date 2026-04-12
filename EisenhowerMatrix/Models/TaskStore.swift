@@ -20,6 +20,17 @@ class TaskStore: ObservableObject {
     private var catListener:  ListenerRegistration?
     private var authHandle:   AuthStateDidChangeListenerHandle?
 
+    /// UID of the user who triggered a reset — persists across restarts so the
+    /// snapshot listener can re-delete any stale Firestore data that arrives
+    /// before the server-side deletes propagate.
+    private var pendingResetUID: String? {
+        get { defaults.string(forKey: "pendingResetUID") }
+        set {
+            if let v = newValue { defaults.set(v, forKey: "pendingResetUID") }
+            else                { defaults.removeObject(forKey: "pendingResetUID") }
+        }
+    }
+
     init() {
         loadCategories()
         loadTasks()
@@ -59,13 +70,25 @@ class TaskStore: ObservableObject {
             .addSnapshotListener { [weak self] snap, error in
                 guard let self = self, let snap = snap else { return }
                 DispatchQueue.main.async {
-                    let migratedKey = "migrated_\(uid)"
-                    if snap.documents.isEmpty && !self.defaults.bool(forKey: migratedKey) {
-                        // First login – push local data to Firestore
-                        for task in self.tasks { self.fsWrite(task, uid: uid) }
-                        for cat  in self.checklistCategories { self.fsWriteCat(cat, uid: uid) }
-                        self.defaults.set(true, forKey: migratedKey)
-                    } else if !snap.documents.isEmpty {
+                    let migratedKey   = "migrated_\(uid)"
+                    let isPendingReset = (self.pendingResetUID == uid)
+
+                    if snap.documents.isEmpty {
+                        // Firestore confirmed empty — reset complete or first-ever use
+                        self.pendingResetUID = nil
+                        if !isPendingReset && !self.defaults.bool(forKey: migratedKey) {
+                            // True first login: push local data up to Firestore
+                            for task in self.tasks { self.fsWrite(task, uid: uid) }
+                            for cat  in self.checklistCategories { self.fsWriteCat(cat, uid: uid) }
+                            self.defaults.set(true, forKey: migratedKey)
+                        }
+                        // If isPendingReset: reset confirmed, local state is already empty — do nothing
+                    } else if isPendingReset {
+                        // Stale Firestore data returned before server-side deletes propagated.
+                        // Re-delete every document and keep local state empty.
+                        for doc in snap.documents { doc.reference.delete() }
+                    } else {
+                        // Normal sync: overwrite local tasks with Firestore truth
                         let fetched = snap.documents
                             .compactMap { EisTask.from(firestoreData: $0.data()) }
                             .sorted { $0.createdAt < $1.createdAt }
@@ -296,12 +319,14 @@ class TaskStore: ObservableObject {
     }
 
     func resetToSampleData() {
-        // Delete all Firestore tasks for this user
+        // Delete all Firestore tasks and mark reset pending so the snapshot
+        // listener won't restore stale data if the app restarts before deletes propagate.
         if let uid = self.uid {
             for task in tasks {
                 db.collection("users").document(uid)
                   .collection("tasks").document(task.id.uuidString).delete()
             }
+            pendingResetUID = uid   // survives app restarts via UserDefaults
         }
         tasks = []
         NotificationManager.shared.cancelAll()
