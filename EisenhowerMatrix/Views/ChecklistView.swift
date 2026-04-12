@@ -123,7 +123,7 @@ struct ChecklistView: View {
             .sheet(item: $editingTask) { task in AddTaskView(editingTask: task) }
             .sheet(isPresented: $showAddCategory) { addCategorySheet }
             .sheet(isPresented: $showQuickAdd) {
-                ChecklistQuickAddSheet(defaultCategoryId: selectedCategoryId)
+                AddTaskView(forceChecklist: true, defaultCategoryId: selectedCategoryId)
             }
             .sheet(isPresented: $showSearch) { SearchView() }
             .sheet(isPresented: $showPomodoro) {
@@ -531,109 +531,6 @@ struct ChecklistView: View {
     }
 }
 
-// MARK: - Quick Add Sheet
-
-private struct ChecklistQuickAddSheet: View {
-    @EnvironmentObject var taskStore: TaskStore
-    @Environment(\.dismiss) var dismiss
-    @AppStorage("appLanguage") private var lang: String = "en"
-    @AppStorage("appAccent")   private var appAccent: String = "blue"
-    @AppStorage("matrixTheme") private var matrixTheme: String = "classic"
-
-    let defaultCategoryId: UUID?
-
-    @State private var title    = ""
-    @State private var notes    = ""
-    @State private var quadrant = Quadrant.doFirst
-    @FocusState private var titleFocused: Bool
-
-    private var s: Str { Str(lang) }
-    private var accent: Color { .accent(appAccent) }
-    private func qColor(_ q: Quadrant) -> Color { q.color(theme: matrixTheme) }
-
-    var body: some View {
-        NavigationView {
-            Form {
-                Section {
-                    TextField(s.titleField, text: $title)
-                        .focused($titleFocused)
-                    TextField(s.notesField, text: $notes, axis: .vertical)
-                        .lineLimit(3, reservesSpace: false)
-                }
-
-                Section(s.quadrantSection) {
-                    LazyVGrid(
-                        columns: [GridItem(.flexible()), GridItem(.flexible())],
-                        spacing: 10
-                    ) {
-                        ForEach(Quadrant.allCases) { q in
-                            Button {
-                                HapticManager.shared.selection()
-                                quadrant = q
-                            } label: {
-                                HStack(spacing: 8) {
-                                    Circle()
-                                        .fill(qColor(q))
-                                        .frame(width: 10, height: 10)
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(s.quadrantTitle(q))
-                                            .font(.caption).fontWeight(.semibold)
-                                            .foregroundColor(qColor(q))
-                                        Text(s.quadrantSubtitle(q))
-                                            .font(.system(size: 9))
-                                            .foregroundColor(.secondary)
-                                            .lineLimit(1)
-                                    }
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 8)
-                                .background(quadrant == q ? qColor(q).opacity(0.12) : Color.secondary.opacity(0.06))
-                                .cornerRadius(8)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(quadrant == q ? qColor(q) : .clear, lineWidth: 1.5)
-                                )
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
-                    .listRowBackground(Color.clear)
-                }
-            }
-            .scrollContentBackground(.hidden)
-            .background(Color.appBackground)
-            .navigationTitle(s.addTask)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(s.cancel) { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(s.add) { save() }
-                        .fontWeight(.semibold)
-                        .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
-                }
-            }
-            .onAppear { titleFocused = true }
-        }
-        .presentationDetents([.medium, .large])
-    }
-
-    private func save() {
-        let t = title.trimmingCharacters(in: .whitespaces)
-        guard !t.isEmpty else { return }
-        taskStore.addTask(EisTask(
-            title: t,
-            quadrant: quadrant,
-            notes: notes.trimmingCharacters(in: .whitespaces),
-            isInChecklist: true,
-            checklistCategoryId: defaultCategoryId ?? taskStore.checklistCategories.first?.id
-        ))
-        dismiss()
-    }
-}
 
 #Preview {
     ChecklistView().environmentObject(TaskStore())
