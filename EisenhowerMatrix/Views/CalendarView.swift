@@ -229,7 +229,9 @@ struct CalendarView: View {
     private func dayTaskRow(_ task: EisTask) -> some View {
         HStack(spacing: 12) {
             Circle()
-                .fill(task.isCompleted ? Color.secondary.opacity(0.4) : qColor(task.quadrant))
+                .fill(task.isCompleted
+                      ? Color.secondary.opacity(0.4)
+                      : (task.effectiveTagColor ?? qColor(task.quadrant)))
                 .frame(width: 10, height: 10)
             VStack(alignment: .leading, spacing: 2) {
                 Text(task.title)
@@ -425,16 +427,23 @@ struct CalendarView: View {
     }
 
     private func weekTaskChip(_ task: EisTask) -> some View {
-        Text(task.title)
-            .font(.system(size: 9, weight: .medium))
-            .lineLimit(2)
-            .foregroundColor(.white)
-            .padding(.horizontal, 3)
-            .padding(.vertical, 2)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(qColor(task.quadrant).opacity(task.isCompleted ? 0.4 : 0.9))
-            .cornerRadius(3)
-            .onTapGesture { editingTask = task }
+        HStack(spacing: 3) {
+            if let tagColor = task.effectiveTagColor {
+                Circle()
+                    .fill(tagColor)
+                    .frame(width: 5, height: 5)
+            }
+            Text(task.title)
+                .font(.system(size: 9, weight: .medium))
+                .lineLimit(2)
+                .foregroundColor(.white)
+        }
+        .padding(.horizontal, 3)
+        .padding(.vertical, 2)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(qColor(task.quadrant).opacity(task.isCompleted ? 0.4 : 0.9))
+        .cornerRadius(3)
+        .onTapGesture { editingTask = task }
     }
 
     private func weekTimedTasks(date: Date, hour: Int) -> [EisTask] {
@@ -602,7 +611,7 @@ struct CalendarView: View {
     private func timelineCard(_ task: EisTask) -> some View {
         HStack(spacing: 0) {
             Rectangle()
-                .fill(qColor(task.quadrant))
+                .fill(task.effectiveTagColor ?? qColor(task.quadrant))
                 .frame(width: 3)
                 .cornerRadius(1.5)
 

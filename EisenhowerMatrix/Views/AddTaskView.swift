@@ -128,9 +128,12 @@ struct AddTaskView: View {
                         }
                         .padding(.vertical, 4)
                     }
+                }
 
-                    // Label field — shown when any colour is chosen
-                    if colorTag != .none || useCustomColor {
+                // Tag label — own Section so it's completely isolated from the horizontal
+                // ScrollView above (which steals gestures and blocks the TextField).
+                if colorTag != .none || useCustomColor {
+                    Section {
                         HStack(spacing: 8) {
                             Circle()
                                 .fill(useCustomColor ? customTagColor : colorTag.color)
@@ -138,8 +141,6 @@ struct AddTaskView: View {
                                 .allowsHitTesting(false)
                             TextField(lang == "zh" ? "標籤名稱（選填）" : "Tag label (optional)",
                                       text: $colorTagLabel)
-                            // Clear tag button — .borderless is required inside Form rows;
-                            // .plain absorbs touch events across the whole row and blocks TextField.
                             Button {
                                 colorTag = .none
                                 useCustomColor = false

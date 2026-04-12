@@ -239,18 +239,18 @@ struct ChecklistView: View {
 
                 Spacer()
 
-                if task.colorTag != .none {
+                if let tagColor = task.effectiveTagColor {
                     HStack(spacing: 3) {
-                        Circle().fill(task.colorTag.color).frame(width: 7, height: 7)
+                        Circle().fill(tagColor).frame(width: 7, height: 7)
                         if !task.colorTagLabel.isEmpty {
                             Text(task.colorTagLabel)
                                 .font(.system(size: 9, weight: .medium))
-                                .foregroundColor(task.colorTag.color)
+                                .foregroundColor(tagColor)
                         }
                     }
                     .padding(.horizontal, task.colorTagLabel.isEmpty ? 0 : 5)
                     .padding(.vertical, task.colorTagLabel.isEmpty ? 0 : 2)
-                    .background(task.colorTagLabel.isEmpty ? .clear : task.colorTag.color.opacity(0.12))
+                    .background(task.colorTagLabel.isEmpty ? .clear : tagColor.opacity(0.12))
                     .cornerRadius(4)
                 }
 
