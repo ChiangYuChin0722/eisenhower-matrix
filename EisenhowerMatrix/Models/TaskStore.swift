@@ -187,7 +187,7 @@ class TaskStore: ObservableObject {
     func resetToSampleData() {
         tasks = []
         NotificationManager.shared.cancelAll()
-        loadSampleData()
+        save()
     }
 
     func deleteCategory(id: UUID) {

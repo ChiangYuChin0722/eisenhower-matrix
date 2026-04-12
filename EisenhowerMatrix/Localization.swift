@@ -257,7 +257,7 @@ struct Str {
     var resetSectionTitle:  String { zh ? "重置"   : "Reset" }
     var resetButton:        String { zh ? "重置 App 資料" : "Reset App Data" }
     var resetConfirmTitle:  String { zh ? "重置 App 資料？" : "Reset app data?" }
-    var resetConfirmMsg:    String { zh ? "所有任務將被刪除，並還原成範例資料。" : "All tasks will be deleted and sample data restored." }
+    var resetConfirmMsg:    String { zh ? "所有任務將被永久刪除，此操作無法復原。" : "All tasks will be permanently deleted. This cannot be undone." }
     var resetConfirmAction: String { zh ? "重置" : "Reset" }
     var doneButton:         String { zh ? "完成" : "Done" }
     var accentSection:       String { zh ? "主題色"  : "Accent Color" }
