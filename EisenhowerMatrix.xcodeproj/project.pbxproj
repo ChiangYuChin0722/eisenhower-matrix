@@ -11,7 +11,7 @@
 		81A6210C2F8B50BE008788CA /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 81A6210B2F8B50BE008788CA /* GoogleSignInSwift */; };
 		81A6210F2F8B50E4008788CA /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 81A6210E2F8B50E4008788CA /* FirebaseAuth */; };
 		81A621112F8B50E4008788CA /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 81A621102F8B50E4008788CA /* FirebaseCore */; };
-		81A621132F8B5121008788CA /* GoogleService-Info 2.plist in Resources */ = {isa = PBXBuildFile; fileRef = 81A621122F8B5121008788CA /* GoogleService-Info 2.plist */; };
+		81A621152F8B515E008788CA /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 81A621142F8B515E008788CA /* GoogleService-Info.plist */; };
 		AAAA020000000001 /* EisenhowerMatrixApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000001 /* EisenhowerMatrixApp.swift */; };
 		AAAA020000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000002 /* ContentView.swift */; };
 		AAAA020000000003 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000003 /* Task.swift */; };
@@ -66,7 +66,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		81A621122F8B5121008788CA /* GoogleService-Info 2.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info 2.plist"; sourceTree = "<group>"; };
+		81A621142F8B515E008788CA /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AAAA010000000001 /* EisenhowerMatrixApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EisenhowerMatrixApp.swift; sourceTree = "<group>"; };
 		AAAA010000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		AAAA010000000003 /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
@@ -129,7 +129,7 @@
 				AAAA030000000002 /* EisenhowerMatrix */,
 				BBBB030000000001 /* EisenhowerMatrixWidget */,
 				AAAA030000000003 /* Products */,
-				81A621122F8B5121008788CA /* GoogleService-Info 2.plist */,
+				81A621142F8B515E008788CA /* GoogleService-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -304,8 +304,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				AAAA02000000000E /* Assets.xcassets in Resources */,
-				81A621132F8B5121008788CA /* GoogleService-Info 2.plist in Resources */,
 				AAAA02000000000F /* Preview Assets.xcassets in Resources */,
+				81A621152F8B515E008788CA /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
