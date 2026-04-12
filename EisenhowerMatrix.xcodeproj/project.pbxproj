@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		81A6210A2F8B50BE008788CA /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 81A621092F8B50BE008788CA /* GoogleSignIn */; };
+		81A6210C2F8B50BE008788CA /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 81A6210B2F8B50BE008788CA /* GoogleSignInSwift */; };
+		81A6210F2F8B50E4008788CA /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 81A6210E2F8B50E4008788CA /* FirebaseAuth */; };
+		81A621112F8B50E4008788CA /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 81A621102F8B50E4008788CA /* FirebaseCore */; };
 		AAAA020000000001 /* EisenhowerMatrixApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000001 /* EisenhowerMatrixApp.swift */; };
 		AAAA020000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000002 /* ContentView.swift */; };
 		AAAA020000000003 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA010000000003 /* Task.swift */; };
@@ -36,6 +40,30 @@
 		BBBB020000000003 /* EisenhowerMatrixWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = BBBB010000000005 /* EisenhowerMatrixWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		BBBB040000000003 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AAAA060000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BBBB040000000001;
+			remoteInfo = EisenhowerMatrixWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		BBBB000000000004 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				BBBB020000000003 /* EisenhowerMatrixWidget.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		AAAA010000000001 /* EisenhowerMatrixApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EisenhowerMatrixApp.swift; sourceTree = "<group>"; };
 		AAAA010000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -59,11 +87,11 @@
 		AAAA010000000016 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
 		AAAA010000000017 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		AAAA010000000018 /* PomodoroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PomodoroView.swift; sourceTree = "<group>"; };
+		AAAA010000000019 /* EisenhowerMatrix.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EisenhowerMatrix.entitlements; sourceTree = "<group>"; };
 		AAAA01000000001A /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
 		AAAA01000000001B /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
-		AAAA01000000001D /* ProfileEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileEditView.swift; sourceTree = "<group>"; };
-		AAAA010000000019 /* EisenhowerMatrix.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EisenhowerMatrix.entitlements; sourceTree = "<group>"; };
 		AAAA01000000001C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AAAA01000000001D /* ProfileEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileEditView.swift; sourceTree = "<group>"; };
 		BBBB010000000001 /* EisenhowerMatrixWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EisenhowerMatrixWidget.swift; sourceTree = "<group>"; };
 		BBBB010000000002 /* WidgetDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDataModel.swift; sourceTree = "<group>"; };
 		BBBB010000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -71,25 +99,15 @@
 		BBBB010000000005 /* EisenhowerMatrixWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = EisenhowerMatrixWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		BBBB000000000004 /* Embed App Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				BBBB020000000003 /* EisenhowerMatrixWidget.appex in Embed App Extensions */,
-			);
-			name = "Embed App Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFrameworksBuildPhase section */
 		AAAA000000000001 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				81A6210A2F8B50BE008788CA /* GoogleSignIn in Frameworks */,
+				81A6210F2F8B50E4008788CA /* FirebaseAuth in Frameworks */,
+				81A621112F8B50E4008788CA /* FirebaseCore in Frameworks */,
+				81A6210C2F8B50BE008788CA /* GoogleSignInSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -103,7 +121,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		AAAA030000000001 /* root */ = {
+		AAAA030000000001 = {
 			isa = PBXGroup;
 			children = (
 				AAAA030000000002 /* EisenhowerMatrix */,
@@ -147,16 +165,6 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
-		AAAA030000000007 /* Managers */ = {
-			isa = PBXGroup;
-			children = (
-				AAAA010000000013 /* NotificationManager.swift */,
-				AAAA010000000016 /* HapticManager.swift */,
-				AAAA01000000001A /* AuthManager.swift */,
-			);
-			path = Managers;
-			sourceTree = "<group>";
-		};
 		AAAA030000000005 /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -184,6 +192,16 @@
 				AAAA01000000000F /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		AAAA030000000007 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				AAAA010000000013 /* NotificationManager.swift */,
+				AAAA010000000016 /* HapticManager.swift */,
+				AAAA01000000001A /* AuthManager.swift */,
+			);
+			path = Managers;
 			sourceTree = "<group>";
 		};
 		BBBB030000000001 /* EisenhowerMatrixWidget */ = {
@@ -263,6 +281,10 @@
 				Base,
 			);
 			mainGroup = AAAA030000000001;
+			packageReferences = (
+				81A621082F8B50BE008788CA /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				81A6210D2F8B50E4008788CA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			productRefGroup = AAAA030000000003 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -340,16 +362,6 @@
 			targetProxy = BBBB040000000003 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
-
-/* Begin PBXContainerItemProxy section */
-		BBBB040000000003 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = AAAA060000000001 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = BBBB040000000001;
-			remoteInfo = EisenhowerMatrixWidget;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin XCBuildConfiguration section */
 		AAAA070000000001 /* Debug */ = {
@@ -594,6 +606,47 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		81A621082F8B50BE008788CA /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.1.0;
+			};
+		};
+		81A6210D2F8B50E4008788CA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.12.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		81A621092F8B50BE008788CA /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 81A621082F8B50BE008788CA /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		81A6210B2F8B50BE008788CA /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 81A621082F8B50BE008788CA /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
+		81A6210E2F8B50E4008788CA /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 81A6210D2F8B50E4008788CA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		81A621102F8B50E4008788CA /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 81A6210D2F8B50E4008788CA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AAAA060000000001 /* Project object */;
 }
