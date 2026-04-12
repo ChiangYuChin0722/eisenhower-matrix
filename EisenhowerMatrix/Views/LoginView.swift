@@ -16,13 +16,15 @@ struct LoginView: View {
         ZStack {
             background
             VStack(spacing: 0) {
-                Spacer()
                 logoSection
+                    .padding(.top, 100)
                 Spacer()
                 buttonsSection
                 footerText
-                Spacer().frame(height: 48)
+                    .padding(.bottom, 48)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .ignoresSafeArea(.keyboard)
         }
         .alert(zh ? "登入失敗" : "Sign In Failed",
                isPresented: $showError,
