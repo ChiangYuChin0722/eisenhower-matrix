@@ -61,6 +61,7 @@
 		AAAA01000000001A /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
 		AAAA01000000001B /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		AAAA010000000019 /* EisenhowerMatrix.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EisenhowerMatrix.entitlements; sourceTree = "<group>"; };
+		AAAA01000000001C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BBBB010000000001 /* EisenhowerMatrixWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EisenhowerMatrixWidget.swift; sourceTree = "<group>"; };
 		BBBB010000000002 /* WidgetDataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDataModel.swift; sourceTree = "<group>"; };
 		BBBB010000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -149,8 +150,7 @@
 			children = (
 				AAAA010000000013 /* NotificationManager.swift */,
 				AAAA010000000016 /* HapticManager.swift */,
-				AAAA01000000001C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-			AAAA01000000001A /* AuthManager.swift */,
+				AAAA01000000001A /* AuthManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
