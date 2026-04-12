@@ -140,15 +140,16 @@ struct SettingsView: View {
 
                 // MARK: Account
                 Section(lang == "zh" ? "帳號" : "Account") {
-                    if let user = authManager.user {
+                    NavigationLink {
+                        ProfileEditView()
+                            .environmentObject(authManager)
+                    } label: {
                         HStack(spacing: 10) {
-                            Image(systemName: "person.circle.fill")
-                                .font(.system(size: 20))
-                                .foregroundColor(.secondary)
+                            authManager.avatarView(size: 36)
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(user.displayName ?? (lang == "zh" ? "使用者" : "User"))
+                                Text(authManager.user?.displayName ?? (lang == "zh" ? "使用者" : "User"))
                                     .font(.subheadline)
-                                Text(user.email ?? "")
+                                Text(authManager.user?.email ?? "")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -166,11 +167,7 @@ struct SettingsView: View {
         .background(Color.appBackground)
         .navigationTitle(s.settingsTitle)
         .navigationBarTitleDisplayMode(.inline)
-        .confirmationDialog(
-            s.resetConfirmTitle,
-            isPresented: $showingResetConfirm,
-            titleVisibility: .visible
-        ) {
+        .alert(s.resetConfirmTitle, isPresented: $showingResetConfirm) {
             Button(s.resetConfirmAction, role: .destructive) {
                 taskStore.resetToSampleData()
             }

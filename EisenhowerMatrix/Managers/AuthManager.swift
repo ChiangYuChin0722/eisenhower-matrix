@@ -4,6 +4,7 @@ import FirebaseCore
 import GoogleSignIn
 import AuthenticationServices
 import CryptoKit
+import SwiftUI
 
 @MainActor
 class AuthManager: ObservableObject {
@@ -80,6 +81,59 @@ class AuthManager: ObservableObject {
 
         case .failure(let error):
             throw error
+        }
+    }
+
+    // MARK: - Update Profile
+
+    func updateProfile(displayName: String) async {
+        guard let firebaseUser = Auth.auth().currentUser else { return }
+        let req = firebaseUser.createProfileChangeRequest()
+        req.displayName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        try? await req.commitChanges()
+        self.user = Auth.auth().currentUser
+    }
+
+    // MARK: - Local avatar helpers
+
+    private static var localAvatarURL: URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("profile_avatar.jpg")
+    }
+
+    static func saveLocalAvatar(_ data: Data) {
+        try? data.write(to: localAvatarURL)
+    }
+
+    static func loadLocalAvatar() -> UIImage? {
+        guard let data = try? Data(contentsOf: localAvatarURL) else { return nil }
+        return UIImage(data: data)
+    }
+
+    @ViewBuilder
+    func avatarView(size: CGFloat) -> some View {
+        if let img = AuthManager.loadLocalAvatar() {
+            Image(uiImage: img)
+                .resizable().scaledToFill()
+                .frame(width: size, height: size)
+                .clipShape(Circle())
+        } else if let url = user?.photoURL {
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .success(let img):
+                    img.resizable().scaledToFill()
+                        .frame(width: size, height: size)
+                        .clipShape(Circle())
+                default:
+                    Image(systemName: "person.circle.fill")
+                        .font(.system(size: size))
+                        .foregroundColor(.secondary)
+                }
+            }
+        } else {
+            Image(systemName: "person.circle.fill")
+                .font(.system(size: size))
+                .foregroundColor(.secondary)
         }
     }
 
