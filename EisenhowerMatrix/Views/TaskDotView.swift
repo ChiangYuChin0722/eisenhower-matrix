@@ -47,8 +47,10 @@ struct TaskDotView: View {
                                 .fill(Color(uiColor: .systemBackground).opacity(0.92))
                                 .shadow(color: .black.opacity(0.08), radius: 3, y: 1)
                         )
-                        // Shift away from the dot: 7 (radius) + 5 (gap) = 12pt each side
-                        .offset(x: showLabelOnLeft ? -(7 + 5) : (7 + 5))
+                        // Shift away from the dot: 14 (diameter) + 5 (gap) = 19pt each side
+                        // overlay alignment is .leading/.trailing so offset starts at circle edge,
+                        // not center — must use full diameter to clear the circle completely.
+                        .offset(x: showLabelOnLeft ? -(14 + 5) : (14 + 5))
                         .transition(.opacity.combined(with: .scale(scale: 0.9)))
                 }
             }
