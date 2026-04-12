@@ -135,9 +135,11 @@ struct AddTaskView: View {
                             Circle()
                                 .fill(useCustomColor ? customTagColor : colorTag.color)
                                 .frame(width: 10, height: 10)
+                                .allowsHitTesting(false)
                             TextField(lang == "zh" ? "標籤名稱（選填）" : "Tag label (optional)",
                                       text: $colorTagLabel)
-                            // Clear tag button
+                            // Clear tag button — .borderless is required inside Form rows;
+                            // .plain absorbs touch events across the whole row and blocks TextField.
                             Button {
                                 colorTag = .none
                                 useCustomColor = false
@@ -146,7 +148,7 @@ struct AddTaskView: View {
                                 Image(systemName: "xmark.circle.fill")
                                     .foregroundColor(.secondary)
                             }
-                            .buttonStyle(.plain)
+                            .buttonStyle(.borderless)
                         }
                     }
                 }
