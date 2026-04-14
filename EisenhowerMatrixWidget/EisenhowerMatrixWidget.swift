@@ -47,21 +47,20 @@ struct EisenhowerEntryView: View {
     }
 }
 
-// MARK: - Small widget (2×2)
+// MARK: - Small widget (2×2) — next deadline countdown
 
 struct SmallWidgetView: View {
     let entry: EisenhowerEntry
     var s: WidgetSnapshot { entry.snapshot }
-    var rate: Double { s.totalCount > 0 ? Double(s.completedCount) / Double(s.totalCount) : 0 }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
             HStack(spacing: 4) {
-                Image(systemName: "square.grid.2x2.fill")
+                Image(systemName: "clock.badge.exclamationmark.fill")
                     .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(.blue)
-                Text("Eisenhower")
+                    .foregroundStyle(.red)
+                Text("Next Deadline")
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -69,58 +68,63 @@ struct SmallWidgetView: View {
 
             Spacer()
 
-            // Progress ring
-            ZStack {
-                Circle()
-                    .stroke(Color.blue.opacity(0.15), lineWidth: 7)
-                Circle()
-                    .trim(from: 0, to: rate)
-                    .stroke(
-                        LinearGradient(colors: [.blue, .cyan],
-                                       startPoint: .topLeading,
-                                       endPoint: .bottomTrailing),
-                        style: StrokeStyle(lineWidth: 7, lineCap: .round)
-                    )
-                    .rotationEffect(.degrees(-90))
-                VStack(spacing: 0) {
-                    Text("\(Int(rate * 100))%")
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
-                    Text("done")
-                        .font(.system(size: 9))
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .frame(width: 64, height: 64)
-            .frame(maxWidth: .infinity)
-
-            Spacer()
-
-            // Bottom: pending + streak
-            HStack {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("\(s.pendingCount)")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundStyle(.orange)
-                    Text("pending")
-                        .font(.system(size: 9))
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                VStack(alignment: .trailing, spacing: 1) {
-                    HStack(spacing: 2) {
-                        Image(systemName: "flame.fill")
-                            .font(.system(size: 10))
-                            .foregroundStyle(.orange)
-                        Text("\(s.currentStreak)")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+            if let next = s.upcomingDeadlines.first {
+                VStack(alignment: .leading, spacing: 6) {
+                    // Quadrant dot + title
+                    HStack(alignment: .top, spacing: 5) {
+                        Circle()
+                            .fill(dotColor(for: next.quadrantRaw))
+                            .frame(width: 6, height: 6)
+                            .padding(.top, 3)
+                        Text(next.title)
+                            .font(.system(size: 13, weight: .semibold))
+                            .lineLimit(3)
+                            .foregroundStyle(next.isOverdue ? .red : .primary)
                     }
-                    Text("streak")
+
+                    // Countdown
+                    HStack(spacing: 3) {
+                        Image(systemName: next.isOverdue ? "exclamationmark.triangle.fill" : "hourglass")
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(next.isOverdue ? .red : .orange)
+                        Text(next.dueDate, style: .relative)
+                            .font(.system(size: 11, weight: .medium, design: .rounded))
+                            .foregroundStyle(next.isOverdue ? .red : .orange)
+                    }
+                }
+
+                Spacer()
+
+                // Remaining deadline count
+                if s.upcomingDeadlines.count > 1 {
+                    Text("+ \(s.upcomingDeadlines.count - 1) more")
                         .font(.system(size: 9))
                         .foregroundStyle(.secondary)
                 }
+            } else {
+                // No deadlines state
+                VStack(alignment: .center, spacing: 6) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 30))
+                        .foregroundStyle(.green)
+                    Text("All clear!")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                Spacer()
             }
         }
         .padding(14)
+    }
+
+    private func dotColor(for raw: String) -> Color {
+        switch raw {
+        case "do":        return .red
+        case "schedule":  return .blue
+        case "delegate":  return .orange
+        default:          return .gray
+        }
     }
 }
 

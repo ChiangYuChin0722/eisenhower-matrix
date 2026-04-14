@@ -35,6 +35,7 @@ final class NotificationManager {
 
     func cancelAll() {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
     }
 
     func getAuthorizationStatus(completion: @escaping (UNAuthorizationStatus) -> Void) {

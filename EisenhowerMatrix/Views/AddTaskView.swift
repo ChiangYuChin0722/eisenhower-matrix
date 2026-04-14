@@ -30,6 +30,7 @@ struct AddTaskView: View {
     @State private var subtasks: [EisTask] = []
     @State private var recurrence      = Recurrence.none
     @State private var selectedCategoryId: UUID? = nil
+    @State private var showDeleteConfirm = false
 
     var isEditing: Bool { editingTask != nil }
     private var s: Str { Str(lang) }
@@ -155,6 +156,20 @@ struct AddTaskView: View {
                     }
                 }
 
+                if isEditing {
+                    Section {
+                        Button(role: .destructive) {
+                            showDeleteConfirm = true
+                        } label: {
+                            HStack {
+                                Spacer()
+                                Text(lang == "zh" ? "刪除任務" : "Delete Task")
+                                Spacer()
+                            }
+                        }
+                    }
+                }
+
                 Section(s.subtasksSection) {
                     ForEach(subtasks) { sub in
                         HStack {
@@ -190,6 +205,18 @@ struct AddTaskView: View {
                 }
             }
             .onAppear(perform: populate)
+            .alert(lang == "zh" ? "刪除任務" : "Delete Task",
+                   isPresented: $showDeleteConfirm) {
+                Button(lang == "zh" ? "刪除" : "Delete", role: .destructive) {
+                    if let task = editingTask {
+                        taskStore.deleteTask(id: task.id)
+                    }
+                    dismiss()
+                }
+                Button(lang == "zh" ? "取消" : "Cancel", role: .cancel) {}
+            } message: {
+                Text(lang == "zh" ? "確定要刪除這個任務嗎？" : "Are you sure you want to delete this task?")
+            }
         }
     }
 
