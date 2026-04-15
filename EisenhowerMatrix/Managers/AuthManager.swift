@@ -144,6 +144,15 @@ class AuthManager: ObservableObject {
         GIDSignIn.sharedInstance.signOut()
     }
 
+    // MARK: - Delete Account
+
+    /// Deletes the Firebase Auth account. Throws if re-authentication is required
+    /// (token too old) — caller should fall back to signOut() in that case.
+    func deleteAccount() async throws {
+        try await Auth.auth().currentUser?.delete()
+        GIDSignIn.sharedInstance.signOut()
+    }
+
     // MARK: - Nonce helpers
 
     private func randomNonceString(length: Int = 32) -> String {

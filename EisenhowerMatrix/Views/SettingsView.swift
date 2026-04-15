@@ -170,7 +170,15 @@ struct SettingsView: View {
         .alert(s.resetConfirmTitle, isPresented: $showingResetConfirm) {
             Button(s.resetConfirmAction, role: .destructive) {
                 taskStore.resetToSampleData()
-                try? authManager.signOut()
+                Task {
+                    do {
+                        // Delete the Firebase Auth account entirely.
+                        try await authManager.deleteAccount()
+                    } catch {
+                        // Account deletion requires recent login — fall back to sign out.
+                        try? authManager.signOut()
+                    }
+                }
             }
             Button(s.cancel, role: .cancel) {}
         } message: {

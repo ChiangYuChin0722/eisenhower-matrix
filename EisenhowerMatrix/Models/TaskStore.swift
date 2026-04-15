@@ -12,6 +12,7 @@ class TaskStore: ObservableObject {
     // v4: added Recurrence, ChecklistCategory, completedAt
     private let saveKey       = "eisenhower_tasks_v4"
     private let categoriesKey = "eisenhower_categories_v1"
+    private let currentUIDKey = "currentUserUID"
     // Shared with Widget Extension via App Group
     private let defaults = UserDefaults(suiteName: "group.com.eisenhower.matrix") ?? .standard
 
@@ -52,6 +53,17 @@ class TaskStore: ObservableObject {
     func startSync(uid: String) {
         stopSync()
         isSyncing = true
+
+        // If a different user is signing in, wipe the local task cache immediately.
+        // This prevents User A's locally-cached tasks from being migrated into
+        // User B's Firestore when User B's collection is first seen as empty.
+        let previousUID = defaults.string(forKey: currentUIDKey)
+        if let prev = previousUID, prev != uid {
+            tasks = []
+            defaults.removeObject(forKey: saveKey)
+        }
+        defaults.set(uid, forKey: currentUIDKey)
+
         let base = db.collection("users").document(uid)
 
         // Check for a pending reset stored in Firestore (survives app reinstalls,
