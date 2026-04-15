@@ -74,6 +74,8 @@ class TaskStore: ObservableObject {
 
             if pendingReset {
                 // A reset was requested — delete any remaining task docs, then clear the flag.
+                // Also cancel all local notifications on THIS device so that every device
+                // the user owns clears its notifications the next time the app is opened.
                 base.collection("tasks").getDocuments { taskSnap, _ in
                     taskSnap?.documents.forEach { $0.reference.delete() }
                 }
@@ -81,6 +83,7 @@ class TaskStore: ObservableObject {
                 DispatchQueue.main.async {
                     self.tasks = []
                     self.saveLocalCache()
+                    NotificationManager.shared.cancelAll()
                 }
             }
 
