@@ -170,6 +170,7 @@ struct SettingsView: View {
         .alert(s.resetConfirmTitle, isPresented: $showingResetConfirm) {
             Button(s.resetConfirmAction, role: .destructive) {
                 taskStore.resetToSampleData()
+                try? authManager.signOut()
             }
             Button(s.cancel, role: .cancel) {}
         } message: {

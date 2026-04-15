@@ -255,10 +255,10 @@ struct Str {
     var completionRateLabel:String { zh ? "完成率"  : "Completion rate" }
     var currentStreakLabel:  String { zh ? "連續天數" : "Current streak" }
     var resetSectionTitle:  String { zh ? "重置"   : "Reset" }
-    var resetButton:        String { zh ? "重置 App 資料" : "Reset App Data" }
-    var resetConfirmTitle:  String { zh ? "重置 App 資料？" : "Reset app data?" }
-    var resetConfirmMsg:    String { zh ? "所有任務將被永久刪除，此操作無法復原。" : "All tasks will be permanently deleted. This cannot be undone." }
-    var resetConfirmAction: String { zh ? "重置" : "Reset" }
+    var resetButton:        String { zh ? "重置並登出" : "Reset & Sign Out" }
+    var resetConfirmTitle:  String { zh ? "重置並登出？" : "Reset & Sign Out?" }
+    var resetConfirmMsg:    String { zh ? "所有任務將被永久刪除，並自動登出帳號。此操作無法復原。" : "All tasks will be permanently deleted and you will be signed out. This cannot be undone." }
+    var resetConfirmAction: String { zh ? "重置並登出" : "Reset & Sign Out" }
     var doneButton:         String { zh ? "完成" : "Done" }
     var accentSection:       String { zh ? "主題色"  : "Accent Color" }
     var matrixThemeSection:  String { zh ? "象限色系" : "Matrix Colors" }
