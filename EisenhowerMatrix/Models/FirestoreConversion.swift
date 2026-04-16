@@ -27,6 +27,7 @@ extension EisTask {
         if let v = checklistCategoryId { d["checklistCategoryId"] = v.uuidString }
         if let v = showInMatrix        { d["showInMatrix"]        = v }
         if let v = tagHex              { d["tagHex"]              = v }
+        if let v = calendarEventId     { d["calendarEventId"]     = v }
         return d
     }
 
@@ -48,8 +49,9 @@ extension EisTask {
         t.sortOrder     = data["sortOrder"]    as? Int    ?? 0
         t.isInChecklist = data["isInChecklist"] as? Bool  ?? false
         t.recurrence    = Recurrence(rawValue: data["recurrence"] as? String ?? "") ?? .none
-        t.showInMatrix  = data["showInMatrix"] as? Bool
-        t.tagHex        = data["tagHex"]       as? String
+        t.showInMatrix      = data["showInMatrix"]  as? Bool
+        t.tagHex            = data["tagHex"]        as? String
+        t.calendarEventId   = data["calendarEventId"] as? String
 
         if let ts = data["createdAt"]   as? Timestamp { t.createdAt   = ts.dateValue() }
         if let ts = data["dueDate"]     as? Timestamp { t.dueDate     = ts.dateValue() }

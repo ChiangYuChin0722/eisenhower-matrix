@@ -1,5 +1,6 @@
 import SwiftUI
 import UserNotifications
+import EventKit
 
 struct SettingsView: View {
     @EnvironmentObject var taskStore: TaskStore
@@ -17,9 +18,11 @@ struct SettingsView: View {
     @AppStorage("pomodoroShortBreak")    private var pomodoroShort      = 5
     @AppStorage("pomodoroLongBreak")     private var pomodoroLong       = 15
     @AppStorage("countdownPrecision")    private var countdownPrecision = "dhms"
+    @AppStorage("syncToiCalendar")       private var syncToiCalendar    = false
     @State private var showingResetConfirm   = false
     @State private var showingQuadrantEdit   = false
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
+    @State private var calendarDeniedAlert   = false
 
     private var s: Str { Str(lang) }
 
@@ -117,6 +120,48 @@ struct SettingsView: View {
                         .foregroundColor(.secondary)
                 } header: {
                     Text(s.notifSection)
+                }
+
+                // MARK: iCloud Calendar sync
+                Section {
+                    Toggle(isOn: $syncToiCalendar) {
+                        Label(lang == "zh" ? "同步至 iCloud 行事曆" : "Sync to iCloud Calendar",
+                              systemImage: "calendar.badge.checkmark")
+                    }
+                    .onChange(of: syncToiCalendar) { enabled in
+                        guard enabled else { return }
+                        Task {
+                            let granted = await EventKitManager.shared.requestAccess()
+                            if !granted {
+                                await MainActor.run {
+                                    syncToiCalendar  = false
+                                    calendarDeniedAlert = true
+                                }
+                            }
+                        }
+                    }
+                    if syncToiCalendar {
+                        Text(lang == "zh"
+                             ? "有截止日期的任務將自動出現在系統行事曆（iCloud 同步）"
+                             : "Tasks with a due date will appear in your system Calendar app and sync via iCloud.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                } header: {
+                    Text(lang == "zh" ? "行事曆" : "Calendar")
+                }
+                .alert(lang == "zh" ? "需要行事曆權限" : "Calendar Access Required",
+                       isPresented: $calendarDeniedAlert) {
+                    Button(lang == "zh" ? "前往設定" : "Open Settings") {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                    Button(lang == "zh" ? "取消" : "Cancel", role: .cancel) {}
+                } message: {
+                    Text(lang == "zh"
+                         ? "請在「設定 → 隱私權 → 行事曆」中允許存取行事曆。"
+                         : "Please allow Calendar access in Settings → Privacy → Calendars.")
                 }
 
                 // MARK: Countdown precision

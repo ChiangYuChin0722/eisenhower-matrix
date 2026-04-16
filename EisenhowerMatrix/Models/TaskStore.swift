@@ -10,11 +10,14 @@ class TaskStore: ObservableObject {
     @Published var isSyncing                               = false
 
     // v4: added Recurrence, ChecklistCategory, completedAt
-    private let saveKey       = "eisenhower_tasks_v4"
-    private let categoriesKey = "eisenhower_categories_v1"
-    private let currentUIDKey = "currentUserUID"
+    private let saveKey          = "eisenhower_tasks_v4"
+    private let categoriesKey    = "eisenhower_categories_v1"
+    private let currentUIDKey    = "currentUserUID"
+    private let calendarSyncKey  = "syncToiCalendar"
     // Shared with Widget Extension via App Group
     private let defaults = UserDefaults(suiteName: "group.com.eisenhower.matrix") ?? .standard
+
+    private var calendarSyncEnabled: Bool { defaults.bool(forKey: calendarSyncKey) }
 
     private var db           = Firestore.firestore()
     private var taskListener: ListenerRegistration?
@@ -237,25 +240,43 @@ class TaskStore: ObservableObject {
     // MARK: - Mutations
 
     func addTask(_ task: EisTask) {
-        tasks.append(task)
+        var t = task
         HapticManager.shared.impact(.light)
-        NotificationManager.shared.scheduleNotification(for: task)
-        fsWrite(task)
+        NotificationManager.shared.scheduleNotification(for: t)
+        if calendarSyncEnabled, let eventId = EventKitManager.shared.upsertEvent(for: t) {
+            t.calendarEventId = eventId
+        }
+        tasks.append(t)
+        fsWrite(t)
         saveLocalCache()
     }
 
     func updateTask(_ task: EisTask) {
-        if let idx = tasks.firstIndex(where: { $0.id == task.id }) {
-            tasks[idx] = task
-            NotificationManager.shared.scheduleNotification(for: task)
+        var t = task
+        NotificationManager.shared.scheduleNotification(for: t)
+        if calendarSyncEnabled {
+            if t.dueDate != nil {
+                if let eventId = EventKitManager.shared.upsertEvent(for: t) {
+                    t.calendarEventId = eventId
+                }
+            } else if let eventId = t.calendarEventId {
+                EventKitManager.shared.deleteEvent(id: eventId)
+                t.calendarEventId = nil
+            }
         }
-        fsWrite(task)
+        if let idx = tasks.firstIndex(where: { $0.id == t.id }) {
+            tasks[idx] = t
+        }
+        fsWrite(t)
         saveLocalCache()
     }
 
     func deleteTask(id: UUID) {
         if let task = tasks.first(where: { $0.id == id }) {
             NotificationManager.shared.cancelNotification(for: task)
+            if let eventId = task.calendarEventId {
+                EventKitManager.shared.deleteEvent(id: eventId)
+            }
         }
         tasks.removeAll { $0.id == id }
         HapticManager.shared.impact(.medium)
@@ -339,6 +360,11 @@ class TaskStore: ObservableObject {
     }
 
     func resetToSampleData() {
+        for task in tasks {
+            if let eventId = task.calendarEventId {
+                EventKitManager.shared.deleteEvent(id: eventId)
+            }
+        }
         if let uid = self.uid {
             let base = db.collection("users").document(uid)
             // Store the reset flag IN Firestore so it survives app reinstalls.
