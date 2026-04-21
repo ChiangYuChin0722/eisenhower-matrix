@@ -58,7 +58,7 @@ final class EventKitManager {
     var isAuthorized: Bool {
         let status = EKEventStore.authorizationStatus(for: .event)
         if #available(iOS 17.0, *) {
-            return status == .writeOnly || status == .fullAccess
+            return status == .fullAccess
         } else {
             return status == .authorized
         }
@@ -67,7 +67,7 @@ final class EventKitManager {
     func requestAccess() async -> Bool {
         do {
             if #available(iOS 17.0, *) {
-                return try await store.requestWriteOnlyAccessToEvents()
+                return try await store.requestFullAccessToEvents()
             } else {
                 return try await withCheckedThrowingContinuation { cont in
                     store.requestAccess(to: .event) { granted, error in
@@ -141,5 +141,16 @@ final class EventKitManager {
         if let event = store.event(withIdentifier: id) {
             try? store.remove(event, span: .thisEvent, commit: true)
         }
+    }
+
+    func loadEvents(for date: Date) -> [EKEvent] {
+        guard isAuthorized else { return [] }
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: date)
+        guard let end = cal.date(byAdding: .day, value: 1, to: start) else { return [] }
+        let calendars = store.calendars(for: .event).filter { $0.title != calendarTitle }
+        guard !calendars.isEmpty else { return [] }
+        let predicate = store.predicateForEvents(withStart: start, end: end, calendars: calendars)
+        return store.events(matching: predicate).sorted { $0.startDate < $1.startDate }
     }
 }

@@ -1,10 +1,12 @@
 import SwiftUI
+import EventKit
 
 struct CalendarView: View {
     @EnvironmentObject var taskStore: TaskStore
     @AppStorage("appLanguage") private var lang: String = "en"
     @AppStorage("appAccent")   private var appAccent: String = "blue"
     @AppStorage("matrixTheme") private var matrixTheme: String = "classic"
+    @AppStorage("syncToiCalendar") private var syncToiCalendar = false
     private func qColor(_ q: Quadrant) -> Color { q.color(theme: matrixTheme) }
     private func qBg(_ q: Quadrant)    -> Color { q.bgColor(theme: matrixTheme) }
     @State private var selectedDate    = Date()
@@ -12,6 +14,7 @@ struct CalendarView: View {
     @State private var viewMode: ViewMode = .month
     @State private var showAddTask     = false
     @State private var editingTask: EisTask? = nil
+    @State private var externalEvents: [EKEvent] = []
 
     enum ViewMode: String, CaseIterable {
         case month = "Month"
@@ -50,6 +53,9 @@ struct CalendarView: View {
                     dayTimelineView
                 }
             }
+            .onAppear { loadExternalEvents() }
+            .onChange(of: selectedDate) { _ in loadExternalEvents() }
+            .onChange(of: syncToiCalendar) { _ in loadExternalEvents() }
             .background(Color.appBackground)
             .navigationTitle(s.tabCalendar)
             .navigationBarTitleDisplayMode(.inline)
@@ -208,6 +214,22 @@ struct CalendarView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.appBackground)
+
+            if !externalEvents.isEmpty {
+                Divider()
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack {
+                        Image(systemName: "calendar").font(.caption).foregroundColor(.secondary)
+                        Text(lang == "zh" ? "iCloud 行事曆" : "iCloud Calendar")
+                            .font(.caption).fontWeight(.medium).foregroundColor(.secondary)
+                    }
+                    .padding(.horizontal, 16).padding(.top, 8).padding(.bottom, 4)
+                    ForEach(externalEvents, id: \.eventIdentifier) { event in
+                        externalEventRow(event)
+                        Divider().padding(.leading, 42)
+                    }
+                }
+            }
         }
     }
 
@@ -244,11 +266,18 @@ struct CalendarView: View {
                 }
             }
             Spacer()
-            Text(task.quadrant.title)
-                .font(.caption2).foregroundColor(qColor(task.quadrant))
-                .padding(.horizontal, 6).padding(.vertical, 2)
-                .background(qColor(task.quadrant).opacity(0.1))
-                .cornerRadius(4)
+            if !task.colorTagLabel.isEmpty {
+                Text(task.colorTagLabel)
+                    .font(.caption2)
+                    .foregroundColor(task.effectiveTagColor ?? qColor(task.quadrant))
+                    .padding(.horizontal, 6).padding(.vertical, 2)
+                    .background((task.effectiveTagColor ?? qColor(task.quadrant)).opacity(0.1))
+                    .cornerRadius(4)
+            } else if task.effectiveTagColor != nil {
+                Circle()
+                    .fill(task.effectiveTagColor!)
+                    .frame(width: 8, height: 8)
+            }
         }
         .padding(.horizontal, 16).padding(.vertical, 10)
         .background(Color(uiColor: .systemBackground))
@@ -700,6 +729,39 @@ struct CalendarView: View {
             selectedDate   = d
             displayedMonth = d
         }
+    }
+
+    private func loadExternalEvents() {
+        guard syncToiCalendar else { externalEvents = []; return }
+        externalEvents = EventKitManager.shared.loadEvents(for: selectedDate)
+    }
+
+    private func externalEventRow(_ event: EKEvent) -> some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(Color(cgColor: event.calendar.cgColor))
+                .frame(width: 10, height: 10)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(event.title ?? "")
+                    .font(.subheadline)
+                    .foregroundColor(.primary)
+                if !event.isAllDay {
+                    Text(event.startDate, style: .time)
+                        .font(.caption).foregroundColor(.secondary)
+                } else {
+                    Text(lang == "zh" ? "全天" : "All day")
+                        .font(.caption).foregroundColor(.secondary)
+                }
+            }
+            Spacer()
+            Text(event.calendar.title)
+                .font(.caption2).foregroundColor(.secondary)
+                .padding(.horizontal, 6).padding(.vertical, 2)
+                .background(Color(cgColor: event.calendar.cgColor).opacity(0.1))
+                .cornerRadius(4)
+        }
+        .padding(.horizontal, 16).padding(.vertical, 10)
+        .background(Color(uiColor: .systemBackground))
     }
 }
 

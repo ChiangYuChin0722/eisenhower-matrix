@@ -3,8 +3,10 @@ import SwiftUI
 struct TaskDotView: View {
     @EnvironmentObject var taskStore: TaskStore
     @AppStorage("matrixTheme") private var matrixTheme: String = "classic"
+    @AppStorage("appLanguage") private var lang: String = "en"
     let task: EisTask
     let canvasSize: CGSize
+    var onEdit: () -> Void = {}
 
     @GestureState private var dragOffset: CGSize = .zero
     private func qColor(_ q: Quadrant) -> Color { q.color(theme: matrixTheme) }
@@ -60,6 +62,29 @@ struct TaskDotView: View {
                 y: dotY - 7 + dragOffset.height
             )
             .zIndex(isDragging ? 999 : 1)
+            .contextMenu {
+                Button {
+                    taskStore.toggleCompletion(id: task.id)
+                } label: {
+                    Label(
+                        task.isCompleted
+                            ? (lang == "zh" ? "標記為未完成" : "Mark Incomplete")
+                            : (lang == "zh" ? "標記為完成" : "Mark Complete"),
+                        systemImage: task.isCompleted ? "circle" : "checkmark.circle"
+                    )
+                }
+                Button {
+                    onEdit()
+                } label: {
+                    Label(lang == "zh" ? "編輯任務" : "Edit Task", systemImage: "pencil")
+                }
+                Divider()
+                Button(role: .destructive) {
+                    taskStore.deleteTask(id: task.id)
+                } label: {
+                    Label(lang == "zh" ? "刪除任務" : "Delete Task", systemImage: "trash")
+                }
+            }
             .gesture(
                 DragGesture(minimumDistance: 4)
                     .updating($dragOffset) { value, state, _ in

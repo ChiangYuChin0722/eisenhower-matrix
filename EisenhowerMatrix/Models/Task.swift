@@ -177,6 +177,7 @@ struct EisTask: Identifiable, Codable, Equatable {
     var checklistCategoryId: UUID?  = nil
     var showInMatrix: Bool?         = nil   // nil = true (backward-compatible)
     var tagHex: String?             = nil   // custom tag color (overrides colorTag)
+    var links: [String]             = []
     var calendarEventId: String?    = nil   // EKEvent identifier for iCloud Calendar sync
 
     /// Resolved tag color: custom hex > preset enum > nil (no tag)

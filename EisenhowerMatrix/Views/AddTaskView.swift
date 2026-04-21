@@ -28,6 +28,7 @@ struct AddTaskView: View {
     @State private var useCustomColor  = false
     @State private var subtaskText     = ""
     @State private var subtasks: [EisTask] = []
+    @State private var links: [String] = []
     @State private var recurrence      = Recurrence.none
     @State private var selectedCategoryId: UUID? = nil
     @State private var showDeleteConfirm = false
@@ -189,6 +190,28 @@ struct AddTaskView: View {
                         .disabled(subtaskText.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
                 }
+
+                Section(lang == "zh" ? "連結" : "Links") {
+                    ForEach(links.indices, id: \.self) { i in
+                        HStack(spacing: 8) {
+                            Image(systemName: "link").foregroundColor(.blue).font(.caption)
+                            TextField("https://...", text: $links[i])
+                                .keyboardType(.URL)
+                                .autocorrectionDisabled()
+                                .textInputAutocapitalization(.never)
+                            if !links[i].isEmpty {
+                                Button { UIApplication.shared.open(URL(string: links[i]) ?? URL(string: "https://")!) } label: {
+                                    Image(systemName: "arrow.up.right.square").foregroundColor(.blue)
+                                }
+                                .buttonStyle(.borderless)
+                            }
+                        }
+                    }
+                    .onDelete { links.remove(atOffsets: $0) }
+                    Button { links.append("") } label: {
+                        Label(lang == "zh" ? "新增連結" : "Add Link", systemImage: "plus")
+                    }
+                }
             }
             .scrollContentBackground(.hidden)
             .background(Color.appBackground)
@@ -220,6 +243,15 @@ struct AddTaskView: View {
         }
     }
 
+    private func savedTagLabel(for color: TaskColor) -> String {
+        UserDefaults.standard.string(forKey: "tagLabel_\(color.rawValue)") ?? ""
+    }
+
+    private func persistTagLabel(_ label: String, for color: TaskColor) {
+        guard !label.isEmpty else { return }
+        UserDefaults.standard.set(label, forKey: "tagLabel_\(color.rawValue)")
+    }
+
     private func colorCircle(_ c: TaskColor) -> some View {
         ZStack {
             Circle()
@@ -235,7 +267,11 @@ struct AddTaskView: View {
         .onTapGesture {
             colorTag = c
             useCustomColor = false
-            if c == .none { colorTagLabel = "" }
+            if c == .none {
+                colorTagLabel = ""
+            } else {
+                colorTagLabel = savedTagLabel(for: c)
+            }
         }
     }
 
@@ -253,6 +289,7 @@ struct AddTaskView: View {
                 colorTag       = .none
             }
             subtasks           = t.subtasks
+            links              = t.links
             addToChecklist     = t.isInChecklist
             recurrence         = t.recurrence
             selectedCategoryId = t.checklistCategoryId
@@ -266,10 +303,12 @@ struct AddTaskView: View {
             addToCalendar      = forceCalendar
             addToChecklist     = forceChecklist
             selectedCategoryId = defaultCategoryId ?? taskStore.checklistCategories.first?.id
+            links              = []
         }
     }
 
     private func save() {
+        if colorTag != .none && !colorTagLabel.isEmpty { persistTagLabel(colorTagLabel, for: colorTag) }
         var task = editingTask ?? EisTask(
             title: title, quadrant: quadrant,
             canvasX: initialCanvasX, canvasY: initialCanvasY
@@ -291,6 +330,7 @@ struct AddTaskView: View {
                                    ? colorTagLabel.trimmingCharacters(in: .whitespaces)
                                    : ""
         task.subtasks            = subtasks
+        task.links               = links
         task.recurrence          = addToCalendar ? recurrence : .none
         task.checklistCategoryId = addToChecklist ? selectedCategoryId : nil
 

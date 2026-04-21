@@ -32,7 +32,7 @@ struct MatrixView: View {
                         cornerLabels(size: geo.size)
 
                         ForEach(taskStore.tasks.filter { $0.showInMatrix != false }) { task in
-                            TaskDotView(task: task, canvasSize: geo.size)
+                            TaskDotView(task: task, canvasSize: geo.size, onEdit: { editingTask = task })
                         }
                     }
                     .gesture(
