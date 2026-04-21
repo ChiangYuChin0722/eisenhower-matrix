@@ -70,17 +70,19 @@ class TaskStore: ObservableObject {
         let base = db.collection("users").document(uid)
 
         // Write public profile so friends can find you by email and see your name/avatar
+        // Start social listeners — both must run on MainActor since FriendManager is @MainActor
         if let user = Auth.auth().currentUser {
-            FriendManager.shared.writeProfile(
-                uid: uid,
-                displayName: user.displayName ?? user.email ?? "",
-                email:       user.email ?? "",
-                photoURL:    user.photoURL?.absoluteString
-            )
+            let displayName = user.displayName ?? user.email ?? ""
+            let email       = user.email ?? ""
+            let photoURL    = user.photoURL?.absoluteString
+            Task { @MainActor in
+                FriendManager.shared.writeProfile(uid: uid, displayName: displayName,
+                                                  email: email, photoURL: photoURL)
+                FriendManager.shared.start(uid: uid)
+            }
+        } else {
+            Task { @MainActor in FriendManager.shared.start(uid: uid) }
         }
-
-        // Start social listeners
-        Task { @MainActor in FriendManager.shared.start(uid: uid) }
 
         // Check for a pending reset stored in Firestore (survives app reinstalls,
         // unlike UserDefaults which is wiped on uninstall).
