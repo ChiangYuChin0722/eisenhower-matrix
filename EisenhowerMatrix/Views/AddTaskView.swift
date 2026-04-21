@@ -19,7 +19,7 @@ struct AddTaskView: View {
     @State private var notes           = ""
     @State private var quadrant        = Quadrant.doFirst
     @State private var addToMatrix      = true
-    @State private var addToCalendar   = false
+    @State private var hasDueDate      = false
     @State private var dueDate         = roundedNextHour()
     @State private var addToChecklist  = false
     @State private var colorTag        = TaskColor.red
@@ -32,6 +32,7 @@ struct AddTaskView: View {
     @State private var recurrence      = Recurrence.none
     @State private var selectedCategoryId: UUID? = nil
     @State private var showDeleteConfirm = false
+    @State private var isCompleted     = false
 
     var isEditing: Bool { editingTask != nil }
     private var s: Str { Str(lang) }
@@ -39,6 +40,27 @@ struct AddTaskView: View {
     var body: some View {
         NavigationView {
             Form {
+                // Completion status banner when editing a completed task
+                if isEditing {
+                    Section {
+                        Button {
+                            isCompleted.toggle()
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
+                                    .font(.title3)
+                                    .foregroundColor(isCompleted ? .green : .secondary)
+                                Text(isCompleted
+                                     ? (lang == "zh" ? "已完成 — 點擊取消完成" : "Completed — tap to undo")
+                                     : (lang == "zh" ? "標記為完成" : "Mark as Complete"))
+                                    .foregroundColor(isCompleted ? .green : .primary)
+                                Spacer()
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+
                 Section(s.taskSection) {
                     TextField(s.titleField, text: $title)
                     TextField(s.notesField, text: $notes, axis: .vertical)
@@ -74,10 +96,11 @@ struct AddTaskView: View {
                 }
 
                 Section {
-                    Toggle(isOn: $addToCalendar) {
-                        Label(s.addToCalendar, systemImage: "calendar")
+                    Toggle(isOn: $hasDueDate) {
+                        Label(lang == "zh" ? "加截止日期" : "Set Deadline",
+                              systemImage: "clock")
                     }
-                    if addToCalendar {
+                    if hasDueDate {
                         DatePicker(s.dateTimeLabel, selection: $dueDate,
                                    displayedComponents: [.date, .hourAndMinute])
 
@@ -104,10 +127,50 @@ struct AddTaskView: View {
                     }
                 }
 
+                // Saved tag presets (only show when at least one saved label exists)
+                let presets = savedTagPresets
+                if !presets.isEmpty {
+                    Section(lang == "zh" ? "常用標籤" : "Saved Tags") {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(presets, id: \.0) { (color, label) in
+                                    Button {
+                                        colorTag       = color
+                                        colorTagLabel  = label
+                                        useCustomColor = false
+                                    } label: {
+                                        HStack(spacing: 5) {
+                                            Circle().fill(color.color).frame(width: 8, height: 8)
+                                            Text(label)
+                                                .font(.caption).fontWeight(.medium)
+                                        }
+                                        .padding(.horizontal, 10).padding(.vertical, 5)
+                                        .background(
+                                            (colorTag == color && colorTagLabel == label && !useCustomColor)
+                                                ? color.color.opacity(0.18)
+                                                : Color.secondary.opacity(0.1)
+                                        )
+                                        .cornerRadius(14)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 14)
+                                                .stroke(
+                                                    (colorTag == color && colorTagLabel == label && !useCustomColor)
+                                                        ? color.color : Color.clear,
+                                                    lineWidth: 1.5
+                                                )
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    }
+                }
+
                 Section(s.colorTagSection) {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
-                            // Preset colour shortcuts
                             ForEach(TaskColor.allCases, id: \.self) { c in
                                 colorCircle(c)
                             }
@@ -120,7 +183,6 @@ struct AddTaskView: View {
                                         useCustomColor = true
                                         colorTag = .none
                                     }
-                                // Ring when active
                                 if useCustomColor {
                                     Circle()
                                         .stroke(Color.primary, lineWidth: 2)
@@ -133,8 +195,6 @@ struct AddTaskView: View {
                     }
                 }
 
-                // Tag label — own Section so it's completely isolated from the horizontal
-                // ScrollView above (which steals gestures and blocks the TextField).
                 if colorTag != .none || useCustomColor {
                     Section {
                         HStack(spacing: 8) {
@@ -153,20 +213,6 @@ struct AddTaskView: View {
                                     .foregroundColor(.secondary)
                             }
                             .buttonStyle(.borderless)
-                        }
-                    }
-                }
-
-                if isEditing {
-                    Section {
-                        Button(role: .destructive) {
-                            showDeleteConfirm = true
-                        } label: {
-                            HStack {
-                                Spacer()
-                                Text(lang == "zh" ? "刪除任務" : "Delete Task")
-                                Spacer()
-                            }
                         }
                     }
                 }
@@ -212,6 +258,20 @@ struct AddTaskView: View {
                         Label(lang == "zh" ? "新增連結" : "Add Link", systemImage: "plus")
                     }
                 }
+
+                if isEditing {
+                    Section {
+                        Button(role: .destructive) {
+                            showDeleteConfirm = true
+                        } label: {
+                            HStack {
+                                Spacer()
+                                Text(lang == "zh" ? "刪除任務" : "Delete Task")
+                                Spacer()
+                            }
+                        }
+                    }
+                }
             }
             .scrollContentBackground(.hidden)
             .background(Color.appBackground)
@@ -240,6 +300,16 @@ struct AddTaskView: View {
             } message: {
                 Text(lang == "zh" ? "確定要刪除這個任務嗎？" : "Are you sure you want to delete this task?")
             }
+        }
+    }
+
+    // MARK: - Tag presets
+
+    private var savedTagPresets: [(TaskColor, String)] {
+        TaskColor.allCases.compactMap { c -> (TaskColor, String)? in
+            guard c != .none else { return nil }
+            let label = savedTagLabel(for: c)
+            return label.isEmpty ? nil : (c, label)
         }
     }
 
@@ -275,6 +345,8 @@ struct AddTaskView: View {
         }
     }
 
+    // MARK: - Populate / Save
+
     private func populate() {
         if let t = editingTask {
             title              = t.title
@@ -283,6 +355,7 @@ struct AddTaskView: View {
             addToMatrix        = t.showInMatrix ?? true
             colorTag           = t.colorTag
             colorTagLabel      = t.colorTagLabel
+            isCompleted        = t.isCompleted
             if let hex = t.tagHex, let c = Color(hex: hex) {
                 customTagColor = c
                 useCustomColor = true
@@ -294,13 +367,13 @@ struct AddTaskView: View {
             recurrence         = t.recurrence
             selectedCategoryId = t.checklistCategoryId
             if let d = t.dueDate {
-                addToCalendar = true
-                dueDate       = d
+                hasDueDate = true
+                dueDate    = d
             }
         } else {
             quadrant           = defaultQuadrant
             addToMatrix        = true
-            addToCalendar      = forceCalendar
+            hasDueDate         = forceCalendar
             addToChecklist     = forceChecklist
             selectedCategoryId = defaultCategoryId ?? taskStore.checklistCategories.first?.id
             links              = []
@@ -317,7 +390,7 @@ struct AddTaskView: View {
         task.notes               = notes
         task.quadrant            = quadrant
         task.showInMatrix        = addToMatrix
-        task.dueDate             = addToCalendar ? dueDate : nil
+        task.dueDate             = hasDueDate ? dueDate : nil
         task.isInChecklist       = addToChecklist
         if useCustomColor {
             task.colorTag      = .none
@@ -330,13 +403,34 @@ struct AddTaskView: View {
                                    ? colorTagLabel.trimmingCharacters(in: .whitespaces)
                                    : ""
         task.subtasks            = subtasks
-        task.links               = links
-        task.recurrence          = addToCalendar ? recurrence : .none
+        task.links               = links.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+        task.recurrence          = hasDueDate ? recurrence : .none
         task.checklistCategoryId = addToChecklist ? selectedCategoryId : nil
 
         if !isEditing {
             if let x = initialCanvasX { task.canvasX = x }
             if let y = initialCanvasY { task.canvasY = y }
+        }
+
+        // Handle completion state change
+        let wasCompleted = editingTask?.isCompleted ?? false
+        if isCompleted && !wasCompleted {
+            task.isCompleted  = true
+            task.completedAt  = Date()
+            // Spawn next recurrence when completing a recurring task
+            if task.recurrence != .none, let due = task.dueDate,
+               let nextDue = task.recurrence.nextDate(after: due) {
+                var next = task
+                next.id          = UUID()
+                next.isCompleted = false
+                next.completedAt = nil
+                next.dueDate     = nextDue
+                next.createdAt   = Date()
+                taskStore.addTask(next)
+            }
+        } else if !isCompleted && wasCompleted {
+            task.isCompleted = false
+            task.completedAt = nil
         }
 
         if isEditing { taskStore.updateTask(task) }

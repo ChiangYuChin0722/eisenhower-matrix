@@ -148,7 +148,12 @@ struct CalendarView: View {
     private func dayCell(_ date: Date) -> some View {
         let isToday    = cal.isDateInToday(date)
         let isSelected = cal.isDate(date, inSameDayAs: selectedDate)
-        let dots       = Array(Set(taskStore.tasks(for: date).map { $0.quadrant }))
+        // Use tag color when available, else quadrant color; cap at 3 dots
+        let dotColors: [Color] = Array(
+            taskStore.tasks(for: date).prefix(3).map { t in
+                t.effectiveTagColor ?? qColor(t.quadrant)
+            }
+        )
 
         return Button { selectedDate = date } label: {
             VStack(spacing: 2) {
@@ -161,8 +166,8 @@ struct CalendarView: View {
                         .foregroundColor(isSelected ? .white : (isToday ? accent : .primary))
                 }
                 HStack(spacing: 2) {
-                    ForEach(dots, id: \.self) { q in
-                        Circle().fill(qColor(q)).frame(width: 4, height: 4)
+                    ForEach(dotColors.indices, id: \.self) { i in
+                        Circle().fill(dotColors[i]).frame(width: 4, height: 4)
                     }
                 }
                 .frame(height: 4)
@@ -456,23 +461,17 @@ struct CalendarView: View {
     }
 
     private func weekTaskChip(_ task: EisTask) -> some View {
-        HStack(spacing: 3) {
-            if let tagColor = task.effectiveTagColor {
-                Circle()
-                    .fill(tagColor)
-                    .frame(width: 5, height: 5)
-            }
-            Text(task.title)
-                .font(.system(size: 9, weight: .medium))
-                .lineLimit(2)
-                .foregroundColor(.white)
-        }
-        .padding(.horizontal, 3)
-        .padding(.vertical, 2)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(qColor(task.quadrant).opacity(task.isCompleted ? 0.4 : 0.9))
-        .cornerRadius(3)
-        .onTapGesture { editingTask = task }
+        let chipColor = task.effectiveTagColor ?? qColor(task.quadrant)
+        return Text(task.title)
+            .font(.system(size: 9, weight: .medium))
+            .lineLimit(2)
+            .foregroundColor(.white)
+            .padding(.horizontal, 3)
+            .padding(.vertical, 2)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(chipColor.opacity(task.isCompleted ? 0.4 : 0.9))
+            .cornerRadius(3)
+            .onTapGesture { editingTask = task }
     }
 
     private func weekTimedTasks(date: Date, hour: Int) -> [EisTask] {
@@ -638,9 +637,10 @@ struct CalendarView: View {
     }
 
     private func timelineCard(_ task: EisTask) -> some View {
-        HStack(spacing: 0) {
+        let cardColor = task.effectiveTagColor ?? qColor(task.quadrant)
+        return HStack(spacing: 0) {
             Rectangle()
-                .fill(task.effectiveTagColor ?? qColor(task.quadrant))
+                .fill(cardColor)
                 .frame(width: 3)
                 .cornerRadius(1.5)
 
@@ -660,14 +660,14 @@ struct CalendarView: View {
                     taskStore.toggleCompletion(id: task.id)
                 } label: {
                     Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                        .foregroundColor(task.isCompleted ? qColor(task.quadrant) : .secondary)
+                        .foregroundColor(task.isCompleted ? cardColor : .secondary)
                 }
                 .buttonStyle(.plain)
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
         }
-        .background(qColor(task.quadrant).opacity(0.06))
+        .background(cardColor.opacity(0.06))
         .cornerRadius(8)
         .padding(.trailing, 16)
         .contentShape(Rectangle())

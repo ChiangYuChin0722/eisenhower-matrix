@@ -9,7 +9,7 @@ struct ChecklistView: View {
     private func qBg(_ q: Quadrant)    -> Color { q.bgColor(theme: matrixTheme) }
 
     @State private var editingTask: EisTask? = nil
-    @State private var showCompleted         = false
+    @State private var showCompletedSection  = false
     @State private var showQuickAdd          = false
     @State private var selectedCategoryId: UUID? = nil
     @State private var showAddCategory       = false
@@ -26,24 +26,27 @@ struct ChecklistView: View {
 
     // MARK: - Derived data
 
-    private var displayedTasks: [EisTask] {
-        var base = taskStore.checklistTasks
-        if let catId = selectedCategoryId {
-            base = base.filter { $0.checklistCategoryId == catId }
-        }
-        if !showCompleted { base = base.filter { !$0.isCompleted } }
-        return base.sorted {
-            if $0.isCompleted != $1.isCompleted { return !$0.isCompleted }
-            if $0.sortOrder   != $1.sortOrder   { return $0.sortOrder < $1.sortOrder }
-            return $0.createdAt < $1.createdAt
-        }
-    }
-
     private var filteredBase: [EisTask] {
         selectedCategoryId == nil
             ? taskStore.checklistTasks
             : taskStore.checklistTasks.filter { $0.checklistCategoryId == selectedCategoryId }
     }
+
+    private var incompleteTasks: [EisTask] {
+        filteredBase
+            .filter { !$0.isCompleted }
+            .sorted {
+                if $0.sortOrder != $1.sortOrder { return $0.sortOrder < $1.sortOrder }
+                return $0.createdAt < $1.createdAt
+            }
+    }
+
+    private var completedTasks: [EisTask] {
+        filteredBase
+            .filter { $0.isCompleted }
+            .sorted { ($0.completedAt ?? $0.createdAt) > ($1.completedAt ?? $1.createdAt) }
+    }
+
     private var completedCount: Int { filteredBase.filter { $0.isCompleted }.count }
     private var totalCount: Int     { filteredBase.count }
     private var progress: Double {
@@ -61,7 +64,7 @@ struct ChecklistView: View {
 
                     if taskStore.checklistTasks.isEmpty {
                         emptyState
-                    } else if displayedTasks.isEmpty {
+                    } else if incompleteTasks.isEmpty && completedCount == 0 {
                         emptyCategory
                     } else {
                         taskList
@@ -87,22 +90,11 @@ struct ChecklistView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Group {
-                        if isReorderMode {
-                            Button(s.doneReorder) {
-                                withAnimation { isReorderMode = false }
-                            }
-                            .fontWeight(.semibold)
-                        } else {
-                            // Icon-only eye button — no text
-                            Button {
-                                withAnimation { showCompleted.toggle() }
-                            } label: {
-                                Image(systemName: showCompleted ? "eye.slash" : "eye")
-                                    .font(.system(size: 15))
-                            }
-                            .foregroundColor(.secondary)
+                    if isReorderMode {
+                        Button(s.doneReorder) {
+                            withAnimation { isReorderMode = false }
                         }
+                        .fontWeight(.semibold)
                     }
                 }
                 if !isReorderMode {
@@ -136,7 +128,7 @@ struct ChecklistView: View {
 
     private var taskList: some View {
         List {
-            // Progress bar inline — no gap between it and the first row
+            // Progress bar
             if totalCount > 0 {
                 HStack(spacing: 0) {
                     Text("\(completedCount) / \(totalCount) \(s.done.lowercased())")
@@ -160,19 +152,20 @@ struct ChecklistView: View {
                     .animation(.spring(response: 0.5, dampingFraction: 0.7), value: progress)
             }
 
+            // Incomplete tasks
             if isReorderMode {
-                ForEach(displayedTasks) { task in
+                ForEach(incompleteTasks) { task in
                     checklistRow(task)
                         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
                         .listRowSeparator(.hidden)
                 }
                 .onMove { from, to in
-                    var reordered = displayedTasks
+                    var reordered = incompleteTasks
                     reordered.move(fromOffsets: from, toOffset: to)
                     taskStore.reorderChecklistTasks(reordered)
                 }
             } else {
-                ForEach(displayedTasks) { task in
+                ForEach(incompleteTasks) { task in
                     checklistRow(task)
                         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
                         .listRowSeparator(.hidden)
@@ -202,7 +195,46 @@ struct ChecklistView: View {
                             .tint(accent)
                         }
                 }
-                .animation(.spring(response: 0.38, dampingFraction: 0.78), value: displayedTasks.map(\.id))
+                .animation(.spring(response: 0.38, dampingFraction: 0.78), value: incompleteTasks.map(\.id))
+            }
+
+            // Completed section
+            if completedCount > 0 {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showCompletedSection.toggle()
+                    }
+                } label: {
+                    HStack {
+                        Text(lang == "zh" ? "已完成 (\(completedCount))" : "Completed (\(completedCount))")
+                            .font(.subheadline).fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        Image(systemName: showCompletedSection ? "chevron.up" : "chevron.down")
+                            .font(.caption).foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                }
+                .buttonStyle(.plain)
+                .listRowBackground(Color.secondary.opacity(0.06))
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+
+                if showCompletedSection {
+                    ForEach(completedTasks) { task in
+                        checklistRow(task)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
+                            .listRowSeparator(.hidden)
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    taskStore.deleteTask(id: task.id)
+                                } label: {
+                                    Label(s.delete, systemImage: "trash")
+                                }
+                                .tint(.red)
+                            }
+                    }
+                }
             }
         }
         .listStyle(.plain)
@@ -214,8 +246,8 @@ struct ChecklistView: View {
     // MARK: - Row
 
     private func checklistRow(_ task: EisTask) -> some View {
-        let isExpanded = expandedIds.contains(task.id)
-        let hasExtra   = !task.subtasks.isEmpty || !task.notes.isEmpty
+        let hasSubtasks = !task.subtasks.isEmpty
+        let isExpanded  = expandedIds.contains(task.id)
 
         return VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 14) {
@@ -230,7 +262,7 @@ struct ChecklistView: View {
 
                     metaRow(task)
 
-                    if !task.subtasks.isEmpty && !isExpanded {
+                    if hasSubtasks && !isExpanded {
                         Text(s.subtasksOf(task.completedSubtaskCount, task.totalSubtaskCount))
                             .font(.caption2)
                             .foregroundColor(.secondary)
@@ -254,28 +286,31 @@ struct ChecklistView: View {
                     .cornerRadius(4)
                 }
 
-                if hasExtra && !isReorderMode {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(.secondary.opacity(0.6))
-                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                        .animation(.easeInOut(duration: 0.2), value: isExpanded)
+                // Expand chevron only for subtasks
+                if hasSubtasks && !isReorderMode {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            if expandedIds.contains(task.id) {
+                                expandedIds.remove(task.id)
+                            } else {
+                                expandedIds.insert(task.id)
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.secondary.opacity(0.6))
+                            .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                            .animation(.easeInOut(duration: 0.2), value: isExpanded)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(.vertical, 11)
             .contentShape(Rectangle())
             .onTapGesture {
-                if hasExtra {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        if expandedIds.contains(task.id) {
-                            expandedIds.remove(task.id)
-                        } else {
-                            expandedIds.insert(task.id)
-                        }
-                    }
-                } else {
-                    editingTask = task
-                }
+                // Always open edit view on tap
+                editingTask = task
             }
 
             if isExpanded {
