@@ -22,6 +22,7 @@ struct EisenhowerMatrixApp: App {
 
     @StateObject private var taskStore   = TaskStore()
     @StateObject private var authManager = AuthManager()
+    @StateObject private var friendMgr   = FriendManager.shared
 
     init() {
         FirebaseApp.configure()
@@ -37,6 +38,7 @@ struct EisenhowerMatrixApp: App {
                     ContentView()
                         .environmentObject(taskStore)
                         .environmentObject(authManager)
+                        .environmentObject(friendMgr)
                 } else {
                     LoginView()
                         .environmentObject(authManager)

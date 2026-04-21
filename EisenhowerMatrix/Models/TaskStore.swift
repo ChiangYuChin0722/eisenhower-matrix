@@ -69,6 +69,19 @@ class TaskStore: ObservableObject {
 
         let base = db.collection("users").document(uid)
 
+        // Write public profile so friends can find you by email and see your name/avatar
+        if let user = Auth.auth().currentUser {
+            FriendManager.shared.writeProfile(
+                uid: uid,
+                displayName: user.displayName ?? user.email ?? "",
+                email:       user.email ?? "",
+                photoURL:    user.photoURL?.absoluteString
+            )
+        }
+
+        // Start social listeners
+        Task { @MainActor in FriendManager.shared.start(uid: uid) }
+
         // Check for a pending reset stored in Firestore (survives app reinstalls,
         // unlike UserDefaults which is wiped on uninstall).
         base.getDocument { [weak self] snap, _ in
@@ -141,6 +154,7 @@ class TaskStore: ObservableObject {
     func stopSync() {
         taskListener?.remove(); taskListener = nil
         catListener?.remove();  catListener  = nil
+        Task { @MainActor in FriendManager.shared.stopAll() }
     }
 
     // MARK: - Firestore write helpers
@@ -196,6 +210,14 @@ class TaskStore: ObservableObject {
     var completedCount: Int { tasks.filter { $0.isCompleted }.count }
     var pendingCount: Int   { tasks.filter { !$0.isCompleted }.count }
 
+    var todayCompletedCount: Int {
+        let cal = Calendar.current
+        return tasks.filter {
+            guard let c = $0.completedAt else { return false }
+            return cal.isDateInToday(c)
+        }.count
+    }
+
     var completionRate: Double {
         guard totalCount > 0 else { return 0 }
         return Double(completedCount) / Double(totalCount)
@@ -239,6 +261,18 @@ class TaskStore: ObservableObject {
 
     // MARK: - Mutations
 
+    private func pushStats() {
+        guard let uid else { return }
+        Task { @MainActor in
+            FriendManager.shared.updateStats(
+                uid: uid,
+                todayCompleted: todayCompletedCount,
+                todayTotal:     totalCount,
+                streak:         currentStreak
+            )
+        }
+    }
+
     func addTask(_ task: EisTask) {
         var t = task
         HapticManager.shared.impact(.light)
@@ -249,6 +283,7 @@ class TaskStore: ObservableObject {
         tasks.append(t)
         fsWrite(t)
         saveLocalCache()
+        pushStats()
     }
 
     func updateTask(_ task: EisTask) {
@@ -269,6 +304,7 @@ class TaskStore: ObservableObject {
         }
         fsWrite(t)
         saveLocalCache()
+        pushStats()
     }
 
     func deleteTask(id: UUID) {
@@ -307,6 +343,7 @@ class TaskStore: ObservableObject {
         }
         fsWrite(tasks[idx])
         saveLocalCache()
+        pushStats()
     }
 
     func toggleSubtaskCompletion(taskId: UUID, subtaskId: UUID) {

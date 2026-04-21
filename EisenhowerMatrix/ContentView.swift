@@ -25,7 +25,7 @@ struct ContentView: View {
                 .tabItem { Label(s.tabDeadlines, systemImage: "clock.badge.exclamationmark") }
 
             DashboardView()
-                .tabItem { Label(s.tabDashboard, systemImage: "chart.bar.fill") }
+                .tabItem { Label(s.tabDashboard, systemImage: "person.2.fill") }
         }
         .tint(accent)
         .preferredColorScheme(colorScheme)
